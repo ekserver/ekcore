@@ -986,6 +986,14 @@ class TradeData
         uint64     m_items[TRADE_SLOT_COUNT];               // traded itmes from m_player side including non-traded slot
 };
 
+struct AnticheatData
+{
+    uint32 lastOpcode;
+    MovementInfo lastMovementInfo;
+    bool disableACCheck;
+    uint32 disableACCheckTimer;
+};
+
 class Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
@@ -994,6 +1002,8 @@ class Player : public Unit, public GridObject<Player>
     public:
         explicit Player (WorldSession *session);
         ~Player ();
+
+        AnticheatData anticheatData;
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
