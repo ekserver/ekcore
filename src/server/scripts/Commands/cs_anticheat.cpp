@@ -160,22 +160,22 @@ public:
         char* command = strtok((char*)args, " ");
 
         uint32 uiGUID = 0;
-        Player* pPlayer = NULL;
+        Player* player = NULL;
         
         if (command)
         {
             strCommand = command;
 
             normalizePlayerName(strCommand);
-            pPlayer = sObjectMgr->GetPlayer(strCommand.c_str()); //get player by name
+            player = sObjectMgr->GetPlayer(strCommand.c_str()); //get player by name
 
-            if (pPlayer)
-                uiGUID = pPlayer->GetGUIDLow();
+            if (player)
+                uiGUID = player->GetGUIDLow();
         }else 
         {
-            pPlayer = handler->getSelectedPlayer();
-            if (pPlayer)
-                uiGUID = pPlayer->GetGUIDLow();  
+            player = handler->getSelectedPlayer();
+            if (player)
+                uiGUID = player->GetGUIDLow();  
         }
 
         if (uiGUID == 0)
@@ -184,24 +184,16 @@ public:
             return true;
         }
         
-        QueryResult resultDB = CharacterDatabase.PQuery("SELECT average,total_reports,speed_reports,fly_reports,jump_reports,waterwalk_reports,teleportplane_reports FROM players_reports_status WHERE guid =%u",uiGUID);
-        if (!resultDB)
-        {
-            handler->PSendSysMessage("The player does not have any record in the anticheat table.");
-            return false;
-        }
 
-        Field *fieldsDB = resultDB->Fetch();
-     
-        uint32 average = fieldsDB[0].GetUInt32();
-        uint32 total_reports = fieldsDB[1].GetUInt32();
-        uint32 speed_reports = fieldsDB[2].GetUInt32();
-        uint32 fly_reports = fieldsDB[3].GetUInt32();
-        uint32 jump_reports = fieldsDB[4].GetUInt32();
-        uint32 waterwalk_reports = fieldsDB[5].GetUInt32();
-        uint32 teleportplane_reports = fieldsDB[6].GetUInt32();
+        uint32 average = player->anticheatData.average;
+        uint32 total_reports = player->anticheatData.total_reports;
+        uint32 speed_reports = player->anticheatData.type_reports[0];
+        uint32 fly_reports = player->anticheatData.type_reports[1];
+        uint32 jump_reports = player->anticheatData.type_reports[3];
+        uint32 waterwalk_reports = player->anticheatData.type_reports[2];
+        uint32 teleportplane_reports = player->anticheatData.type_reports[4];
 
-        handler->PSendSysMessage("Information about player %s",pPlayer->GetName());
+        handler->PSendSysMessage("Information about player %s",player->GetName());
         handler->PSendSysMessage("Average: %u || Total Reports: %u ",average,total_reports);
         handler->PSendSysMessage("Speed Reports: %u || Fly Reports: %u || Jump Reports: %u ",speed_reports,fly_reports,jump_reports);
         handler->PSendSysMessage("Walk On Water Reports: %u  || Teleport To Plane Reports: %u",waterwalk_reports,teleportplane_reports);

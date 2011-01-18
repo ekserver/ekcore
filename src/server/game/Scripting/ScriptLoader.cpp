@@ -631,7 +631,7 @@ void AddSpellScripts()
 
 void AddCommandScripts()
 {
-	AddSC_anticheat_commandscript();
+    AddSC_anticheat_commandscript();
     AddSC_account_commandscript();
     AddSC_achievement_commandscript();
     AddSC_debug_commandscript();

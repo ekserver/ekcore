@@ -401,6 +401,12 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     GetPosition(&anticheatData.lastMovementInfo.pos);
     anticheatData.lastOpcode = 0;
 
+    for (uint8 i = 0; i < 5; i++)
+        anticheatData.type_reports[i] = 0;
+
+    anticheatData.average = 0;
+    anticheatData.creation_time = 0;
+
     m_speakTime = 0;
     m_speakCount = 0;
 

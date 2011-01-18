@@ -33,64 +33,22 @@ void AnticheatMgr::DeletePlayerReport(Player* player)
 
 void AnticheatMgr::BuildReport(Player* player,uint8 reportType)
 {
-    // nos aseguramos que tenemos un reporte del player      0     1         2          3               4             5           6              7                          8
-    QueryResult resultDB = CharacterDatabase.PQuery("SELECT guid,average,total_reports,speed_reports,fly_reports,jump_reports,waterwalk_reports,teleportplane_reports, creation_time FROM players_reports_status WHERE guid =%u",player->GetGUIDLow());
-    if (!resultDB)
+    if (player->anticheatData.total_reports == 0)
     {
-        CharacterDatabase.PExecute("INSERT IGNORE INTO players_reports_status (guid,creation_time) VALUES (%u,%u);",player->GetGUIDLow(),time(NULL));
-        resultDB = CharacterDatabase.PQuery("SELECT guid,average,total_reports,speed_reports,fly_reports,jump_reports,waterwalk_reports,teleportplane_reports, creation_time FROM players_reports_status WHERE guid =%u",player->GetGUIDLow());
+        player->anticheatData.creation_time = time(NULL);
+        CharacterDatabase.PExecute("INSERT IGNORE INTO players_reports_status (guid,creation_time) VALUES (%u,%u);",player->GetGUIDLow(),player->anticheatData.creation_time);
     }
 
-    // this should never happen
-    if (!resultDB)
-        return;
+    std::string report_type = report_types[reportType];
 
-    Field *fieldsDB = resultDB->Fetch();
-     
-    uint64 guid = fieldsDB[0].GetUInt64();
-    uint32 average = fieldsDB[1].GetUInt32();
-    uint32 total_reports = fieldsDB[2].GetUInt32();
-    uint32 speed_reports = fieldsDB[3].GetUInt32();
-    uint32 fly_reports = fieldsDB[4].GetUInt32();
-    uint32 jump_reports = fieldsDB[5].GetUInt32();
-    uint32 waterwalk_reports = fieldsDB[6].GetUInt32();
-    uint32 teleportplane_reports = fieldsDB[7].GetUInt32();
-    uint64 creation_time = fieldsDB[8].GetUInt64();
+    player->anticheatData.type_reports[reportType]++;
 
-    std::string report_type = "";
-    uint32 reportChanged = 0;
+    uint64 actual_time = time(NULL) - player->anticheatData.creation_time;
 
-    switch(reportType)
-    {
-    case SPEED_HACK_REPORT:
-        report_type = "speed_reports";
-        reportChanged = speed_reports;
-        break;
-    case FLY_HACK_REPORT:
-        report_type = "fly_reports";
-        reportChanged = fly_reports;
-        break;
-    case WALK_WATER_HACK_REPORT:
-        report_type = "waterwalk_reports";
-        reportChanged = waterwalk_reports;
-        break;
-    case JUMP_HACK_REPORT:
-        report_type = "jump_reports";
-        reportChanged = jump_reports;
-        break;
-    case TELEPORT_PLANE_HACK_REPORT:
-        report_type = "teleportplane_reports";
-        reportChanged = teleportplane_reports;
-        break;
-    }
+    player->anticheatData.average = player->anticheatData.total_reports > 0 ? ((player->anticheatData.average * (player->anticheatData.total_reports)) + actual_time) / (player->anticheatData.total_reports + 1) : 0;
+    player->anticheatData.total_reports++;
 
-    reportChanged++;
-
-    uint64 actual_time = time(NULL) - creation_time;
-
-    average = total_reports > 0 ? ((average * (total_reports)) + actual_time) / (total_reports + 1) : 0;
-
-    CharacterDatabase.PExecute("UPDATE players_reports_status SET %s=%u, total_reports=%u, average=%u WHERE guid=%u",report_type.c_str(),reportChanged,total_reports+1,average,player->GetGUIDLow());
+    CharacterDatabase.PExecute("UPDATE players_reports_status SET %s=%u, total_reports=%u, average=%u WHERE guid=%u",report_type.c_str(),player->anticheatData.type_reports[reportType],player->anticheatData.total_reports,player->anticheatData.average,player->GetGUIDLow());
 }
 
 void AnticheatMgr::DisableAnticheatDetection(Player* player, bool teleport)

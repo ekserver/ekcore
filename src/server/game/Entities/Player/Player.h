@@ -992,6 +992,10 @@ struct AnticheatData
     MovementInfo lastMovementInfo;
     bool disableACCheck;
     uint32 disableACCheckTimer;
+    uint32 total_reports;
+    uint32 type_reports[5];
+    uint32 average;
+    uint64 creation_time;
 };
 
 class Player : public Unit, public GridObject<Player>
