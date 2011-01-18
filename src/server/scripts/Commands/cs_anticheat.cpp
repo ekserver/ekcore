@@ -244,50 +244,58 @@ public:
     static bool HandleAntiCheatGlobalCommand(ChatHandler* handler, const char* args)
     {
         if (!sWorld->getBoolConfig(CONFIG_ANTICHEAT_ENABLE))
-            return false;
-
-        QueryResult resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status ORDER BY average ASC LIMIT 3;");
-        if (!resultDB)
         {
-            handler->PSendSysMessage("The player does not have any record in the anticheat table.");
-            return false;
+            handler->PSendSysMessage("The Anticheat System is disabled.");
+            return true;
         }
 
-        handler->SendSysMessage("=============================");
-        handler->PSendSysMessage("Players with the lowest averages:");
-        do
+        QueryResult resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status WHERE total_reports != 0 ORDER BY average ASC LIMIT 3;");
+        if (!resultDB)
         {
-            Field *fieldsDB = resultDB->Fetch();
+            handler->PSendSysMessage("No players found.");
+            return true;
+        } else
+        {
+                handler->SendSysMessage("=============================");
+                handler->PSendSysMessage("Players with the lowest averages:");
+                do
+                {
+                    Field *fieldsDB = resultDB->Fetch();
      
-            uint64 guid = fieldsDB[0].GetUInt64();
-            uint32 average = fieldsDB[1].GetUInt32();
-            uint32 total_reports = fieldsDB[2].GetUInt32();
+                    uint64 guid = fieldsDB[0].GetUInt64();
+                    uint32 average = fieldsDB[1].GetUInt32();
+                    uint32 total_reports = fieldsDB[2].GetUInt32();
 
-             if (Player* player = sObjectMgr->GetPlayerByLowGUID(guid))
-                 handler->PSendSysMessage("Player: %s Average: %u Total Reports: %u",player->GetName(),average,total_reports);
+                     if (Player* player = sObjectMgr->GetPlayerByLowGUID(guid))
+                         handler->PSendSysMessage("Player: %s Average: %u Total Reports: %u",player->GetName(),average,total_reports);
 
-        } while (resultDB->NextRow());
+                } while (resultDB->NextRow());
+        }
 
-
-        resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status ORDER BY total_reports DESC LIMIT 3;");
+        resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status WHERE total_reports != 0 ORDER BY total_reports DESC LIMIT 3;");
         
         // this should never happen
         if (!resultDB)
-            return false;
-        handler->SendSysMessage("==========================");
-        handler->PSendSysMessage("Players with the more reports:");
-        do
         {
-            Field *fieldsDB = resultDB->Fetch();
+            handler->PSendSysMessage("No players found.");
+            return true;
+        } else
+        {
+            handler->SendSysMessage("=============================");
+            handler->PSendSysMessage("Players with the more reports:");
+            do
+            {
+                Field *fieldsDB = resultDB->Fetch();
      
-            uint64 guid = fieldsDB[0].GetUInt64();
-            uint32 average = fieldsDB[1].GetUInt32();
-            uint32 total_reports = fieldsDB[2].GetUInt32();
+                uint64 guid = fieldsDB[0].GetUInt64();
+                uint32 average = fieldsDB[1].GetUInt32();
+                uint32 total_reports = fieldsDB[2].GetUInt32();
 
-             if (Player* player = sObjectMgr->GetPlayerByLowGUID(guid))
-                 handler->PSendSysMessage("Player: %s Total Reports: %u Average: %u",player->GetName(),total_reports,average);
+                    if (Player* player = sObjectMgr->GetPlayerByLowGUID(guid))
+                        handler->PSendSysMessage("Player: %s Total Reports: %u Average: %u",player->GetName(),total_reports,average);
 
-        } while (resultDB->NextRow());
+            } while (resultDB->NextRow());
+        }
 
         return true;
     }
