@@ -46,6 +46,9 @@ public:
 
     static bool HandleAnticheatWarnCommand(ChatHandler* handler, const char* args)
     {
+        if (!sWorld->getBoolConfig(CONFIG_ANTICHEAT_ENABLE))
+            return false;
+
         Player* pTarget = NULL;
         
         std::string strCommand;
@@ -82,6 +85,9 @@ public:
 
     static bool HandleAnticheatJailCommand(ChatHandler* handler, const char* args)
     {
+        if (!sWorld->getBoolConfig(CONFIG_ANTICHEAT_ENABLE))
+            return false;
+
         Player* pTarget = NULL;
         
         std::string strCommand;
@@ -128,6 +134,9 @@ public:
 
     static bool HandleAntiCheatDeleteCommand(ChatHandler* handler, const char* args)
     {
+        if (!sWorld->getBoolConfig(CONFIG_ANTICHEAT_ENABLE))
+            return false;
+
         std::string strCommand;
 
         char* command = strtok((char*)args, " "); //get entered name
@@ -155,6 +164,9 @@ public:
 
     static bool HandleAntiCheatPlayerCommand(ChatHandler* handler, const char* args)
     {
+        if (!sWorld->getBoolConfig(CONFIG_ANTICHEAT_ENABLE))
+            return false;
+
         std::string strCommand;
 
         char* command = strtok((char*)args, " ");
@@ -203,7 +215,7 @@ public:
 
     static bool HandleAntiCheatHandleCommand(ChatHandler* handler, const char* args)
     {
-        /*std::string strCommand;
+        std::string strCommand;
 
         char* command = strtok((char*)args, " ");
         
@@ -217,20 +229,23 @@ public:
 
         if (strCommand.compare("on") == 0)
         {
-            sWorld.setBoolConfig(CONFIG_ANTICHEAT_ENABLE,true);
-            handler->SendSysMessage("The AntiCheat-System is now: Enabled!");
+            sWorld->setBoolConfig(CONFIG_ANTICHEAT_ENABLE,true);
+            handler->SendSysMessage("The Anticheat System is now: Enabled!");
         }
         else if (strCommand.compare("off") == 0)
         {
-            sWorld.setBoolConfig(CONFIG_ANTICHEAT_ENABLE,false);
-            handler->SendSysMessage("The AntiCheat-System is now: Disabled!");
+            sWorld->setBoolConfig(CONFIG_ANTICHEAT_ENABLE,false);
+            handler->SendSysMessage("The Anticheat System is now: Disabled!");
         }
-        */
+        
         return true;
     }
 
     static bool HandleAntiCheatGlobalCommand(ChatHandler* handler, const char* args)
     {
+        if (!sWorld->getBoolConfig(CONFIG_ANTICHEAT_ENABLE))
+            return false;
+
         QueryResult resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status ORDER BY average ASC LIMIT 3;");
         if (!resultDB)
         {

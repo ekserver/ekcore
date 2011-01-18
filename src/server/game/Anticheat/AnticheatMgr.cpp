@@ -49,6 +49,16 @@ void AnticheatMgr::BuildReport(Player* player,uint8 reportType)
     player->anticheatData.total_reports++;
 
     CharacterDatabase.PExecute("UPDATE players_reports_status SET %s=%u, total_reports=%u, average=%u WHERE guid=%u",report_type.c_str(),player->anticheatData.type_reports[reportType],player->anticheatData.total_reports,player->anticheatData.average,player->GetGUIDLow());
+    
+    if (player->anticheatData.total_reports > sWorld->getIntConfig(CONFIG_ANTICHEAT_REPORTS_INGAME_NOTIFICATION))
+    {
+        // display warning at the center of the screen, hacky way?
+        std::string str = "";
+        str = "|cFFFFFC00[AC]|cFF00FFFF[|cFF60FF00" + std::string(player->GetName()) + "|cFF00FFFF] Possible cheater!";
+        WorldPacket data(SMSG_NOTIFICATION, (str.size()+1));
+        data << str;
+        sWorld->SendGlobalGMMessage(&data);
+    }
 }
 
 void AnticheatMgr::DisableAnticheatDetection(Player* player, bool teleport)
@@ -133,6 +143,9 @@ void AnticheatMgr::TeleportPlaneHackDetection(Player* player, MovementInfo movem
 
 void AnticheatMgr::StartHackDetection(Player* player, MovementInfo movementInfo, uint32 opcode)
 {
+    if (!sWorld->getBoolConfig(CONFIG_ANTICHEAT_ENABLE))
+        return;
+
     if (player->isGameMaster())
         return;
 
