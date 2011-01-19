@@ -1700,7 +1700,7 @@ bool Player::BuildEnumData(QueryResult result, WorldPacket * p_data)
             if (cInfo)
             {
                 petDisplayId = fields[17].GetUInt32();
-                petLevel     = fields[18].GetUInt32();
+                petLevel     = fields[18].GetUInt16();
                 petFamily    = cInfo->family;
             }
         }
@@ -16092,10 +16092,12 @@ void Player::_LoadBGData(PreparedQueryResult result)
 
     Field* fields = result->Fetch();
     // Expecting only one row
-    /* bgInstanceID, bgTeam, x, y, z, o, map, taxi[0], taxi[1], mountSpell */
+    //             0         1      2       3       4       5       6          7           8          9
+    // SELECT instance_id, team, join_x, join_y, join_z, join_o, join_map, taxi_start, taxi_end, mount_spell FROM character_battleground_data WHERE guid = ?
+
     m_bgData.bgInstanceID = fields[0].GetUInt32();
-    m_bgData.bgTeam       = fields[1].GetUInt32();
-    m_bgData.joinPos      = WorldLocation(fields[6].GetUInt32(),    // Map
+    m_bgData.bgTeam       = fields[1].GetUInt16();
+    m_bgData.joinPos      = WorldLocation(fields[6].GetUInt16(),    // Map
                                           fields[2].GetFloat(),     // X
                                           fields[3].GetFloat(),     // Y
                                           fields[4].GetFloat(),     // Z
@@ -16867,7 +16869,11 @@ void Player::_LoadAuras(PreparedQueryResult result, uint32 timediff)
 {
     sLog->outDebug("Loading auras for player %u",GetGUIDLow());
 
-    //QueryResult *result = CharacterDatabase.PQuery("SELECT caster_guid,spell,effect_mask,recalculate_mask,stackcount,amount0,amount1,amount2,base_amount0,base_amount1,base_amount2,maxduration,remaintime,remaincharges FROM character_aura WHERE guid = '%u'",GetGUIDLow());
+    /*                                                           0       1        2         3                 4         5      6       7         8              9            10
+    QueryResult *result = CharacterDatabase.PQuery("SELECT caster_guid,spell,effect_mask,recalculate_mask,stackcount,amount0,amount1,amount2,base_amount0,base_amount1,base_amount2,
+                                                        11          12          13
+                                                    maxduration,remaintime,remaincharges FROM character_aura WHERE guid = '%u'",GetGUIDLow()); 
+    */
 
     if (result)
     {
@@ -17329,8 +17335,10 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
 {
     uint16 slot = 0;
 
-    ////                                                     0      1       3         4      5          6          7          8          9           10          11          12
-    //QueryResult *result = CharacterDatabase.PQuery("SELECT quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3, itemcount4 FROM character_queststatus WHERE guid = '%u'", GetGUIDLow());
+    ////                                                       0      1       2        3        4           5          6         7           8           9           10
+    //QueryResult *result = CharacterDatabase.PQuery("SELECT quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3, 
+    //                                                    11 
+    //                                                itemcount4 FROM character_queststatus WHERE guid = '%u'", GetGUIDLow());
 
     if (result)
     {
@@ -17357,7 +17365,7 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
 
                 questStatusData.m_explored = (fields[2].GetUInt8() > 0);
 
-                time_t quest_time = time_t(fields[3].GetUInt64());
+                time_t quest_time = time_t(fields[3].GetUInt32());
 
                 if (pQuest->HasFlag(QUEST_TRINITY_FLAGS_TIMED) && !GetQuestRewardStatus(quest_id))
                 {
@@ -17464,7 +17472,7 @@ void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
                 if (qQuest->IsDFQuest())
                 {
                     m_DFQuests.insert(qQuest->GetQuestId());
-                    m_lastDailyQuestTime = (time_t)fields[1].GetUInt64();
+                    m_lastDailyQuestTime = time_t(fields[1].GetUInt32());
                     continue;
                 }
             }
@@ -17916,7 +17924,7 @@ bool Player::_LoadHomeBind(PreparedQueryResult result)
     {
         Field* fields = result->Fetch();
 
-        m_homebindMapId = fields[0].GetUInt32();
+        m_homebindMapId = fields[0].GetUInt16();
         m_homebindAreaId = fields[1].GetUInt16();
         m_homebindX = fields[2].GetFloat();
         m_homebindY = fields[3].GetFloat();
@@ -23985,12 +23993,12 @@ void Player::_LoadGlyphs(PreparedQueryResult result)
         if (spec >= m_specsCount)
             continue;
 
-        m_Glyphs[spec][0] = fields[1].GetUInt32();
-        m_Glyphs[spec][1] = fields[2].GetUInt32();
-        m_Glyphs[spec][2] = fields[3].GetUInt32();
-        m_Glyphs[spec][3] = fields[4].GetUInt32();
-        m_Glyphs[spec][4] = fields[5].GetUInt32();
-        m_Glyphs[spec][5] = fields[6].GetUInt32();
+        m_Glyphs[spec][0] = fields[1].GetUInt16();
+        m_Glyphs[spec][1] = fields[2].GetUInt16();
+        m_Glyphs[spec][2] = fields[3].GetUInt16();
+        m_Glyphs[spec][3] = fields[4].GetUInt16();
+        m_Glyphs[spec][4] = fields[5].GetUInt16();
+        m_Glyphs[spec][5] = fields[6].GetUInt16();
     }
     while (result->NextRow());
 }
