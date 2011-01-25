@@ -1931,7 +1931,7 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
             }
             case 54798: // FLAMING Arrow Triggered Effect
             {
-                if (!target || !target->ToCreature() || !caster->ToCreature()->IsVehicle())
+                if (!target || !target->ToCreature() || !caster->IsVehicle())
                     return;
 
                 Unit *rider = caster->GetVehicleKit()->GetPassenger(0);
@@ -1945,10 +1945,10 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     target->CastSpell(target, 54683, true);
 
                 // Credit Frostworgs
-                if (target->ToCreature()->GetEntry() == 29358)
+                if (target->GetEntry() == 29358)
                     rider->CastSpell(rider, 54896, true);
                 // Credit Frost Giants
-                else if (target->ToCreature()->GetEntry() == 29351)
+                else if (target->GetEntry() == 29351)
                     rider->CastSpell(rider, 54893, true);
 
                 break;
@@ -2314,6 +2314,12 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                     case 46736:
                         triggerSpellId = 46737;
                         break;
+                    // Shield Level 1
+                    case 63130:
+                    // Shield Level 2
+                    case 63131:
+                    // Shield Level 3
+                    case 63132:
                     // Ball of Flames Visual
                     case 71706:
                         return;
