@@ -55,7 +55,8 @@ class instance_archavon : public InstanceMapScript
 				return;
 			 else if ((pvpWG->getDefenderTeam()!=TEAM_ALLIANCE) && (m_player->ToPlayer()->GetTeam() == HORDE))
 				return;
-			 else m_player->CastSpell(m_player, SPELL_TELEPORT_FORTRESS, true);
+			 else if ( m_player->GetSession()->GetSecurity() == 0 )
+                m_player->CastSpell(m_player, SPELL_TELEPORT_FORTRESS, true);
             }
 			}
 		}
