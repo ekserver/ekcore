@@ -635,7 +635,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                 if (AuraEffect const * aurEff = caster->GetAuraEffect(34241,0))
                     amount += cp * aurEff->GetAmount();
 
-                amount += CalculatePctF(cp, caster->GetTotalAttackPowerValue(BASE_ATTACK));
+                amount += uint32(CalculatePctU(caster->GetTotalAttackPowerValue(BASE_ATTACK), cp));
             }
             // Rend
             else if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARRIOR && GetSpellProto()->SpellFamilyFlags[0] & 0x20)
@@ -2398,15 +2398,15 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                 {
                     Unit *permafrostCaster = NULL;
                     if (caster->HasAura(66193)) permafrostCaster = caster->GetAura(66193)->GetCaster();
-                    if (caster->HasAura(67855)) permafrostCaster = caster->GetAura(67855)->GetCaster(); 
-                    if (caster->HasAura(67856)) permafrostCaster = caster->GetAura(67856)->GetCaster(); 
+                    if (caster->HasAura(67855)) permafrostCaster = caster->GetAura(67855)->GetCaster();
+                    if (caster->HasAura(67856)) permafrostCaster = caster->GetAura(67856)->GetCaster();
                     if (caster->HasAura(67857)) permafrostCaster = caster->GetAura(67857)->GetCaster();
-                
+
                     if (permafrostCaster)
                     {
                         if (Creature *permafrostCasterAsCreature = permafrostCaster->ToCreature())
                             permafrostCasterAsCreature->DespawnOrUnsummon(3000);
- 
+
                         caster->CastSpell(caster, 66181, false);
                         caster->RemoveAllAuras();
                         if (Creature *casterAsCreature = caster->ToCreature())
@@ -3174,7 +3174,11 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
         {
             target->SetShapeshiftForm(FORM_NONE);
             if (target->getClass() == CLASS_DRUID)
+            {
                 target->setPowerType(POWER_MANA);
+                // Remove movement impairing effects also when shifting out
+                target->RemoveMovementImpairingAuras();
+            }
         }
 
         if (modelid > 0)
@@ -3237,7 +3241,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
     {
         // Dash
         if (AuraEffect * aurEff =target->GetAuraEffect(SPELL_AURA_MOD_INCREASE_SPEED, SPELLFAMILY_DRUID, 0, 0, 0x8))
-            aurEff->RecalculateAmount();        
+            aurEff->RecalculateAmount();
 
         // Disarm handling
         // If druid shifts while being disarmed we need to deal with that since forms aren't affected by disarm
@@ -4267,7 +4271,7 @@ void AuraEffect::HandleAuraControlVehicle(AuraApplication const * aurApp, uint8 
         return;
 
     if (apply)
-    {   
+    {
         caster->EnterVehicle(target->GetVehicleKit(), m_amount - 1, aurApp);
     }
     else
@@ -4458,11 +4462,19 @@ void AuraEffect::HandleModMechanicImmunity(AuraApplication const * aurApp, uint8
             break;
         case 34471: // The Beast Within
         case 19574: // Bestial Wrath
-            mechanic = (1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT) | (1 << MECHANIC_FEAR) | (1 << MECHANIC_STUN);
+            mechanic = (1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT) | (1 << MECHANIC_FEAR) | (1 << MECHANIC_STUN) | (1 << MECHANIC_SLEEP) | (1 << MECHANIC_CHARM) | (1 << MECHANIC_SAPPED) | (1 << MECHANIC_HORROR) | (1 << MECHANIC_POLYMORPH) | (1 << MECHANIC_DISORIENTED) | (1 << MECHANIC_FREEZE) | (1 << MECHANIC_TURN);
             target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_SNARE, apply);
             target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_ROOT, apply);
             target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_FEAR, apply);
             target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_STUN, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_SLEEP, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_CHARM, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_SAPPED, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_HORROR, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_FREEZE, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_TURN, apply);
             break;
         default:
             if (GetMiscValue() < 1)
@@ -5540,10 +5552,17 @@ void AuraEffect::HandleModDamageDone(AuraApplication const * aurApp, uint8 mode,
     }
 }
 
-void AuraEffect::HandleModDamagePercentDone(AuraApplication const * /*aurApp*/, uint8 mode, bool /*apply*/) const
+void AuraEffect::HandleModDamagePercentDone(AuraApplication const * aurApp, uint8 mode, bool apply) const
 {
-    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
+
+    Player* target = aurApp->GetTarget()->ToPlayer();
+    if (!target)
+        return;
+
+    if (target->HasItemFitToSpellRequirements(GetSpellProto()))
+        aurApp->GetTarget()->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, GetAmount()/100.0f, apply);
 }
 
 void AuraEffect::HandleModOffhandDamagePercent(AuraApplication const * aurApp, uint8 mode, bool apply) const
@@ -5829,7 +5848,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     break;
                 case 63322: // Saronite Vapors
                 {
-                    int32 mana = int32(GetAmount() * pow(2.0f, GetBase()->GetStackAmount())); // mana restore - bp * 2^stackamount 
+                    int32 mana = int32(GetAmount() * pow(2.0f, GetBase()->GetStackAmount())); // mana restore - bp * 2^stackamount
                     int32 damage = mana * 2; // damage
                     caster->CastCustomSpell(target, 63337, &mana, NULL, NULL, true);
                     caster->CastCustomSpell(target, 63338, &damage, NULL, NULL, true);

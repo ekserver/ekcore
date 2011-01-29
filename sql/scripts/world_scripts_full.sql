@@ -1048,6 +1048,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_oculus_drake' WHERE `entry` IN 
 UPDATE `creature_template` SET `ScriptName`='boss_urom' WHERE `entry`=27655;
 UPDATE `creature_template` SET `ScriptName`='boss_varos' WHERE `entry`=27447;
 UPDATE `creature_template` SET `ScriptName`='npc_azure_ring_captain' WHERE `entry`=28236;
+UPDATE `creature_template` SET `ScriptName`='boss_eregos' WHERE `entry`=27656;
 
 /* OBSIDIAN SANCTUM */
 UPDATE `instance_template` SET `script`='instance_obsidian_sanctum' WHERE `map`=615;
@@ -1854,7 +1855,7 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 69146, 'spell_marrowgar_coldflame_damage'),
 ( 70823, 'spell_marrowgar_coldflame_damage'),
 ( 70824, 'spell_marrowgar_coldflame_damage'),
-( 70825, 'spell_marrowgar_coldflame_damage');
+( 70825, 'spell_marrowgar_coldflame_damage'),
 ( 69075, 'spell_marrowgar_bone_storm'),
 ( 70834, 'spell_marrowgar_bone_storm'),
 ( 70835, 'spell_marrowgar_bone_storm'),
@@ -1969,6 +1970,8 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 71901, 'spell_blood_queen_bloodbolt'),
 ( 71902, 'spell_blood_queen_bloodbolt'),
 ( 71390, 'spell_blood_queen_pact_of_the_darkfallen'),
+( 71340, 'spell_blood_queen_pact_of_the_darkfallen_dmg'),
+( 71341, 'spell_blood_queen_pact_of_the_darkfallen_dmg_target'),
 -- Isle of Conquest
 ( 66630, 'spell_gen_gunship_portal'),
 ( 66637, 'spell_gen_gunship_portal'),
@@ -1981,6 +1984,7 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 56251, 'spell_varos_energize_core_area_entry'),
 ( 50785, 'spell_varos_energize_core_area_enemy'),
 ( 59372, 'spell_varos_energize_core_area_enemy'),
+( 51162, 'spell_eregos_planar_shift'),
 -- Trial of Crusader
 ( 66118, 'spell_gen_leeching_swarm'),
 ( 67630, 'spell_gen_leeching_swarm'),
