@@ -14726,8 +14726,8 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     // Not give XP in case already completed once repeatable quest
     uint32 XP = rewarded ? 0 : uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST));
     // XP.Boost
-    if( getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) && (GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL) )
-        XP = uint32(XP * sWorld->getRate(CONFIG_XP_BOOST_SOLO));
+    //if( getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) && (GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL) )
+    //    XP = uint32(XP * sWorld->getRate(CONFIG_XP_BOOST_SOLO));
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
     Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
@@ -22091,7 +22091,8 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
         // XP.Boost
         bool xpBoost = false;
 
-        pGroup->GetDataForXPAtKill(pVictim,count,sum_level,member_with_max_level,not_gray_member_with_max_level,xpBoost);
+        //pGroup->GetDataForXPAtKill(pVictim,count,sum_level,member_with_max_level,not_gray_member_with_max_level,xpBoost);
+        pGroup->GetDataForXPAtKill(pVictim,count,sum_level,member_with_max_level,not_gray_member_with_max_level);
 
         if (member_with_max_level)
         {
@@ -22138,8 +22139,8 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
                             AddPctN(itr_xp, (*i)->GetAmount());
 
                         // XP.Boost
-                        if( xpBoost && (pGroupGuy->getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL)) )
-                            itr_xp = uint32(itr_xp * sWorld->getRate(CONFIG_XP_BOOST_GROUP));
+                        //if( xpBoost && (pGroupGuy->getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL)) )
+                        //    itr_xp = uint32(itr_xp * sWorld->getRate(CONFIG_XP_BOOST_GROUP));
 
                         pGroupGuy->GiveXP(itr_xp, pVictim, group_rate);
                         if (Pet* pet = pGroupGuy->GetPet())
@@ -22161,8 +22162,8 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
     {
         xp = (PvP || GetVehicle()) ? 0 : Trinity::XP::Gain(this, pVictim);
         // XP.Boost
-        if( getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) && GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL )
-            xp = uint32(xp * sWorld->getRate(CONFIG_XP_BOOST_SOLO));
+        //if( getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) && GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL )
+        //    xp = uint32(xp * sWorld->getRate(CONFIG_XP_BOOST_SOLO));
 
         // honor can be in PvP and !PvP (racial leader) cases
         if (RewardHonor(pVictim, 1, -1, true))
