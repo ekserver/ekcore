@@ -6167,8 +6167,17 @@ void ObjectMgr::LoadGraveyardZones()
     sLog->outString(">> Loaded %u graveyard-zone links in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
 }
+WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(Player* player)
+{
+    return GetClosestGraveYard(player->GetPositionX(),player->GetPositionY(),player->GetPositionZ(),player->GetMapId(),player->GetTeam(),player->getClass());
+}
 
 WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team)
+{
+    return GetClosestGraveYard(x,y,z,MapId,team,0);
+}
+
+WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team, uint8 playerclass)
 {
     // search for zone associated closest graveyard
     uint32 zoneId = sMapMgr->GetZoneId(MapId,x,y,z);
@@ -6228,6 +6237,9 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
         // skip enemy faction graveyard
         // team == 0 case can be at call from .neargrave
         if (data.team != 0 && team != 0 && data.team != team)
+            continue;
+
+        if(playerclass != 0 && data.safeLocId == 1405 && playerclass != CLASS_DEATH_KNIGHT)
             continue;
 
         // find now nearest graveyard at other map

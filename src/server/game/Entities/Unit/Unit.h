@@ -2043,6 +2043,11 @@ class Unit : public WorldObject
         bool canFly() const     { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY); }
         bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING); }
         void SetFlying(bool apply);
+        bool HasFlyingAura() const { return HasAuraType(SPELL_AURA_FLY) ||
+            HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ||
+            HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) ||
+            HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) ||
+            HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK); }
 
         void RewardRage(uint32 damage, uint32 weaponSpeedHitFactor, bool attacker);
 

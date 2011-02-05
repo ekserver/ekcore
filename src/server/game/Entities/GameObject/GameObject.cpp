@@ -439,7 +439,7 @@ void GameObject::Update(uint32 diff)
                         // environmental damage spells already have around enemies targeting but this not help in case not existed GO casting support
                         // affect only players
                         Player* player = NULL;
-                        Trinity::AnyPlayerInObjectRangeCheck checker(this, radius);
+                        Trinity::AnyPlayerInObjectRangeCheck checker(this, radius, true);
                         Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, checker);
                         VisitNearbyWorldObject(radius, searcher);
                         ok = player;
@@ -450,10 +450,13 @@ void GameObject::Update(uint32 diff)
                         // some traps do not have spell but should be triggered
                         if (goInfo->trap.spellId)
                             CastSpell(ok, goInfo->trap.spellId);
+                    
+                        if(goInfo->trap.cooldown == 0)
+                            m_cooldownTime = time(NULL) + 4;        // 4 seconds
+                        else
+                            m_cooldownTime = time(NULL) + goInfo->trap.cooldown;
 
-                        m_cooldownTime = time(NULL) + 4;        // 4 seconds
-
-                        if (owner)  // || goInfo->trap.charges == 1)
+                        if(owner && goInfo->trap.charges != 0)  // || goInfo->trap.charges == 1)
                             SetLootState(GO_JUST_DEACTIVATED);
 
                         if (IsBattlegroundTrap && ok->GetTypeId() == TYPEID_PLAYER)

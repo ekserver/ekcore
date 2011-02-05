@@ -54,6 +54,7 @@
 #include "TemporarySummon.h"
 #include "Vehicle.h"
 #include "Transport.h"
+#include "InstanceScript.h"
 
 #include <math.h>
 
@@ -548,6 +549,8 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if (pVictim->IsAIEnabled)
         pVictim->GetAI()->DamageTaken(this, damage);
 
+    if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
+        pVictim->ToCreature()->AI()->ElementalDamageTaken(this, damage, damageSchoolMask);
     if (IsAIEnabled)
         GetAI()->DamageDealt(pVictim, damage, damagetype);
 
@@ -7795,6 +7798,19 @@ bool Unit::HandleAuraProc(Unit * pVictim, uint32 damage, Aura * triggeredByAura,
                     this->CastCustomSpell(this, 67545, &bp0, NULL, NULL, true, NULL, triggeredByAura->GetEffect(0), this->GetGUID());
                     return true;
                 }
+                case 44544: // Fingers of Frost
+                {
+                    *handled = true;
+
+                    int32 key = int32(uint32(uint32(triggeredByAura->GetApplyTime()) & uint32(0x7FFFFFFF)));
+
+                    if (Aura * aura = GetAura(74396))
+                        if (aura->GetEffect(EFFECT_0)->GetAmount() == key)
+                            if (aura->DropCharge())
+                                triggeredByAura->Remove();
+
+                    return false;
+                }
             }
             break;
         }
@@ -10445,6 +10461,9 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         float coeff2 = CalculateLevelPenalty(spellProto) * stack;
         if (spellProto->SpellFamilyName) //TODO: fix this
             TakenTotal+= int32(TakenAdvertisedBenefit * coeff * coeff2);
+        else
+            TakenTotal+= TakenAdvertisedBenefit; //Workaround by BroodWyrm
+
         if (Player* modOwner = GetSpellModOwner())
         {
             coeff *= 100.0f;
@@ -10536,6 +10555,12 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     // Mobs can't crit with spells.
     if (IS_CREATURE_GUID(GetGUID()))
         return false;
+
+    // Creatures cannot crit with Spells - Trinity Fix is useless
+    if(GetTypeId() != TYPEID_PLAYER)
+        if(!((isPet() || isTotem()) && GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER))// Pets and Totems from Player should crit
+            return false;
+
 
     // not critting spell
     if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT))
@@ -15024,6 +15049,9 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     // clean InHateListOf
     if (pVictim->GetTypeId() == TYPEID_PLAYER)
     {
+        if(pVictim->GetMap()->IsDungeon() && pVictim->GetInstanceScript())
+            pVictim->GetInstanceScript()->OnPlayerKilled(pVictim->ToPlayer());
+
         // remember victim PvP death for corpse type and corpse reclaim delay
         // at original death (not at SpiritOfRedemtionTalent timeout)
         pVictim->ToPlayer()->SetPvPDeath(player != NULL);

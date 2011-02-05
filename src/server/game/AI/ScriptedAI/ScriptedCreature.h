@@ -15,6 +15,8 @@
 
 #define SCRIPT_CAST_TYPE dynamic_cast
 
+#define MAX_AGGRO_PULSE_TIMER            5000
+
 #define CAST_PLR(a)     (SCRIPT_CAST_TYPE<Player*>(a))
 #define CAST_CRE(a)     (SCRIPT_CAST_TYPE<Creature*>(a))
 #define CAST_SUM(a)     (SCRIPT_CAST_TYPE<TempSummon*>(a))
@@ -233,6 +235,12 @@ struct ScriptedAI : public CreatureAI
         return heroic25;
     }
 
+    void SetImmuneToPushPullEffects(bool set)
+    {
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, set);
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, set);
+    }
+
     private:
         bool m_bCombatMovement;
         uint32 m_uiEvadeCheckCooldown;
@@ -256,6 +264,7 @@ struct BossAI : public ScriptedAI
     virtual ~BossAI() {}
 
     const uint32 bossId;
+    uint32 inFightAggroCheck_Timer;
     EventMap events;
     SummonList summons;
     InstanceScript * const instance;
@@ -276,6 +285,7 @@ struct BossAI : public ScriptedAI
         void _EnterCombat();
         void _JustDied();
         void _JustReachedHome() { me->setActive(false); }
+        void _DoAggroPulse(const uint32 diff);
 
         bool CheckInRoom()
         {
@@ -286,6 +296,7 @@ struct BossAI : public ScriptedAI
         }
         bool CheckBoundary(Unit *who);
         void TeleportCheaters();
+        void SetImmuneToDeathGrip(bool set = true);
 };
 
 // SD2 grid searchers.
