@@ -38,18 +38,22 @@ enum eTypes
     TYPE_ALGALON                = 13,
     TYPE_COLOSSUS               = 14,
 
-    DATA_STEELBREAKER           = 20,
-    DATA_MOLGEIM                = 21,
-    DATA_BRUNDIR                = 22,
+    TYPE_SARA,
+    TYPE_BRAIN_DOOR_1,
+    TYPE_BRAIN_DOOR_2,
+    TYPE_BRAIN_DOOR_3,
 
-    DATA_EXP_COMMANDER          = 25,
+    DATA_STEELBREAKER,
+    DATA_MOLGEIM,
+    DATA_BRUNDIR,
 
-    TYPE_SARA                   = 30,
+    DATA_EXP_COMMANDER,
+    DATA_RIGHT_ARM,
+    DATA_LEFT_ARM,
+};
 
-    TYPE_BRAIN_DOOR_1           = 31,
-    TYPE_BRAIN_DOOR_2           = 32,
-    TYPE_BRAIN_DOOR_3           = 33,
-
+enum eBossNPCs
+{
     NPC_LEVIATHAN               = 33113,
     NPC_IGNIS                   = 33118,
     NPC_RAZORSCALE              = 33186,
@@ -68,7 +72,10 @@ enum eTypes
     NPC_YOGGSARON               = 33288,
     NPC_SARA                    = 33134,
     NPC_ALGALON                 = 32871,
+};
 
+enum eTowerEvents
+{
     EVENT_TOWER_OF_STORM_DESTROYED     = 21031,
     EVENT_TOWER_OF_FROST_DESTROYED     = 21032,
     EVENT_TOWER_OF_FLAMES_DESTROYED    = 21033,
@@ -80,4 +87,5 @@ enum eAchievementCriteria
     ACHIEVEMENT_CRITERIA_HOT_POCKET_10                   = 10430, //ignis
     ACHIEVEMENT_CRITERIA_HOT_POCKET_25                   = 10431,
 };
+
 #endif

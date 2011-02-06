@@ -263,6 +263,32 @@ bool CharacterDatabaseConnection::Open()
     PREPARE_STATEMENT(CHAR_ADD_INSTANCE_SAVE, "INSERT INTO instance (id,map,resettime,difficulty,completedEncounters,data) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_UPDATE_INSTANCE_DATA, "UPDATE instance SET completedEncounters=?, data=? WHERE id=?", CONNECTION_ASYNC)
 
+    ////Anticheat
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_SET_CHEATERS, "INSERT INTO cheat_reports (`guid`,`name`,`mapid`,`position_x`,`position_y`,`position_z`,`report`,`time`) VALUES (?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_SET_CHEATERS_TEMP, "INSERT INTO cheat_temp_reports (`guid`,`name`,`mapid`,`position_x`,`position_y`,`position_z`,`report`,`time`) VALUES (?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_SET_CHEATERS, "INSERT INTO cheat_reports (`guid`,`name`,`mapid`,`position_x`,`position_y`,`position_z`,`report`,`time`) VALUES (?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_SET_CHEATERS_TEMP, "INSERT INTO cheat_temp_reports (`guid`,`name`,`mapid`,`position_x`,`position_y`,`position_z`,`report`,`time`) VALUES (?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_GET_CHEATERS, "SELECT A.`name` , count( * ) AS 'Repeticiones' FROM `characters` AS A, `cheat_reports` AS B WHERE A.`online` =1 AND A.`guid` = B.`guid` GROUP BY B.`guid` ORDER BY Repeticiones DESC LIMIT 0 , 3", CONNECTION_SYNCH);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_SET_CHEAT_FIRST_REPORT, "INSERT INTO cheat_first_report (`guid`,`name`,`time`) VALUES (?,?,?)", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_GET_CHEATERS_AVERAGE, "SELECT A.`name` , CAST((SUM(B.time ) / count( * ) ) - C.time AS UNSIGNED) AS 'promedio' , CAST(count( * ) AS UNSIGNED) AS 'Repeticiones' FROM `characters` AS A, `cheat_temp_reports` AS B, cheat_first_report AS C WHERE A.`online` =1 AND A.`guid` = B.`guid` AND A.guid = C.guid GROUP BY B.`guid` ORDER BY Repeticiones  DESC LIMIT 0 , 3", CONNECTION_SYNCH);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_GET_CHEAT_FIRST_REPORT, "SELECT * FROM cheat_first_report WHERE guid=?", CONNECTION_SYNCH);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_DEL_CHEAT_FIRST_REPORT, "DELETE FROM cheat_first_report WHERE guid=?", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_DEL_CHEATERS_TEMP, "DELETE FROM cheat_temp_reports WHERE guid=?", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_DEL_CHEATERS, "DELETE FROM cheat_reports WHERE guid=?", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_CLEAN_CHEAT_FIRST_REPORT, "DELETE FROM cheat_first_report", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_CLEAN_CHEATERS_TEMP, "DELETE FROM cheat_temp_reports", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_CLEAN_CHEATERS, "DELETE FROM cheat_reports", CONNECTION_ASYNC);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_GET_CHEATERS_AVERAGE_BY_GUID,"SELECT CAST((SUM(B.time ) / count( * ) ) - C.time AS UNSIGNED) AS 'promedio' , CAST(count( * ) AS UNSIGNED) AS 'Repeticiones' FROM `characters` AS A, `cheat_temp_reports` AS B, cheat_first_report AS C WHERE A.`online` =1 AND A.`guid` = B.`guid` AND A.guid = C.guid AND A.`guid`=? GROUP BY B.`guid` ORDER BY Repeticiones  DESC LIMIT 0 , 1", CONNECTION_SYNCH);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_GET_CHEATERS_BY_GUID,"SELECT count( * ) AS 'Repeticiones' FROM `characters` AS A, `cheat_reports` AS B WHERE A.`online` =1 AND A.`guid` = B.`guid` AND A.`guid`=? GROUP BY B.`guid` ORDER BY Repeticiones DESC LIMIT 0 , 1", CONNECTION_SYNCH);
+    //PREPARE_STATEMENT(CHAR_ANTICHEAT_GET_REPORTS_TYPE_BY_GUID,"SELECT report FROM cheat_reports WHERE guid=?", CONNECTION_SYNCH);
+
+    //LOL-Custom
+    PREPARE_STATEMENT(CHAR_ADD_CHATTICKER_MESSAGE, "INSERT INTO chatticker (name, race, text) VALUES (?, ?, ?)", CONNECTION_ASYNC);
+
+    PREPARE_STATEMENT(CHAR_GET_CODEBOX_ITEM, "SELECT `item_id`, `quantity`, `uses`, `account_id`, `char_guid`, `new_level`, `code`  FROM `codes` WHERE `npc_id` = ? AND `account_id` = ?", CONNECTION_SYNCH);
+    PREPARE_STATEMENT(CHAR_GET_CODEBOX_ITEMGROUP, "SELECT `item_id` FROM `codes_item_loot` WHERE `group_id` = ? ORDER BY RAND() LIMIT 1", CONNECTION_SYNCH);
+    PREPARE_STATEMENT(CHAR_SET_CODEBOX_CODE_USED, "UPDATE `codes` SET `uses` = (`uses` - 1) WHERE  `npc_id` = ? AND `account_id` = ?", CONNECTION_ASYNC);
+
     for (PreparedStatementMap::const_iterator itr = m_queries.begin(); itr != m_queries.end(); ++itr)
         PrepareStatement(itr->first, itr->second.first, itr->second.second);
 
