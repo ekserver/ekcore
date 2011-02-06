@@ -6692,6 +6692,20 @@ ReputationRank Player::GetReputationRank(uint32 faction) const
     return GetReputationMgr().GetRank(factionEntry);
 }
 
+//Calculate XP.Boost VIP Item Experiance Bonus - LandOfLegends Changes
+uint32 Player::CalculateExperienceBoost(uint32 xp, bool inGroup)
+{
+    if( getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) && (GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL) )
+    {
+        if(inGroup)
+            xp = uint32(xp * sWorld->getRate(RATE_XP_BOOST_SOLO));
+        else
+            xp = uint32(xp * sWorld->getRate(RATE_XP_BOOST_GROUP));
+    }
+
+    return xp;
+}
+
 //Calculate total reputation percent player gain with quest/creature level
 int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest, bool noQuestBonus)
 {
@@ -14725,9 +14739,9 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
 
     // Not give XP in case already completed once repeatable quest
     uint32 XP = rewarded ? 0 : uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST));
+
     // XP.Boost
-    //if( getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) && (GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL) )
-    //    XP = uint32(XP * sWorld->getRate(CONFIG_XP_BOOST_SOLO));
+    XP = CalculateExperienceBoost(XP,false);
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
     Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
@@ -22088,11 +22102,11 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
         uint32 sum_level = 0;
         Player* member_with_max_level = NULL;
         Player* not_gray_member_with_max_level = NULL;
+
         // XP.Boost
         bool xpBoost = false;
 
-        //pGroup->GetDataForXPAtKill(pVictim,count,sum_level,member_with_max_level,not_gray_member_with_max_level,xpBoost);
-        pGroup->GetDataForXPAtKill(pVictim,count,sum_level,member_with_max_level,not_gray_member_with_max_level);
+        pGroup->GetDataForXPAtKill(pVictim,count,sum_level,member_with_max_level,not_gray_member_with_max_level,xpBoost);
 
         if (member_with_max_level)
         {
@@ -22139,8 +22153,8 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
                             AddPctN(itr_xp, (*i)->GetAmount());
 
                         // XP.Boost
-                        //if( xpBoost && (pGroupGuy->getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL)) )
-                        //    itr_xp = uint32(itr_xp * sWorld->getRate(CONFIG_XP_BOOST_GROUP));
+                        if(xpBoost)
+                            itr_xp = CalculateExperienceBoost(itr_xp,true);
 
                         pGroupGuy->GiveXP(itr_xp, pVictim, group_rate);
                         if (Pet* pet = pGroupGuy->GetPet())
@@ -22162,8 +22176,7 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
     {
         xp = (PvP || GetVehicle()) ? 0 : Trinity::XP::Gain(this, pVictim);
         // XP.Boost
-        //if( getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) && GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL )
-        //    xp = uint32(xp * sWorld->getRate(CONFIG_XP_BOOST_SOLO));
+        xp = CalculateExperienceBoost(xp,false);
 
         // honor can be in PvP and !PvP (racial leader) cases
         if (RewardHonor(pVictim, 1, -1, true))

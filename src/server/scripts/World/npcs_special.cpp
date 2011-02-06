@@ -1282,7 +1282,7 @@ public:
         if (pCreature->isCanTrainingAndResetTalentsOf(pPlayer))
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_HELLO_ROGUE1, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
 
-        if (pPlayer->GetSpecsCount() == 1 && pCreature->isCanTrainingAndResetTalentsOf(pPlayer) && pPlayer->getLevel() >= sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))
+        if (pPlayer->GetSpecsCount() == 1 && pCreature->isCanTrainingAndResetTalentsOf(pPlayer) && !(pPlayer->getLevel() < sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL)))
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_HELLO_ROGUE3, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC);
 
         if (pPlayer->getClass() == CLASS_ROGUE && pPlayer->getLevel() >= 24 && !pPlayer->HasItemCount(17126,1) && !pPlayer->GetQuestRewardStatus(6681))
@@ -2134,6 +2134,7 @@ public:
 #define GOSSIP_ENGINEERING3   "Sholazar Basin."
 #define GOSSIP_ENGINEERING4   "Icecrown."
 #define GOSSIP_ENGINEERING5   "Storm Peaks."
+#define GOSSIP_ENGINEERING6   "The Underground."
 
 enum eWormhole
 {
@@ -2141,6 +2142,7 @@ enum eWormhole
     SPELL_SHOLAZAR_BASIN        = 67835,
     SPELL_ICECROWN              = 67836,
     SPELL_STORM_PEAKS           = 67837,
+    SPELL_UNDERGROUND           = 68081,
 
     TEXT_WORMHOLE               = 907
 };
@@ -2150,8 +2152,25 @@ class npc_wormhole : public CreatureScript
 public:
     npc_wormhole() : CreatureScript("npc_wormhole") { }
 
+    struct npc_wormholeAI : PassiveAI
+    {
+        npc_wormholeAI(Creature* c) : PassiveAI(c) { rnd = urand(0,9); }
+
+        uint8 rnd;
+    };
+
+    CreatureAI *GetAI(Creature* creature) const
+    {
+        return new npc_wormholeAI(creature);
+    }
+
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
+        npc_wormholeAI* pAI = CAST_AI(npc_wormholeAI, pCreature->AI());
+        
+        if (!pAI)
+            return false;
+
         if (pCreature->isSummon())
         {
             if (pPlayer == CAST_SUM(pCreature)->GetSummoner())
@@ -2161,6 +2180,9 @@ public:
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ENGINEERING3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ENGINEERING4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ENGINEERING5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+
+                if (pAI->rnd == 1)
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ENGINEERING6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
 
                 pPlayer->PlayerTalkClass->SendGossipMenu(TEXT_WORMHOLE, pCreature->GetGUID());
             }
@@ -2197,6 +2219,10 @@ public:
             case GOSSIP_ACTION_INFO_DEF + 5: //Storm peaks
                 pPlayer->CLOSE_GOSSIP_MENU();
                 pPlayer->CastSpell(pPlayer, SPELL_STORM_PEAKS, true);
+                break;
+            case GOSSIP_ACTION_INFO_DEF + 6: //Underground
+                pPlayer->CLOSE_GOSSIP_MENU();
+                pPlayer->CastSpell(pPlayer, SPELL_UNDERGROUND, true);
                 break;
         }
         return true;
@@ -2440,6 +2466,7 @@ public:
         bool m_bLostProtector = false;
         bool m_bLostIllidari = false;
         bool m_bLostSummer = false;
+        bool m_bLostExplorer = false;
 
         //Tabard of the Blood Knight
         if (pPlayer->GetQuestRewardStatus(QUEST_TRUE_MASTERS_OF_LIGHT) && !pPlayer->HasItemCount(ITEM_TABARD_OF_THE_BLOOD_KNIGHT, 1, true))
@@ -2468,7 +2495,11 @@ public:
             !pPlayer->HasItemCount(ITEM_TABARD_OF_THE_SUMMER_FLAMES, 1, true))
             m_bLostSummer = true;
 
-        if (m_bLostBloodKnight || m_bLostHand || m_bLostProtector || m_bLostIllidari || m_bLostSummer)
+        if(pPlayer->HasAchieved(ACHIEVEMENT_EXPLORE_NORTHREND) &&
+            !pPlayer->HasItemCount(ITEM_TABARD_OF_THE_EXPLORER, 1, true))
+            m_bLostExplorer = true;
+
+        if (m_bLostBloodKnight || m_bLostHand || m_bLostProtector || m_bLostIllidari || m_bLostSummer || m_bLostExplorer)
         {
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
@@ -2492,6 +2523,9 @@ public:
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_LOST_TABARD_OF_SUMMER_SKIES, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_LOST_TABARD_OF_SUMMER_FLAMES, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+7);
             }
+
+            if(m_bLostExplorer)
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_LOST_TABARD_OF_THE_EXPLORER, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
 
             pPlayer->SEND_GOSSIP_MENU(13583, pCreature->GetGUID());
         }
@@ -2536,6 +2570,10 @@ public:
             case GOSSIP_ACTION_INFO_DEF+7:
                 pPlayer->CLOSE_GOSSIP_MENU();
                 pPlayer->CastSpell(pPlayer, SPELL_TABARD_OF_SUMMER_FLAMES, false);
+                break;
+            case GOSSIP_ACTION_INFO_DEF+8:
+                pPlayer->CLOSE_GOSSIP_MENU();
+                pPlayer->CastSpell(pPlayer, SPELL_TABARD_OF_THE_EXPLORER, false);
                 break;
         }
         return true;
@@ -2605,35 +2643,69 @@ public:
     }
 };
 
+class tome_of_divinity : public CreatureScript
+{
+public:
+    tome_of_divinity() : CreatureScript("tome_of_divinity") { }
+
+    bool OnGossipHello (Player *player, Creature *pCreature)
+    {
+        if (pCreature->isQuestGiver())
+            player->PrepareQuestMenu(pCreature->GetGUID());
+
+        if ((player->GetQuestStatus(2998) == QUEST_STATUS_COMPLETE && player->GetQuestStatus(1642) == QUEST_STATUS_INCOMPLETE) || (player->GetQuestStatus(2997) == QUEST_STATUS_COMPLETE && player->GetQuestStatus(1646) == QUEST_STATUS_INCOMPLETE))
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich brauche einen neuen Folianten!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+        player->SEND_GOSSIP_MENU(player->GetGossipTextId(pCreature), pCreature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect (Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction) {
+        switch (uiAction) {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            ItemPosCountVec dest;
+            uint8 canStoreNewItem = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 6775, 1);
+            if (canStoreNewItem == EQUIP_ERR_OK) {
+                Item *newItem = NULL;
+                newItem = pPlayer->StoreNewItem(dest, 6775, 1, true);
+                pPlayer->SendNewItem(newItem, 1, true, false);
+            } else
+                pCreature->MonsterSay("Du hast leider keinen Platz mehr im Inventar!", LANG_UNIVERSAL, pPlayer->GetGUID());
+            break;
+        }
+        return true;
+    }
+};
+
 void AddSC_npcs_special()
 {
-    new npc_air_force_bots;
-    new npc_lunaclaw_spirit;
-    new npc_chicken_cluck;
-    new npc_dancing_flames;
-    new npc_doctor;
-    new npc_injured_patient;
-    new npc_garments_of_quests;
-    new npc_guardian;
-    new npc_kingdom_of_dalaran_quests;
-    new npc_mount_vendor;
-    new npc_rogue_trainer;
-    new npc_sayge;
-    new npc_steam_tonk;
-    new npc_tonk_mine;
-    new npc_winter_reveler;
-    new npc_brewfest_reveler;
-    new npc_snake_trap;
-    new npc_mirror_image;
-    new npc_ebon_gargoyle;
-    new npc_lightwell;
-    new mob_mojo;
-    new npc_training_dummy;
-    new npc_shadowfiend;
-    new npc_wormhole;
-    new npc_pet_trainer;
-    new npc_locksmith;
-    new npc_tabard_vendor;
-    new npc_experience;
+    new npc_air_force_bots();
+    new npc_lunaclaw_spirit();
+    new npc_chicken_cluck();
+    new npc_dancing_flames();
+    new npc_doctor();
+    new npc_injured_patient();
+    new npc_garments_of_quests();
+    new npc_guardian();
+    new npc_kingdom_of_dalaran_quests();
+    new npc_mount_vendor();
+    new npc_rogue_trainer();
+    new npc_sayge();
+    new npc_steam_tonk();
+    new npc_tonk_mine();
+    new npc_winter_reveler();
+    new npc_brewfest_reveler();
+    new npc_snake_trap();
+    new npc_mirror_image();
+    new npc_ebon_gargoyle();
+    new npc_lightwell();
+    new mob_mojo();
+    new npc_training_dummy();
+    new npc_shadowfiend();
+    new npc_wormhole();
+    new npc_pet_trainer();
+    new npc_locksmith();
+    new npc_tabard_vendor();
+    new npc_experience();
+    new tome_of_divinity();
 }
-

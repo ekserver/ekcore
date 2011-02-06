@@ -135,6 +135,11 @@ there is no difference here (except that default text is chosen with `gameobject
 #define REP_AXE                 570
 #define REP_SWORD               571
 
+#define Q_ARMOR_H               5302
+#define Q_ARMOR_A               5284
+#define Q_WEAPON_H              5301
+#define Q_WEAPON_A              5283
+
 #define S_DRAGON                10656
 #define S_ELEMENTAL             10658
 #define S_TRIBAL                10660
@@ -147,11 +152,29 @@ there is no difference here (except that default text is chosen with `gameobject
 #define S_UNLEARN_ELEMENTAL     36328
 #define S_UNLEARN_TRIBAL        36433
 
+#define Q_TRIBAL_H              5148
+#define Q_TRIBAL_A              5143
+
+#define Q_ELEMENTAL_H           5146
+#define Q_ELEMENTAL_A           5144
+
+#define Q_DRAGON_H              5145
+#define Q_DRAGON_A              5141
+
 #define S_GOBLIN                20222
 #define S_GNOMISH               20219
 
 #define S_LEARN_GOBLIN          20221
 #define S_LEARN_GNOMISH         20220
+
+/*
+GOBLIN
+ Ally: 3639; 3638; 4181 oder 3629
+ Horde: 3639; 3638, 3633 oder 3526
+GNOME
+ Horde: 3641; 3640; 3635 oder 3637
+  Ally: 3641; 3640; 3634 oder 3632 oder 3630
+*/
 
 #define S_SPELLFIRE             26797
 #define S_MOONCLOTH             26798
@@ -165,6 +188,10 @@ there is no difference here (except that default text is chosen with `gameobject
 #define S_UNLEARN_MOONCLOTH     41558
 #define S_UNLEARN_SHADOWEAVE    41559
 
+#define Q_SHADOWEAVE            10833
+#define Q_MOONCLOTH             10831
+#define Q_SPELLFIRE             10832
+
 #define S_TRANSMUTE             28672
 #define S_ELIXIR                28677
 #define S_POTION                28675
@@ -176,6 +203,10 @@ there is no difference here (except that default text is chosen with `gameobject
 #define S_UNLEARN_TRANSMUTE     41565
 #define S_UNLEARN_ELIXIR        41564
 #define S_UNLEARN_POTION        41563
+
+#define Q_TRANSMUTE             10907
+#define Q_POTION                10905
+#define Q_ELIXIR                10902
 
 /*###
 # formulas to calculate unlearning cost
@@ -366,7 +397,7 @@ public:
 
         if (pPlayer->HasSkill(SKILL_ALCHEMY) && pPlayer->GetBaseSkillValue(SKILL_ALCHEMY) >= 350 && pPlayer->getLevel() > 67)
         {
-            if (pPlayer->GetQuestRewardStatus(10899) || pPlayer->GetQuestRewardStatus(10902) || pPlayer->GetQuestRewardStatus(10897))
+            if (pPlayer->GetQuestRewardStatus(Q_TRANSMUTE) || pPlayer->GetQuestRewardStatus(Q_POTION) || pPlayer->GetQuestRewardStatus(Q_ELIXIR))
             {
                 switch (eCreature)
                 {
@@ -439,6 +470,7 @@ public:
                 if (pPlayer->HasEnoughMoney(DoHighUnlearnCost(pPlayer)))
                 {
                     pCreature->CastSpell(pPlayer, S_UNLEARN_TRANSMUTE, true);
+                pPlayer->removeSpell(S_TRANSMUTE);
                     pPlayer->ModifyMoney(-DoHighUnlearnCost(pPlayer));
                 } else
                     pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -448,6 +480,7 @@ public:
                 if (pPlayer->HasEnoughMoney(DoHighUnlearnCost(pPlayer)))
                 {
                     pCreature->CastSpell(pPlayer, S_UNLEARN_ELIXIR, true);
+                pPlayer->removeSpell(S_ELIXIR);
                     pPlayer->ModifyMoney(-DoHighUnlearnCost(pPlayer));
                 } else
                     pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -457,6 +490,7 @@ public:
                 if (pPlayer->HasEnoughMoney(DoHighUnlearnCost(pPlayer)))
                 {
                     pCreature->CastSpell(pPlayer, S_UNLEARN_POTION, true);
+                pPlayer->removeSpell(S_POTION);
                     pPlayer->ModifyMoney(-DoHighUnlearnCost(pPlayer));
                 } else
                     pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -651,6 +685,8 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_WEAPON, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_WEAPON);
+                    pPlayer->removeSpell(S_WEAPON);
+                    pPlayer->GetTeam() == TEAM_ALLIANCE ? pPlayer->SetQuestStatus( Q_WEAPON_A, QUEST_STATUS_NONE) :  pPlayer->SetQuestStatus( Q_WEAPON_A, QUEST_STATUS_NONE);
                         pPlayer->ModifyMoney(-DoLowUnlearnCost(pPlayer));
                         pCreature->CastSpell(pPlayer, S_REP_ARMOR, true);
                         pPlayer->CLOSE_GOSSIP_MENU();
@@ -670,6 +706,8 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_ARMOR, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_ARMOR);
+                    pPlayer->removeSpell(S_ARMOR);
+                    pPlayer->GetTeam() == TEAM_ALLIANCE ? pPlayer->SetQuestStatus( Q_ARMOR_A, QUEST_STATUS_NONE) :  pPlayer->SetQuestStatus( Q_ARMOR_A, QUEST_STATUS_NONE);
                         pPlayer->ModifyMoney(-DoLowUnlearnCost(pPlayer));
                         pCreature->CastSpell(pPlayer, S_REP_WEAPON, true);
                     } else
@@ -699,6 +737,7 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_HAMMER, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_HAMMER);
+                    pPlayer->removeSpell(S_HAMMER);
                         pPlayer->ModifyMoney(-DoMedUnlearnCost(pPlayer));
                     } else
                         pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -713,6 +752,7 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_AXE, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_AXE);
+                    pPlayer->removeSpell(S_AXE);
                         pPlayer->ModifyMoney(-DoMedUnlearnCost(pPlayer));
                     } else
                         pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -727,6 +767,7 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_SWORD, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_SWORD);
+                    pPlayer->removeSpell(S_SWORD);
                         pPlayer->ModifyMoney(-DoMedUnlearnCost(pPlayer));
                     } else
                         pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -1015,6 +1056,9 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_DRAGON, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_DRAGON);
+
+                    pPlayer->removeSpell(S_DRAGON);
+
                         pPlayer->ModifyMoney(-DoMedUnlearnCost(pPlayer));
                     } else
                         pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -1029,6 +1073,9 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_ELEMENTAL, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_ELEMENTAL);
+
+                    pPlayer->removeSpell(S_ELEMENTAL);
+
                         pPlayer->ModifyMoney(-DoMedUnlearnCost(pPlayer));
                     } else
                         pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -1043,6 +1090,9 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_TRIBAL, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_TRIBAL);
+
+                    pPlayer->removeSpell(S_TRIBAL);
+
                         pPlayer->ModifyMoney(-DoMedUnlearnCost(pPlayer));
                     } else
                         pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -1200,6 +1250,7 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_SPELLFIRE, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_SPELLFIRE);
+                    pPlayer->removeSpell(S_SPELLFIRE);
                         pPlayer->ModifyMoney(-DoHighUnlearnCost(pPlayer));
                     } else
                         pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -1214,6 +1265,7 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_MOONCLOTH, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_MOONCLOTH);
+                    pPlayer->removeSpell(S_MOONCLOTH);
                         pPlayer->ModifyMoney(-DoHighUnlearnCost(pPlayer));
                     } else
                         pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);
@@ -1228,6 +1280,7 @@ public:
                     {
                         pPlayer->CastSpell(pPlayer, S_UNLEARN_SHADOWEAVE, true);
                         ProfessionUnlearnSpells(pPlayer, S_UNLEARN_SHADOWEAVE);
+                    pPlayer->removeSpell(S_SHADOWEAVE);
                         pPlayer->ModifyMoney(-DoHighUnlearnCost(pPlayer));
                     } else
                         pPlayer->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, pCreature, 0, 0);

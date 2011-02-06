@@ -1048,8 +1048,9 @@ void Group::SetTargetIcon(uint8 id, uint64 whoGuid, uint64 targetGuid)
     BroadcastPacket(&data, true);
 }
 
-void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_level, Player* & member_with_max_level, Player* & not_gray_member_with_max_level)
+void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_level, Player* & member_with_max_level, Player* & not_gray_member_with_max_level, bool& withXPBoost)
 {
+    int32 boostItemCount = 0;
     for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
         Player* member = itr->getSource();
@@ -1058,6 +1059,9 @@ void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_lev
 
         if (!member->IsAtGroupRewardDistance(victim))        // at req. distance
             continue;
+
+        if( member->GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL )
+            boostItemCount ++;
 
         ++count;
         sum_level += member->getLevel();
@@ -1068,6 +1072,7 @@ void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_lev
         if (victim->getLevel() > gray_level && (!not_gray_member_with_max_level || not_gray_member_with_max_level->getLevel() < member->getLevel()))
             not_gray_member_with_max_level = member;
     }
+    withXPBoost = boostItemCount > 0;
 }
 
 void Group::SendTargetIconList(WorldSession *session)

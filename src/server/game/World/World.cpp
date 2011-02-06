@@ -411,6 +411,12 @@ void World::LoadConfigSettings(bool reload)
     ///- Send server info on login?
     m_int_configs[CONFIG_ENABLE_SINFO_LOGIN] = sConfig->GetIntDefault("Server.LoginInfo", 0);
 
+    // XP.Boost
+    rate_values[RATE_XP_BOOST_SOLO]    = sConfig->GetFloatDefault("XP.Boost.Solo", 1.0f);
+    rate_values[RATE_XP_BOOST_GROUP]   = sConfig->GetFloatDefault("XP.Boost.Group", 1.0f);
+    m_int_configs[CONFIG_XP_BOOST_ITEMID]    = sConfig->GetIntDefault("XP.Boost.ItemId", 0);
+    m_int_configs[CONFIG_XP_BOOST_MAXLEVEL]  = sConfig->GetIntDefault("XP.Boost.MaxLevel", 0);
+
     ///- Read all rates from the config file
     rate_values[RATE_HEALTH]      = sConfig->GetFloatDefault("Rate.Health", 1);
     if (rate_values[RATE_HEALTH] < 0)

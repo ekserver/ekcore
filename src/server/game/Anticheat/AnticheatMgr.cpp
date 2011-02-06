@@ -45,7 +45,7 @@ void AnticheatMgr::BuildReport(Player* player,uint8 reportType)
 
     uint64 actual_time = time(NULL) - player->anticheatData.creation_time;
 
-    player->anticheatData.average = player->anticheatData.total_reports > 0 ? ((player->anticheatData.average * (player->anticheatData.total_reports)) + actual_time) / (player->anticheatData.total_reports + 1) : 0;
+    player->anticheatData.average = (uint32)(player->anticheatData.total_reports > 0 ? ((player->anticheatData.average * (player->anticheatData.total_reports)) + actual_time) / (player->anticheatData.total_reports + 1) : 0);
     player->anticheatData.total_reports++;
 
     CharacterDatabase.PExecute("UPDATE players_reports_status SET %s=%u, total_reports=%u, average=%u WHERE guid=%u",report_type.c_str(),player->anticheatData.type_reports[reportType],player->anticheatData.total_reports,player->anticheatData.average,player->GetGUIDLow());
