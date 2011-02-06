@@ -344,6 +344,7 @@ public:
                         DoCast(me, SPELL_FREEZE_ANIM);
                         me->SetOrientation(DarkGlareAngle);
                         me->StopMoving();
+                        me->GetMotionMaster()->MoveRotate(35000, ClockWise ? ROTATE_DIRECTION_LEFT : ROTATE_DIRECTION_RIGHT);
 
                         //Darkbeam for 35 seconds
                         PhaseTimer = 35000;
@@ -357,12 +358,12 @@ public:
                         if (DarkGlareTickTimer <= diff)
                         {
                             //Set angle and cast
-                            if (ClockWise)
-                                me->SetOrientation(DarkGlareAngle + DarkGlareTick * M_PI / 35);
-                            else
-                                me->SetOrientation(DarkGlareAngle - DarkGlareTick * M_PI / 35);
+                            //if (ClockWise)
+                            //    me->SetOrientation(DarkGlareAngle + DarkGlareTick * M_PI / 35);
+                            //else
+                            //    me->SetOrientation(DarkGlareAngle - DarkGlareTick * M_PI / 35);
 
-                            me->StopMoving();
+                            //me->StopMoving();
 
                             //Actual dark glare cast, maybe something missing here?
                             DoCast(me, SPELL_DARK_GLARE, false);
@@ -1320,14 +1321,6 @@ public:
     };
 
 };
-
-//GetAIs
-
-
-
-
-
-
 
 void AddSC_boss_cthun()
 {
