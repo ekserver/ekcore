@@ -16,7 +16,7 @@
 #include "AnticheatMgr.h"
 #include "MapManager.h"
 
-#define CLIMB_ANGLE 1.7f
+#define CLIMB_ANGLE 1.9f
 
 AnticheatMgr::AnticheatMgr() 
 {
@@ -173,17 +173,13 @@ void AnticheatMgr::StartHackDetection(Player* player, MovementInfo movementInfo,
 // basic detection
 void AnticheatMgr::ClimbHackDetection(Player *player, MovementInfo movementInfo, uint32 opcode)
 {
+    if (opcode != MSG_MOVE_HEARTBEAT ||
+        player->anticheatData.lastOpcode != MSG_MOVE_HEARTBEAT)
+        return;
+
     if (player->IsInWater() || 
         player->IsFlying() || 
         player->IsFalling())
-        return;
-
-    if (opcode == MSG_MOVE_JUMP || 
-        opcode == MSG_MOVE_FALL_LAND)
-        return;
-
-    // not sure if this is the best way to check if we are really falling
-    if (movementInfo.fallTime || movementInfo.j_xyspeed || movementInfo.j_zspeed)
         return;
 
     Position playerPos;
@@ -196,9 +192,10 @@ void AnticheatMgr::ClimbHackDetection(Player *player, MovementInfo movementInfo,
 
     if (angle > CLIMB_ANGLE)
     {
-        sLog->outError("Clibmhack Player %u", player->GetGUIDLow());
+        sLog->outError("Clibmhack Player %u || Angle %f || Opcode %u", player->GetGUIDLow(), angle, opcode);
         BuildReport(player,CLIMB_HACK_REPORT);
-    }
+    } //else
+      //  sLog->outError("Angle %f || Opcode %u",angle,opcode);
 }
 
 void AnticheatMgr::SpeedHackDetection(Player* player,MovementInfo movementInfo)
