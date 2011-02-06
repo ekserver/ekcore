@@ -535,12 +535,10 @@ public:
                     Malone->GetMotionMaster()->MoveTargetedHome();
                     Malone->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
+                me->AI()->EnterEvadeMode();
                 me->setFaction(1194);
                 Done = true;
                 DoScriptText(SAY_GIVEUP, me, NULL);
-                me->DeleteThreatList();
-                me->CombatStop();
-                me->GetMotionMaster()->MoveTargetedHome();
                 Player* pPlayer = Unit::GetPlayer(*me, PlayerGUID);
                 if (pPlayer)
                     CAST_PLR(pPlayer)->GroupEventHappens(QUEST_WBI, me);

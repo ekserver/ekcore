@@ -18,7 +18,7 @@
 
 /* ScriptData
 SDName: Boss_Leotheras_The_Blind
-SD%Complete: 80
+SD%Complete: 90
 SDComment: Possesion Support
 SDCategory: Coilfang Resevoir, Serpent Shrine Cavern
 EndScriptData */
@@ -46,7 +46,7 @@ EndScriptData */
 #define AURA_DEMONIC_ALIGNMENT  37713
 #define SPELL_SHADOWBOLT        39309
 #define SPELL_SOUL_LINK         38007
-#define SPELL_CONSUMING_MADNESS 37749 //not supported by core yet
+#define SPELL_CONSUMING_MADNESS 37749
 
 //Misc.
 #define MODEL_DEMON             20125
@@ -204,6 +204,7 @@ public:
 
         void Reset()
         {
+        KillCharmedPlayer();
             CheckChannelers();
             BanishTimer = 1000;
             Whirlwind_Timer = 15000;
@@ -346,6 +347,23 @@ public:
 
             InnerDemon_Count = 0;
         }
+
+    void KillCharmedPlayer()
+    {
+        if(!me->GetMap()->IsDungeon())
+            return;
+
+        InstanceMap::PlayerList const &playerliste = ((InstanceMap*)me->GetMap())->GetPlayers();
+        InstanceMap::PlayerList::const_iterator it;
+
+        Map::PlayerList const &PlayerList = ((InstanceMap*)me->GetMap())->GetPlayers();
+        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            Player* i_pl = i->getSource();
+            if(i_pl && i_pl->isAlive() && i_pl->HasAuraEffect(SPELL_CONSUMING_MADNESS,0))
+                i_pl->DealDamage(i_pl,i_pl->GetHealth(),0,DIRECT_DAMAGE,SPELL_SCHOOL_MASK_NORMAL,0,false);
+        }
+    }
 
         void CastConsumingMadness() //remove this once SPELL_INSIDIOUS_WHISPER is supported by core
         {
@@ -525,11 +543,9 @@ public:
                             {
                                 demon->AI()->AttackStart((*itr));
                                 CAST_AI(mob_inner_demon::mob_inner_demonAI, demon->AI())->victimGUID = (*itr)->GetGUID();
+                            demon->getThreatManager().addThreat((*itr),1000000);
 
                                 (*itr)->AddAura(SPELL_INSIDIOUS_WHISPER, *itr);
-
-                                if (InnerDemon_Count > 4)
-                                    InnerDemon_Count = 0;
 
                                 //Safe storing of creatures
                                 InnderDemon[InnerDemon_Count] = demon->GetGUID();

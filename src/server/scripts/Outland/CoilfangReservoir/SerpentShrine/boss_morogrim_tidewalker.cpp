@@ -157,12 +157,18 @@ public:
 
         void ApplyWateryGrave(Unit* pPlayer, uint8 i)
         {
+        if(pPlayer->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if(pPlayer->GetGUID() == me->GetGUID())
+            return;
+
             switch(i)
             {
-            case 0: pPlayer->CastSpell(pPlayer, SPELL_WATERY_GRAVE_1, true); break;
-            case 1: pPlayer->CastSpell(pPlayer, SPELL_WATERY_GRAVE_2, true); break;
-            case 2: pPlayer->CastSpell(pPlayer, SPELL_WATERY_GRAVE_3, true); break;
-            case 3: pPlayer->CastSpell(pPlayer, SPELL_WATERY_GRAVE_4, true); break;
+        case 0: me->CastSpell(pPlayer, SPELL_WATERY_GRAVE_1, true); break;
+        case 1: me->CastSpell(pPlayer, SPELL_WATERY_GRAVE_2, true); break;
+        case 2: me->CastSpell(pPlayer, SPELL_WATERY_GRAVE_3, true); break;
+        case 3: me->CastSpell(pPlayer, SPELL_WATERY_GRAVE_4, true); break;
             }
         }
 

@@ -59,9 +59,9 @@ class boss_gruul : public CreatureScript
 public:
     boss_gruul() : CreatureScript("boss_gruul") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature *_Creature) const
     {
-        return new boss_gruulAI (pCreature);
+        return new boss_gruulAI (_Creature);
     }
 
     struct boss_gruulAI : public ScriptedAI
@@ -166,6 +166,9 @@ public:
             if (!UpdateVictim())
                 return;
 
+            if (me->HasAura(SPELL_STONED))
+                me->RemoveAurasDueToSpell(SPELL_STONED);
+
             // Growth
             // Gruul can cast this spell up to 30 times
             if (m_uiGrowth_Timer <= uiDiff)
@@ -250,11 +253,10 @@ public:
             }
         }
     };
-
 };
-
 
 void AddSC_boss_gruul()
 {
     new boss_gruul();
 }
+

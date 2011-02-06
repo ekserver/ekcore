@@ -19,6 +19,7 @@ set(scripts_STAT_SRCS
   Outland/HellfireCitadel/ShatteredHalls/boss_nethekurse.cpp
   Outland/HellfireCitadel/ShatteredHalls/instance_shattered_halls.cpp
   Outland/HellfireCitadel/ShatteredHalls/boss_warbringer_omrogg.cpp
+  Outland/HellfireCitadel/ShatteredHalls/shattered_halls.cpp
   Outland/CoilfangReservoir/SteamVault/boss_mekgineer_steamrigger.cpp
   Outland/CoilfangReservoir/SteamVault/instance_steam_vault.cpp
   Outland/CoilfangReservoir/SteamVault/boss_hydromancer_thespia.cpp
@@ -55,6 +56,7 @@ set(scripts_STAT_SRCS
   Outland/TempestKeep/arcatraz/instance_arcatraz.cpp
   Outland/TempestKeep/arcatraz/arcatraz.h
   Outland/TempestKeep/arcatraz/arcatraz.cpp
+  Outland/TempestKeep/arcatraz/boss_dalliah_soccothates.cpp
   Outland/Auchindoun/AuchenaiCrypts/boss_shirrak_the_dead_watcher.cpp
   Outland/Auchindoun/AuchenaiCrypts/boss_exarch_maladaar.cpp
   Outland/Auchindoun/ManaTombs/boss_pandemonius.cpp
@@ -63,6 +65,7 @@ set(scripts_STAT_SRCS
   Outland/Auchindoun/SethekkHalls/boss_darkweaver_syth.cpp
   Outland/Auchindoun/SethekkHalls/instance_sethekk_halls.cpp
   Outland/Auchindoun/SethekkHalls/sethekk_halls.h
+  Outland/Auchindoun/SethekkHalls/sethekk_halls.cpp
   Outland/Auchindoun/ShadowLabyrinth/boss_murmur.cpp
   Outland/Auchindoun/ShadowLabyrinth/boss_ambassador_hellmaw.cpp
   Outland/Auchindoun/ShadowLabyrinth/boss_blackheart_the_inciter.cpp

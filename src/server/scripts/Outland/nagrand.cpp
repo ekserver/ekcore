@@ -54,18 +54,16 @@ public:
 
     struct mob_shattered_rumblerAI : public ScriptedAI
     {
-        bool Spawn;
-
         mob_shattered_rumblerAI(Creature *c) : ScriptedAI(c) {}
 
-        void Reset()
-        {
-            Spawn = false;
+        bool Spawn;
+
+        void Reset() 
+        { 
+            Spawn = false; 
         }
 
-        void EnterCombat(Unit* /*who*/) {}
-
-        void SpellHit(Unit *Hitter, const SpellEntry *Spellkind)
+        void SpellHit(Unit * /*Hitter*/, const SpellEntry *Spellkind)
         {
             if (Spellkind->Id == 32001 && !Spawn)
             {
@@ -73,16 +71,14 @@ public:
                 float y = me->GetPositionY();
                 float z = me->GetPositionZ();
 
-                Hitter->SummonCreature(18181,x+(0.7f * (rand()%30)),y+(rand()%5),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
-                Hitter->SummonCreature(18181,x+(rand()%5),y-(rand()%5),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
-                Hitter->SummonCreature(18181,x-(rand()%5),y+(0.5f *(rand()%60)),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
-                me->setDeathState(CORPSE);
+                me->SummonCreature(18181,x+(0.7f * (rand()%30)),y+(rand()%5),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
+                me->SummonCreature(18181,x+(rand()%5),y-(rand()%5),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
+                me->SummonCreature(18181,x-(rand()%5),y+(0.5f *(rand()%60)),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
+                me->Kill(me);
                 Spawn = true;
             }
-            return;
         }
     };
-
 };
 
 /*######

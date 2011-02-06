@@ -41,16 +41,15 @@ class boss_murmur : public CreatureScript
 public:
     boss_murmur() : CreatureScript("boss_murmur") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature *_Creature) const
     {
-        return new boss_murmurAI (pCreature);
+        return new boss_murmurAI (_Creature);
     }
 
-    struct boss_murmurAI : public ScriptedAI
+    struct boss_murmurAI : public Scripted_NoMovementAI
     {
-        boss_murmurAI(Creature *c) : ScriptedAI(c)
+        boss_murmurAI(Creature *c) : Scripted_NoMovementAI(c)
         {
-            SetCombatMovement(false);
         }
 
         uint32 SonicBoom_Timer;
@@ -200,11 +199,10 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
 };
-
 
 void AddSC_boss_murmur()
 {
     new boss_murmur();
 }
+

@@ -18,7 +18,12 @@
 
 #ifndef DEF_SERPENT_SHRINE_H
 #define DEF_SERPENT_SHRINE_H
-
+enum LurkerEventState
+{
+    LURKER_NOT_STARTED = 0,
+    LURKER_FISHING     = 1,
+    LURKER_HOOKED      = 2
+};
 enum WaterEventState
 {
     WATERSTATE_NONE     = 0,
