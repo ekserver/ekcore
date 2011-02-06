@@ -26,7 +26,7 @@ EndScriptData */
 #include "ScriptPCH.h"
 #include "shadowfang_keep.h"
 
-#define MAX_ENCOUNTER              4
+#define MAX_ENCOUNTER              5
 
 enum eEnums
 {
@@ -43,7 +43,8 @@ enum eEnums
     GO_SORCERER_DOOR        = 18972,                        //door to open when Fenrus the Devourer
     GO_ARUGAL_DOOR          = 18971,                        //door to open when Wolf Master Nandos
 
-    SPELL_ASHCROMBE_TELEPORT    = 15742
+    SPELL_ASHCROMBE_TELEPORT    = 15742,
+    ACTION_SPAWN_CRAZED         = 3
 };
 
 const Position SpawnLocation[] =
@@ -74,6 +75,10 @@ public:
         uint64 uiAshGUID;
         uint64 uiAdaGUID;
         uint64 uiArchmageArugalGUID;
+        
+        uint64 uiFryeGUID;
+        uint64 uiHummelGUID;
+        uint64 uiBaxterGUID;
 
         uint64 DoorCourtyardGUID;
         uint64 DoorSorcererGUID;
@@ -81,6 +86,7 @@ public:
 
         uint8 uiPhase;
         uint16 uiTimer;
+        uint32 uiSpawnCrazedTimer;
 
         void Initialize()
         {
@@ -89,6 +95,10 @@ public:
             uiAshGUID = 0;
             uiAdaGUID = 0;
             uiArchmageArugalGUID = 0;
+
+            uiFryeGUID = 0;
+            uiHummelGUID = 0;
+            uiBaxterGUID = 0;
 
             DoorCourtyardGUID = 0;
             DoorSorcererGUID = 0;
@@ -105,6 +115,9 @@ public:
                 case NPC_ASH: uiAshGUID = creature->GetGUID(); break;
                 case NPC_ADA: uiAdaGUID = creature->GetGUID(); break;
                 case NPC_ARCHMAGE_ARUGAL: uiArchmageArugalGUID = creature->GetGUID(); break;
+                case NPC_FRYE: uiFryeGUID = creature->GetGUID(); break;
+                case NPC_HUMMEL: uiHummelGUID = creature->GetGUID(); break;
+                case NPC_BAXTER: uiBaxterGUID = creature->GetGUID(); break;
             }
         }
 
@@ -174,6 +187,11 @@ public:
                         DoUseDoorOrButton(DoorArugalGUID);
                     m_auiEncounter[3] = data;
                     break;
+                case TYPE_CROWN:
+                    if (data == NOT_STARTED)
+                        uiSpawnCrazedTimer = urand(15000, 20000);
+                    m_auiEncounter[4] = data;
+                    break;
             }
 
             if (data == DONE)
@@ -202,6 +220,20 @@ public:
                     return m_auiEncounter[2];
                 case TYPE_NANDOS:
                     return m_auiEncounter[3];
+                case TYPE_CROWN:
+                    return m_auiEncounter[4];
+            }
+            return 0;
+        }
+
+        uint64 GetData64(uint32 id)
+        {
+            switch(id)
+            {
+                case DATA_DOOR:   return DoorCourtyardGUID;
+                case DATA_FRYE:   return uiFryeGUID;
+                case DATA_HUMMEL: return uiHummelGUID;
+                case DATA_BAXTER: return uiBaxterGUID;
             }
             return 0;
         }
@@ -235,6 +267,16 @@ public:
 
         void Update(uint32 uiDiff)
         {
+            if (GetData(TYPE_CROWN) == IN_PROGRESS)
+            {
+                if (uiSpawnCrazedTimer <= uiDiff)
+                {
+                    if (Creature* pHummel = instance->GetCreature(uiHummelGUID))
+                        pHummel->AI()->DoAction(ACTION_SPAWN_CRAZED);
+                    uiSpawnCrazedTimer = urand(5000, 7500);
+                } else uiSpawnCrazedTimer -= uiDiff;
+            }
+
             if (GetData(TYPE_FENRUS) != DONE)
                 return;
 

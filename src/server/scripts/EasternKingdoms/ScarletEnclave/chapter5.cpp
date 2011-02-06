@@ -527,7 +527,7 @@ public:
                     NPCChangeTarget(uiThassarianGUID);
 
                     me->Unmount();
-                    me->CastSpell(me, SPELL_THE_MIGHT_OF_MOGRAINE, true); // need to fix, on player only
+                //me->CastSpell(me, SPELL_THE_MIGHT_OF_MOGRAINE, true); // need to fix, on player only
 
                     if (Creature* pTemp = Unit::GetCreature(*me, uiKoltiraGUID))
                         pTemp->Unmount();
@@ -737,6 +737,7 @@ public:
 
                         case 9: // charge begins
                             SetHoldState(false);
+                        me->CastSpell(me, SPELL_THE_MIGHT_OF_MOGRAINE, true); // need to fix, on player only
                             if (Creature* pTemp = Unit::GetCreature(*me, uiKoltiraGUID))
                             {
                                 pTemp->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);

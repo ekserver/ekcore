@@ -24,6 +24,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "ScriptPCH.h"
+#include "blackwing_lair.h"
 
 //Razorgore Phase 2 Script
 
@@ -49,7 +50,12 @@ public:
 
     struct boss_razorgoreAI : public ScriptedAI
     {
-        boss_razorgoreAI(Creature *c) : ScriptedAI(c) {}
+        boss_razorgoreAI(Creature *c) : ScriptedAI(c)
+        {
+            pInstance = c->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
 
         uint32 Cleave_Timer;
         uint32 WarStomp_Timer;
@@ -62,16 +68,25 @@ public:
             WarStomp_Timer = 35000;
             FireballVolley_Timer = 7000;
             Conflagration_Timer = 12000;
+
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_RAZORGORE,NOT_STARTED);
         }
 
         void EnterCombat(Unit * /*who*/)
         {
             DoZoneInCombat();
+
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_RAZORGORE,IN_PROGRESS);
         }
 
         void JustDied(Unit* /*Killer*/)
         {
             DoScriptText(SAY_DEATH, me);
+
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_RAZORGORE,DONE);
         }
 
         void UpdateAI(const uint32 diff)

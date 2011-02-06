@@ -328,7 +328,7 @@ class boss_hexlord_malacrass : public CreatureScript
                     Creature *pCreature = (Unit::GetCreature((*me), AddGUID[i]));
                     if (!pCreature || !pCreature->isAlive())
                     {
-                        if (pCreature) pCreature->setDeathState(DEAD);
+                if (pCreature) pCreature->DisappearAndDie();
                         pCreature = me->SummonCreature(AddEntry[i], Pos_X[i], POS_Y, POS_Z, ORIENT, TEMPSUMMON_DEAD_DESPAWN, 0);
                         if (pCreature) AddGUID[i] = pCreature->GetGUID();
                     }

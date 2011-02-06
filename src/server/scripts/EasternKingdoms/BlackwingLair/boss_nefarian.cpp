@@ -118,6 +118,18 @@ public:
             DoZoneInCombat();
         }
 
+    void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
+    {
+        if(spell->Id == SPELL_SHADOWFLAME)
+        {
+            if(pTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                if(!pTarget->HasAuraEffect(22683,0))
+                    me->CastSpell(pTarget,22682,true);
+            }
+        }
+    }
+
         void UpdateAI(const uint32 diff)
         {
             if (DespawnTimer <= diff)

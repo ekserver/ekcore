@@ -24,6 +24,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "ScriptPCH.h"
+#include "blackwing_lair.h"
 
 #define SAY_AGGRO               -1469000
 #define SAY_LEASH               -1469001
@@ -45,7 +46,12 @@ public:
 
     struct boss_broodlordAI : public ScriptedAI
     {
-        boss_broodlordAI(Creature *c) : ScriptedAI(c) {}
+        boss_broodlordAI(Creature *c) : ScriptedAI(c)
+        {
+            pInstance = c->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
 
         uint32 Cleave_Timer;
         uint32 BlastWave_Timer;
@@ -58,12 +64,24 @@ public:
             BlastWave_Timer = 12000;
             MortalStrike_Timer = 20000;
             KnockBack_Timer = 30000;
+
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_LASHLAYER,NOT_STARTED);
         }
 
         void EnterCombat(Unit * /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             DoZoneInCombat();
+
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_LASHLAYER,IN_PROGRESS);
+    }
+
+    void JustDied(Unit *killer)
+    {
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_LASHLAYER,DONE);
         }
 
         void UpdateAI(const uint32 diff)

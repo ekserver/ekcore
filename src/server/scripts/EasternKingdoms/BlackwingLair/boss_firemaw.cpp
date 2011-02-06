@@ -24,6 +24,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "ScriptPCH.h"
+#include "blackwing_lair.h"
 
 #define SPELL_SHADOWFLAME       22539
 #define SPELL_WINGBUFFET        23339
@@ -41,7 +42,12 @@ public:
 
     struct boss_firemawAI : public ScriptedAI
     {
-        boss_firemawAI(Creature *c) : ScriptedAI(c) {}
+        boss_firemawAI(Creature *c) : ScriptedAI(c)
+        {
+            pInstance = c->GetInstanceScript();
+        }
+        
+        InstanceScript* pInstance;
 
         uint32 ShadowFlame_Timer;
         uint32 WingBuffet_Timer;
@@ -52,11 +58,35 @@ public:
             ShadowFlame_Timer = 30000;                          //These times are probably wrong
             WingBuffet_Timer = 24000;
             FlameBuffet_Timer = 5000;
+
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_FIREMAW,NOT_STARTED);
         }
 
         void EnterCombat(Unit * /*who*/)
         {
             DoZoneInCombat();
+
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_FIREMAW,IN_PROGRESS);
+    }
+
+    void JustDied(Unit *killer)
+    {
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_FIREMAW,DONE);
+    }
+
+    void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
+    {
+        if(spell->Id == SPELL_SHADOWFLAME)
+        {
+            if(pTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                if(!pTarget->HasAuraEffect(22683,0))
+                    me->CastSpell(pTarget,22682,true);
+            }
+        }
         }
 
         void UpdateAI(const uint32 diff)

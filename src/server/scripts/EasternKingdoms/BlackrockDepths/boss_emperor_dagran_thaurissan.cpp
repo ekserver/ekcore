@@ -37,6 +37,11 @@ enum Spells
     SPELL_AVATAROFFLAME                                    = 15636
 };
 
+enum Creatures
+{
+    MOIRA_BRONZEBEARD                                      = 8929
+};
+
 class boss_emperor_dagran_thaurissan : public CreatureScript
 {
 public:
@@ -105,6 +110,16 @@ public:
             } else AvatarOfFlame_Timer -= diff;
 
             DoMeleeAttackIfReady();
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            if (Creature* pMoira = me->FindNearestCreature(MOIRA_BRONZEBEARD, 100.0f, true))
+            {
+                pMoira->setFaction(35);
+                pMoira->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pMoira->AI()->EnterEvadeMode();
+            }
         }
     };
 

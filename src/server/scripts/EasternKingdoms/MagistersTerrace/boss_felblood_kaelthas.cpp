@@ -89,12 +89,13 @@ public:
 
     struct boss_felblood_kaelthasAI : public ScriptedAI
     {
-        boss_felblood_kaelthasAI(Creature* c) : ScriptedAI(c)
+        boss_felblood_kaelthasAI(Creature* c) : ScriptedAI(c), Summons(me)
         {
             pInstance = c->GetInstanceScript();
         }
 
         InstanceScript* pInstance;
+        SummonList Summons;
 
         uint32 FireballTimer;
         uint32 PhoenixTimer;
@@ -136,6 +137,7 @@ public:
             FirstGravityLapse = true;
             HasTaunted = false;
 
+            Summons.DespawnAll();
             Phase = 0;
 
             if (pInstance)
@@ -150,12 +152,19 @@ public:
         void JustDied(Unit * /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
+            Summons.DespawnAll();
 
             if (!pInstance)
                 return;
 
-            pInstance->HandleGameObject(pInstance->GetData64(DATA_KAEL_DOOR), true);
+            pInstance->SetData(DATA_KAELTHAS_EVENT, DONE);
+            pInstance->HandleGameObject(pInstance->GetData64(DATA_KAEL_DOOR), true); //TODO: move all door handling to instance
             // Open the encounter door
+        }
+
+        void JustSummoned(Creature *summon)
+        {
+            Summons.Summon(summon);
         }
 
         void DamageTaken(Unit* /*done_by*/, uint32 &damage)
@@ -190,8 +199,7 @@ public:
                 return;
 
             std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
-            std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
-            for (i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
+            for (std::list<HostileReference*>::const_iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
                 if (pUnit && pUnit->isAlive())
@@ -208,8 +216,8 @@ public:
             float y = KaelLocations[0][1];
             me->GetMap()->CreatureRelocation(me, x, y, LOCATION_Z, 0.0f);
             //me->SendMonsterMove(x, y, LOCATION_Z, 0, 0, 0); // causes some issues...
-            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
-            for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
                 if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
@@ -220,8 +228,8 @@ public:
 
         void CastGravityLapseKnockUp()
         {
-            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
-            for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
                 if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
@@ -232,8 +240,8 @@ public:
 
         void CastGravityLapseFly()                              // Use Fly Packet hack for now as players can't cast "fly" spells unless in map 530. Has to be done a while after they get knocked into the air...
         {
-            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
-            for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
                 if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
@@ -252,8 +260,8 @@ public:
 
         void RemoveGravityLapse()
         {
-            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
-            for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
                 if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
@@ -313,7 +321,10 @@ public:
                         {
                             Phoenix->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE + UNIT_FLAG_NON_ATTACKABLE);
                             SetThreatList(Phoenix);
-                            Phoenix->AI()->AttackStart(pTarget);
+                            if (pTarget)
+                                Phoenix->AI()->AttackStart(pTarget);
+                            else
+                                Phoenix->AI()->AttackStart(me->getVictim());
                         }
 
                         DoScriptText(SAY_PHOENIX, me);

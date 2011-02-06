@@ -24,6 +24,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "ScriptPCH.h"
+#include "blackwing_lair.h"
 
 #define SAY_LINE1           -1469026
 #define SAY_LINE2           -1469027
@@ -86,7 +87,11 @@ public:
             c->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             c->setFaction(35);
             c->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+            pInstance = c->GetInstanceScript();
         }
+
+        InstanceScript *pInstance;
 
         uint64 PlayerGUID;
         uint32 SpeechTimer;
@@ -113,6 +118,9 @@ public:
             TailSwipe_Timer = 20000;
             HasYelled = false;
             DoingSpeech = false;
+
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_VAELASTRASZ,NOT_STARTED);
         }
 
         void BeginSpeech(Unit *pTarget)
@@ -143,6 +151,15 @@ public:
             DoCast(me, SPELL_ESSENCEOFTHERED);
             DoZoneInCombat();
             me->SetHealth(me->CountPctFromMaxHealth(30));
+
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_VAELASTRASZ,IN_PROGRESS);
+    }
+
+    void JustDied(Unit *killer)
+    {
+        if(pInstance)
+            pInstance->SetData(ENCOUNTER_VAELASTRASZ,DONE);
         }
 
         void UpdateAI(const uint32 diff)

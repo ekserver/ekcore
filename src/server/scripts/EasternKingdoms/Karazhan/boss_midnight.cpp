@@ -186,6 +186,7 @@ public:
                                 pAttumen->SetUInt64Value(UNIT_FIELD_TARGET, pAttumen->getVictim()->GetGUID());
                             }
                             pAttumen->SetFloatValue(OBJECT_FIELD_SCALE_X,1);
+ 			    pAttumen->SetHealth(pAttumen->GetMaxHealth());
                         }
                     } else Mount_Timer -= diff;
                 }
@@ -243,7 +244,7 @@ void boss_attumen::boss_attumenAI::UpdateAI(const uint32 diff)
             }
             Midnight = 0;
             me->SetVisible(false);
-            me->Kill(me);
+            me->DealDamage(me,me->GetHealth());
         }
     } else ResetTimer -= diff;
 
@@ -301,7 +302,7 @@ void boss_attumen::boss_attumenAI::UpdateAI(const uint32 diff)
             if (pMidnight && pMidnight->GetTypeId() == TYPEID_UNIT)
             {
                 CAST_AI(boss_midnight::boss_midnightAI, (pMidnight->AI()))->Mount(me);
-                me->SetHealth(pMidnight->GetHealth());
+                me->SetHealth(me->GetMaxHealth());
                 DoResetThreat();
             }
         }
