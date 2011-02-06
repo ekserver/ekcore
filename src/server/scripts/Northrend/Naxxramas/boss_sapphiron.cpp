@@ -118,6 +118,8 @@ public:
 
             CanTheHundredClub = true;
             CheckFrostResistTimer = 5000;
+
+            SetImmuneToDeathGrip();
         }
 
         void EnterCombat(Unit * /*who*/)
@@ -231,6 +233,8 @@ public:
             if ((phase != PHASE_BIRTH && !UpdateVictim()) || !CheckInRoom())
                 return;
 
+            _DoAggroPulse(diff);
+
             if (CanTheHundredClub)
             {
                 if (CheckFrostResistTimer <= diff)
@@ -265,7 +269,9 @@ public:
                         case EVENT_BLIZZARD:
                         {
                             //DoCastAOE(SPELL_SUMMON_BLIZZARD);
-                            if (Creature *pSummon = DoSummon(MOB_BLIZZARD, me, 0.0f, urand(25000,30000), TEMPSUMMON_TIMED_DESPAWN))
+                            Unit *target = SelectTarget(SELECT_TARGET_RANDOM,1);
+                            if (!target) target = me->getVictim();
+                            if (Creature *pSummon = DoSummon(MOB_BLIZZARD, target, 0.0f, 20000, TEMPSUMMON_TIMED_DESPAWN))
                                 pSummon->GetMotionMaster()->MoveRandom(40);
                             events.ScheduleEvent(EVENT_BLIZZARD, RAID_MODE(20000,7000), 0, PHASE_GROUND);
                             break;

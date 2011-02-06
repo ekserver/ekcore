@@ -94,8 +94,8 @@ class boss_archavon : public CreatureScript
                             events.ScheduleEvent(EVENT_ROCK_SHARDS, 15000);
                             break;
                         case EVENT_CHOKING_CLOUD:
-                            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                                DoCast(target, SPELL_CRUSHING_LEAP, true); //10y~80y, ignore range
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, -10, true))
+                            DoCast(pTarget, SPELL_CRUSHING_LEAP); //10y~80y
                             events.ScheduleEvent(EVENT_CHOKING_CLOUD, 30000);
                             break;
                         case EVENT_STOMP:

@@ -423,6 +423,53 @@ public:
     }
 };
 
+/*######
+## npc_webbed_crusader
+######*/
+
+enum eWebbedCrusaderSpells
+{
+    NPC_FORGOTTEN_DEEPS_AMBUSHER = 30204,
+    NPC_FREED_CRUSADER = 30274,
+    SPELL_FREED_CRUSADER = 56423
+};
+// UPDATE creature_template SET scriptname = 'npc_webbed_crusader' WHERE entry in (30273,30268);
+class npc_webbed_crusader : public CreatureScript
+{
+public:
+    npc_webbed_crusader() : CreatureScript("npc_webbed_crusader") { }
+
+    struct npc_webbed_crusaderAI : public Scripted_NoMovementAI
+    {
+        npc_webbed_crusaderAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature) {}
+
+        void JustDied(Unit* killer)
+        {
+            switch(urand(0,1))
+            {
+            case 0:
+                {
+                    Creature* temp = DoSpawnCreature(NPC_FREED_CRUSADER,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,30000);
+                    if(Player* pPlayer = killer->GetCharmerOrOwnerPlayerOrPlayerItself())
+                        pPlayer->KilledMonsterCredit(NPC_FREED_CRUSADER,temp->GetGUID());
+                    //DoCast(me,SPELL_FREED_CRUSADER,true);
+                }
+                break;
+            case 1:
+                {
+                    Creature* temp = DoSpawnCreature(NPC_FORGOTTEN_DEEPS_AMBUSHER,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,30000);
+                    temp->AI()->AttackStart(killer);
+                }
+                break;
+            }
+        }
+    };
+
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_webbed_crusaderAI(creature);
+    }
+};
 void AddSC_icecrown()
 {
     new npc_arete;
@@ -432,4 +479,5 @@ void AddSC_icecrown()
     new npc_argent_tournament_post;
     new npc_alorah_and_grimmin;
     new npc_guardian_pavilion;
+    new npc_webbed_crusader;
 }

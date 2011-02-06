@@ -30,7 +30,10 @@ enum eGameObjects
     GO_FREYA_CHEST          = 194324,
     GO_LEVIATHAN_DOOR       = 194905,
     GO_LEVIATHAN_GATE       = 194630,
-    GO_VEZAX_DOOR           = 194750,
+    GO_YOGGSARON_DOOR       = 194773,
+    GO_YOGGBRAIN_DOOR_1     = 194635,
+    GO_YOGGBRAIN_DOOR_2     = 194636,
+    GO_YOGGBRAIN_DOOR_3     = 194637
 };
 
 class instance_ulduar : public InstanceMapScript
@@ -65,10 +68,14 @@ public:
         uint64 uiFreyaGUID;
         uint64 uiVezaxGUID;
         uint64 uiYoggSaronGUID;
+        uint64 uiSaraGUID;
         uint64 uiAlgalonGUID;
         uint64 uiLeviathanDoor[7];
         uint64 uiLeviathanGateGUID;
-        uint64 uiVezaxDoorGUID;
+        uint64 uiYoggSaronDoorGUID;
+        uint64 uiYoggSaronBrainDoor1GUID;
+        uint64 uiYoggSaronBrainDoor2GUID;
+        uint64 uiYoggSaronBrainDoor3GUID;
 
         uint64 uiKologarnChestGUID;
         uint64 uiThorimChestGUID;
@@ -91,12 +98,16 @@ public:
             uiVezaxGUID           = 0;
             uiYoggSaronGUID       = 0;
             uiAlgalonGUID         = 0;
+            uiSaraGUID            = 0;
             uiKologarnChestGUID   = 0;
             uiThorimChestGUID     = 0;
             uiHodirChestGUID      = 0;
             uiFreyaChestGUID      = 0;
             uiLeviathanGateGUID   = 0;
-            uiVezaxDoorGUID       = 0;
+            uiYoggSaronDoorGUID   = 0;
+            uiYoggSaronBrainDoor1GUID = 0;
+            uiYoggSaronBrainDoor2GUID = 0;
+            uiYoggSaronBrainDoor3GUID = 0;
             flag                  = 0;
 
             memset(&uiEncounter, 0, sizeof(uiEncounter));
@@ -173,6 +184,9 @@ public:
                 case NPC_ALGALON:
                     uiAlgalonGUID = creature->GetGUID();
                     break;
+                case NPC_SARA:
+                    uiSaraGUID = creature->GetGUID();
+                    break;
             }
 
          }
@@ -187,7 +201,7 @@ public:
                     break;
                 case GO_THORIM_CHEST_HERO:
                 case GO_THORIM_CHEST:
-                    uiThorimChestGUID =go->GetGUID();
+                    uiThorimChestGUID = go->GetGUID();
                     break;
                 case GO_HODIR_CHEST_HERO:
                 case GO_HODIR_CHEST:
@@ -208,8 +222,20 @@ public:
                     uiLeviathanGateGUID = go->GetGUID();
                     HandleGameObject(NULL, false, go);
                     break;
-                case GO_VEZAX_DOOR:
-                    uiVezaxDoorGUID = go->GetGUID();
+                case GO_YOGGSARON_DOOR:
+                    uiYoggSaronDoorGUID = go->GetGUID();
+                    HandleGameObject(NULL, true, go);
+                    break;
+                case GO_YOGGBRAIN_DOOR_1:
+                    uiYoggSaronBrainDoor1GUID = go->GetGUID();
+                    HandleGameObject(NULL, false, go);
+                    break;
+                case GO_YOGGBRAIN_DOOR_2:
+                    uiYoggSaronBrainDoor2GUID = go->GetGUID();
+                    HandleGameObject(NULL, false, go);
+                    break;
+                case GO_YOGGBRAIN_DOOR_3:
+                    uiYoggSaronBrainDoor3GUID = go->GetGUID();
                     HandleGameObject(NULL, false, go);
                     break;
             }
@@ -261,9 +287,13 @@ public:
                 case TYPE_MIMIRON:
                 case TYPE_VEZAX:
                     if (state == DONE)
-                        HandleGameObject(uiVezaxDoorGUID, true);
+                        HandleGameObject(uiYoggSaronDoorGUID, true);
                     break;
                 case TYPE_YOGGSARON:
+                if(state == IN_PROGRESS)
+                    HandleGameObject(uiYoggSaronDoorGUID,false);
+                else
+                    HandleGameObject(uiYoggSaronDoorGUID,true);
                     break;
                 case TYPE_KOLOGARN:
                     if (state == DONE)
@@ -327,6 +357,7 @@ public:
                 case TYPE_VEZAX:                return uiVezaxGUID;
                 case TYPE_YOGGSARON:            return uiYoggSaronGUID;
                 case TYPE_ALGALON:              return uiAlgalonGUID;
+                case TYPE_SARA:                 return uiSaraGUID;
 
                 // razorscale expedition commander
                 case DATA_EXP_COMMANDER:        return uiExpCommanderGUID;
@@ -334,6 +365,10 @@ public:
                 case DATA_STEELBREAKER:         return uiAssemblyGUIDs[0];
                 case DATA_MOLGEIM:              return uiAssemblyGUIDs[1];
                 case DATA_BRUNDIR:              return uiAssemblyGUIDs[2];
+
+                case TYPE_BRAIN_DOOR_1 :        return uiYoggSaronBrainDoor1GUID;
+                case TYPE_BRAIN_DOOR_2 :        return uiYoggSaronBrainDoor2GUID;
+                case TYPE_BRAIN_DOOR_3 :        return uiYoggSaronBrainDoor3GUID;
             }
 
             return 0;

@@ -34,6 +34,7 @@ set(scripts_STAT_SRCS
   Northrend/ObsidianSanctum/instance_obsidian_sanctum.cpp
   Northrend/ObsidianSanctum/obsidian_sanctum.h
   Northrend/ObsidianSanctum/boss_sartharion.cpp
+  Northrend/ObsidianSanctum/mob_obsidian_sanctum.cpp
   Northrend/FrozenHalls/HallsOfReflection/halls_of_reflection.h
   Northrend/FrozenHalls/HallsOfReflection/boss_falric.cpp
   Northrend/FrozenHalls/HallsOfReflection/instance_halls_of_reflection.cpp
@@ -98,7 +99,8 @@ set(scripts_STAT_SRCS
   Northrend/Naxxramas/boss_sapphiron.cpp
   Northrend/Naxxramas/instance_naxxramas.cpp
   Northrend/Naxxramas/boss_grobbulus.cpp
-  Northrend/Naxxramas/boss_noth.cpp
+  Northrend/Naxxramas/boss_noth.cpp 
+  Northrend/Naxxramas/mob_naxxramas.cpp
   Northrend/crystalsong_forest.cpp
   Northrend/VaultOfArchavon/boss_archavon.cpp
   Northrend/VaultOfArchavon/boss_koralon.cpp
