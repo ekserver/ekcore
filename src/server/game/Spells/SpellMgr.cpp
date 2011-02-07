@@ -4058,15 +4058,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_DB;
             count++;
             break;
-        case 69055: // Saber Lash (Lord Marrowgar)
-        case 70814: // Saber Lash (Lord Marrowgar)
-            spellInfo->EffectRadiusIndex[0] = 8;
-            count++;
-            break;
-        case 69075: // Bone Storm (Lord Marrowgar)
-        case 70834: // Bone Storm (Lord Marrowgar)
-        case 70835: // Bone Storm (Lord Marrowgar)
-        case 70836: // Bone Storm (Lord Marrowgar)
         case 72378: // Blood Nova (Deathbringer Saurfang)
         case 73058: // Blood Nova (Deathbringer Saurfang)
             spellInfo->EffectRadiusIndex[0] = 12;
