@@ -1356,8 +1356,16 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                     p->CastedCreatureOrGO(spellHitTarget->GetEntry(),spellHitTarget->GetGUID(),m_spellInfo->Id);
         }
 
-        if (m_caster && m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->IsAIEnabled)
-            m_caster->ToCreature()->AI()->SpellHitTarget(spellHitTarget, m_spellInfo);
+        if(m_originalCaster)
+        {
+            if(m_originalCaster->GetTypeId() == TYPEID_UNIT && m_originalCaster->ToCreature()->IsAIEnabled)
+                m_originalCaster->ToCreature()->AI()->SpellHitTarget(spellHitTarget, m_spellInfo);
+        }else
+        {
+            if(m_caster && m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->IsAIEnabled)
+                m_caster->ToCreature()->AI()->SpellHitTarget(spellHitTarget, m_spellInfo);
+
+        }
 
         // Needs to be called after dealing damage/healing to not remove breaking on damage auras
         DoTriggersOnSpellHit(spellHitTarget);
@@ -6317,6 +6325,14 @@ SpellCastResult Spell::CheckItems()
                              return SPELL_FAILED_ITEM_AT_MAX_CHARGES;
                  }
                  break;
+            }
+            case SPELL_EFFECT_RESURRECT:
+            {
+                // gnomish army knife
+                if (m_spellInfo->Id == 54732)
+                    if (p_caster->GetSkillValue(SKILL_ENGINERING) < 350)
+                        return SPELL_FAILED_LOW_CASTLEVEL;
+                break;
             }
             default:
                 break;

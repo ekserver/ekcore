@@ -767,6 +767,12 @@ namespace Trinity
                             continue;
                         if (!target->isAttackableByAOE(i_requireDeadTarget))
                             continue;
+                        // if we are a player, not in duel, not in arena, not in battleground, and deactivated pvp we are unable to hit player targets
+                        if( i_source->GetTypeId() == TYPEID_PLAYER && !((Player*)i_source)->duel &&
+                            !((Player*)i_source)->InArena() && !((Player*)i_source)->InBattleground() &&
+                            !((Player*)i_source)->IsPvP()  && target->GetTypeId() == TYPEID_PLAYER)
+                            continue;
+                        
                         if (i_source->IsControlledByPlayer())
                         {
                             if (i_source->IsFriendlyTo(target))

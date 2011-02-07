@@ -1164,6 +1164,13 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                             }
                         }
                         break;
+                    case 45032: // Curse of Agony - Sathrovarr
+                    case 45034:
+                        if(removeMode != AURA_REMOVE_BY_EXPIRE && removeMode != AURA_REMOVE_BY_DEATH)
+                            break;
+                        //Trigger on next player
+                        target->CastSpell(target, 45034, true, NULL, GetEffect(0));
+                    	break;
                 }
                 break;
             case SPELLFAMILY_MAGE:
@@ -1587,6 +1594,43 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         caster->RemoveAurasDueToSpell(200000);
                 }
             }
+            break;
+        case SPELLFAMILY_MAGE:
+            switch(GetSpellProto()->Id)
+            {
+                case 44544: // Fingers of Frost
+                {
+                    int32 key = int32(uint32(uint32(aurApp->GetBase()->GetApplyTime()) & uint32(0x7FFFFFFF)));
+
+                    // See if we already have the indicator aura. If not, create one.
+                    if (Aura * aura = target->GetAura(74396))
+                    {
+                        if (!apply)
+                        {
+                            if (aura->GetEffect(EFFECT_0)->GetAmount() == key)
+                                aura->Remove(removeMode);
+                            break;
+                        }
+
+                        // Aura already there. Refresh duration and set original charges
+                        aura->SetCharges(aurApp->GetBase()->GetEffect(EFFECT_0)->GetAmount());
+                        aura->GetEffect(EFFECT_0)->SetAmount(key);
+                        aura->RefreshDuration();
+                        break;
+                    }
+                    else if (apply)
+                        if (Aura * aura = target->AddAura(74396, target))
+                        {
+                            aura->GetEffect(EFFECT_0)->SetAmount(key);
+                            aura->SetCharges(aurApp->GetBase()->GetEffect(EFFECT_0)->GetAmount());
+                        }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        default:
             break;
     }
 }

@@ -3693,12 +3693,20 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39365: // Thundering Storm
         case 41071: // Raise Dead (HACK)
         case 52124: // Sky Darkener Assault
+        case 41172: // Rapid Shot
+        case 40834: // Agonizing Flames
+        case 45032: // Curse of Agony - Sathrovarr
+        case 45034: // Curse of Agony - Sathrovarr
         case 42442: // Vengeance Landing Cannonfire
         case 45863: // Cosmetic - Incinerate to Random Target
         case 25425: // Shoot
         case 45761: // Shoot
         case 42611: // Shoot
         case 62374: // Pursued
+        case 50988: // Glare of the Tribunal (nh)
+        case 59870: // Glare of the Tribunal (hc)
+        case 55927: // Sear Beam (nh)
+        case 59509: // Sear Beam (hc)
             spellInfo->MaxAffectedTargets = 1;
             count++;
             break;
@@ -3707,6 +3715,38 @@ void SpellMgr::LoadSpellCustomAttr()
             // a trap always has dst = src?
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
             spellInfo->EffectImplicitTargetA[1] = TARGET_DST_CASTER;
+            count++;
+            break;
+        case 28836: //Mark - should not be resistet
+        case 28786: //Locust Swarm
+        case 54022: //Locust Swarm
+        case 57581: //Shadow Fissure - Sartharion Drakes
+        case 59128: //Shadow Fissure - Sartharion Drakes
+        case 57570: //Shadow Breath - Sartharion Drakes
+        case 59126: //Shadow Breath - Sartharion Drakes
+        case 56908: //Fire Breath - Sartharion
+        case 58956: //Fire Breath - Sartharion
+        case 57874: //Twilight Shift Damage - Sartharion
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_FIXED_DAMAGE;
+            count++;
+            break;
+        //Change nothing
+        //case 57491: //Flame Tzunami Hack - Sartharion
+        //case 60430: //Flame Tzunami Hack - Sartharion
+        //    spellInfo->EffectRadiusIndex[0] = 8;
+        //    spellInfo->EffectRadiusIndex[1] = 8;
+        //    spellInfo->EffectRadiusIndex[2] = 8;
+        //    count++;
+        //    break;
+        case 57697: //Lavastrike Hack - Sartharion
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_TARGET_ENEMY;
+            //spellInfo->EffectImplicitTargetB[0] = TARGET_DEST_TARGET_RANDOM;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_DST_TARGET_ENEMY; //This would be more funny
+            count++;
+            break;
+        case 31225:
+        case 8593:
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_ALLOW_DEAD_TARGET;
             count++;
             break;
         case 41376: // Spite
@@ -3720,6 +3760,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 54172: // Divine Storm (heal)
         case 29213: // Curse of the Plaguebringer - Noth
         case 28542: // Life Drain - Sapphiron
+        case 41357: // L1 Acane Charge
         case 66588: // Flaming Spear
         case 54171: // Divine Storm
             spellInfo->MaxAffectedTargets = 3;
@@ -3737,6 +3778,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45641: // Fire Bloom
         case 55665: // Life Drain - Sapphiron (H)
         case 28796: // Poison Bolt Volly - Faerlina
+        case 29232: // Fungal Creep - Loatheb Spore - Dont know if needed
             spellInfo->MaxAffectedTargets = 5;
             count++;
             break;
@@ -3888,6 +3930,23 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectMiscValue[0] = MECHANIC_IMMUNE_SHIELD;
             count++;
             break;
+        case 53651:
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+            count++;
+            break;
+        case 43202:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ALLY;
+            count++;
+            break;
+        case 61306:     // Kirin Tor Commendation Badge
+        case 61308:     // Wyrmrest Commendation Badge
+        case 61311:     // Argent Crusade Commendation Badge
+        case 61312:     // Ebon Blade Commendadtion Badge
+        case 69757:     // Sons of Hodir Commendation Badge
+            spellInfo->EffectBasePoints[0] = 519;           // Some suggest a global multiplier is used for rep gain
+            count++;                                        // but basepoints * 1,3 hard coded in the tooltip says
+            break;                                          // otherwise.
         case 64321: // Potent Pheromones
             // spell should dispel area aura, but doesn't have the attribute
             // may be db data bug, or blizz may keep reapplying area auras every update with checking immunity
@@ -3895,12 +3954,33 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
             count++;
             break;
+        case 48246: // Ball of Flame
+            spellInfo->MaxAffectedTargets = 1;
+            count++;
+            break;
+        case 48278: // Paralyze
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
+        case 69055:     // Saber Lash
+        case 70814:     // Saber Lash
+            spellInfo->EffectRadiusIndex[0] = 8;
+            count++;
+            break;
+        case 69075:     // Bone Storm
+        case 70834:     // Bone Storm
+        case 70835:     // Bone Storm
+        case 70836:     // Bone Storm
+            spellInfo->EffectRadiusIndex[0] = 12;
+            count++;
+            break;
         case 18500: // Wing Buffet
         case 33086: // Wild Bite
         case 49749: // Piercing Blow
         case 52890: // Penetrating Strike
         case 53454: // Impale
+        case 55276: // Puncture
         case 59446: // Impale
+        case 59826: // Puncture
+        case 60590: // Void Strike
         case 62383: // Shatter
         case 64777: // Machine Gun
         case 65239: // Machine Gun
@@ -3911,6 +3991,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 69293: // Wing Buffet
         case 74439: // Machine Gun
             mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            count++;
+            break;
+        case 28299:
+            spellInfo->Attributes |= SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
             count++;
             break;
         // Strength of the Pack
@@ -3924,6 +4008,14 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 33206: // Pain Suppression
             spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_STUNNED;
+            count++;
+            break;
+        case 61367: // Windfury, TODO: remove this when spell 32910 works as supposed
+            spellInfo->EffectTriggerSpell[0] = 65976;
+            count++;
+            break;
+        case 56278: // Read Pronouncement, missing EffectApplyAuraName
+            spellInfo->Effect[0] = SPELL_EFFECT_DUMMY;
             count++;
             break;
         case 53241: // Marked for Death (Rank 1)

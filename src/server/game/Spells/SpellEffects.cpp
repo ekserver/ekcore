@@ -375,7 +375,7 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                             }
                         }
 
-                        if (unitTarget->HasAura(m_triggeredByAuraSpell->Id))
+                        if (unitTarget->HasAura(m_triggeredByAuraSpell->Id) || unitTarget->GetTypeId() != TYPEID_PLAYER)
                             damage = 0;
                         break;
                     // Consumption
@@ -927,7 +927,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     return;
                 // Polarity Shift
                 case 28089:
-                    if (unitTarget)
+                    if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
                         unitTarget->CastSpell(unitTarget, roll_chance_i(50) ? 28059 : 28084, true, NULL, NULL, m_caster->GetGUID());
                     break;
                 // Polarity Shift
@@ -1141,6 +1141,25 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         bg->EventPlayerDroppedFlag(m_caster->ToPlayer());
 
                     m_caster->CastSpell(m_caster, 30452, true, NULL);
+                    return;
+                }
+                case 51962:                                 //Offer Jungle Punch
+                {
+                    if (!unitTarget || m_caster->GetTypeId() != TYPEID_PLAYER || unitTarget->GetTypeId() != TYPEID_UNIT)
+                        return;
+                    
+                    if (uint32 entry = unitTarget->ToCreature()->GetEntry())
+                    {
+                        switch(entry)
+                        {
+                            case 27986:
+                            case 28047:
+                            case 28568:
+                            {
+                                m_caster->ToPlayer()->KilledMonsterCredit(entry, 0);
+                            }
+                        }
+                    }
                     return;
                 }
                 case 52759:                                 // Ancestral Awakening
@@ -2608,6 +2627,9 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
         case 48542:                                         // Revitalize
             damage = int32(CalculatePctN(unitTarget->GetMaxPower(power), damage));
             break;
+        case 71132:                                         // Glyph of Shadow Word: Pain
+            damage = m_caster->GetCreateMana() / 100;
+            break;
         default:
             break;
     }
@@ -3103,8 +3125,15 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     float radius = GetSpellRadiusForHostile(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[effIndex]));
 
                     uint32 amount = damage > 0 ? damage : 1;
-                    if (m_spellInfo->Id == 18662) // Curse of Doom
-                        amount = 1;
+
+                    switch (m_spellInfo->Id) {
+                        case 4073:  // Mechanical Dragonling
+                        case 12749: // Mithril Mechanical Dragonling
+                        case 18662: // Curse of Doom
+                        case 19804: // Arcanite Dragonling
+                            amount = 1;
+                            break;
+                    }
 
                     for (uint32 count = 0; count < amount; ++count)
                     {
@@ -4312,6 +4341,9 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
 
     ExecuteLogEffectSummonObject(effIndex, pGameObj);
 
+    if(m_originalCaster && m_originalCaster->GetTypeId() != TYPEID_PLAYER && pGameObj->GetGoType() != GAMEOBJECT_TYPE_CHEST)
+        pGameObj->SetOwnerGUID(m_originalCasterGUID);
+
     // Wild object not have owner and check clickable by players
     map->Add(pGameObj);
 
@@ -4379,6 +4411,21 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
         {
             switch(m_spellInfo->Id)
             {
+                //Ebon Blade Banner
+                case 23301:
+                {
+                    if (!unitTarget || m_caster->GetTypeId() != TYPEID_PLAYER || unitTarget->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    Player* plr = m_caster->ToPlayer();
+                    if (plr && unitTarget->isDead())
+                    {
+                        plr->KilledMonsterCredit(30220, 0);
+                        unitTarget->ToCreature()->ForcedDespawn(); //workaround for infinite credits
+                    }
+
+                    return;
+                }
                 // Glyph of Backstab
                 case 63975:
                 {
@@ -4478,6 +4525,75 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     m_caster->CastSpell(unitTarget, 22682, true);
                     return;
                 }
+                // Hallowed Wand
+                // Random Costume
+                case 24720:
+                {
+                    if(!unitTarget || !unitTarget->isAlive())
+                        return;
+
+                    uint32 spellId;
+                    switch(urand(0, 6))
+                    {
+                    case 0: spellId = 24717; break; // Pirate Costume
+                    case 1: spellId = 24741; break; // Wisp Costume
+                    case 2: spellId = 24724; break; // Skeleton Costume
+                    case 3: spellId = 24719; break; // Leper Gnome Costume
+                    case 4: spellId = 24718; break; // Ninja Costume
+                    case 5: spellId = 24737; break; // Ghost Costume
+                    case 6: spellId = 24733; break; // Bat Costume
+                    }
+                    m_caster->CastSpell(unitTarget, spellId, true);
+                }
+                break;
+                // Pirate Costume
+                case 24717:
+                {
+                    if(!unitTarget || !unitTarget->isAlive())
+                        return;
+
+                    if(unitTarget->getGender() == GENDER_MALE)
+                        m_caster->CastSpell(unitTarget,24708,true);
+                    else
+                        m_caster->CastSpell(unitTarget,24709,true);
+                }
+                break;
+                // Ninja Costume
+                case 24718:
+                {
+                    if(!unitTarget || !unitTarget->isAlive())
+                        return;
+
+                    if(unitTarget->getGender() == GENDER_MALE)
+                        m_caster->CastSpell(unitTarget,24711,true);
+                    else
+                        m_caster->CastSpell(unitTarget,24710,true);
+                }
+                break;
+                // Leper Gnome Costume
+                case 24719:
+                {
+                    if(!unitTarget || !unitTarget->isAlive())
+                        return;
+
+                    if(unitTarget->getGender() == GENDER_MALE)
+                        m_caster->CastSpell(unitTarget,24712,true);
+                    else
+                        m_caster->CastSpell(unitTarget,24713,true);
+                }
+                break;
+                // Ghost Costume
+                case 24737:
+                {
+                    if(!unitTarget || !unitTarget->isAlive())
+                        return;
+
+                    if(unitTarget->getGender() == GENDER_MALE)
+                        m_caster->CastSpell(unitTarget,24735,true);
+                    else
+                        m_caster->CastSpell(unitTarget,24736,true);
+                }
+                break;
                 // Piccolo of the Flaming Fire
                 case 17512:
                 {
@@ -4546,6 +4662,34 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         break;
                     cTarget->setDeathState(CORPSE);
                     cTarget->RemoveCorpse();
+                    break;
+                }
+                case 32314:
+                {
+                    Player *p_caster = dynamic_cast<Player*>(m_caster);
+                    if (!p_caster)
+                        break;
+                    p_caster->RewardPlayerAndGroupAtEvent(18393, unitTarget);
+                    Creature *cTarget = dynamic_cast<Creature*>(unitTarget);
+                    if (!cTarget)
+                        break;
+                    cTarget->setDeathState(CORPSE);
+                    cTarget->RemoveCorpse();
+                    break;
+                }
+
+                // Shared Bonds
+                case 34789:
+                case 41362:
+                {
+                    if(!unitTarget)
+                        return;
+
+                    //[*Hack*]
+                    SpellEntry *triggeredSpellInfo = (SpellEntry*)GetSpellStore()->LookupEntry(41363);
+                    triggeredSpellInfo->AttributesEx = SPELL_ATTR1_NO_THREAT;
+
+                    m_caster->CastSpell(unitTarget, triggeredSpellInfo, true);
                     break;
                 }
                 case 48025:                                     // Headless Horseman's Mount
@@ -4669,6 +4813,33 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     }
                     break;
                 }
+                case 43375: // Mixing Blood - Quest 11306
+                {
+                    if(!unitTarget && unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    uint32 spellid = 0;
+                    switch(rand()% 4)
+                    {
+                    case 0:
+                        spellid = 43378; // Summon Slime
+                        break;
+                    case 1:
+                        spellid = 43970; // Knockback and Damage
+                        break;
+                    case 2:
+                        spellid = 43376; // Fail without effekt
+                        break;
+                    //case 3:
+                    //    spellid = 43374; // Unstable Potion
+                    //    break;
+                    case 3:
+                        spellid = 43377; // Success
+                    }
+
+                    unitTarget->CastSpell(unitTarget,spellid,true);
+                    break;
+                }
                 // Brutallus - Burn
                 case 45141:
                 case 45151:
@@ -4728,6 +4899,13 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     sprintf(buf, "%s causually tosses %s [Worn Troll Dice]. One %u and one %u.", m_caster->GetName(), gender, urand(1,6), urand(1,6));
                     m_caster->MonsterTextEmote(buf, 0);
                     break;
+                }
+                // Drop of Gnomes
+                case 49109:
+                {
+                    Position pos;
+                    m_caster->GetPosition(&pos);
+                    m_caster->SummonCreature(27163, pos,TEMPSUMMON_TIMED_DESPAWN,60000);
                 }
                 // Vigilance
                 case 50725:
@@ -5256,6 +5434,13 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     unitTarget->CastSpell(unitTarget, spellTarget[urand(0,4)], true);
                     break;
                 }
+                case 58601:                               // Remove Flight Auras
+                    unitTarget->RemoveAurasByType(SPELL_AURA_FLY);
+                    unitTarget->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+                    unitTarget->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED);
+                    unitTarget->RemoveAurasByType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS);
+                    unitTarget->RemoveAurasByType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK);
+                    break;
                 case 64142:                                 // Upper Deck - Create Foam Sword
                     if (unitTarget->GetTypeId() != TYPEID_PLAYER)
                         return;
@@ -5569,6 +5754,9 @@ void Spell::EffectStuck(SpellEffIndex /*effIndex*/)
         return;
 
     Player* pTarget = (Player*)unitTarget;
+
+    if(pTarget && pTarget->getClass() == CLASS_DEATH_KNIGHT)
+        return;
 
     sLog->outDebug("Spell Effect: Stuck");
     sLog->outDetail("Player %s (guid %u) used auto-unstuck future at map %u (%f, %f, %f)", pTarget->GetName(), pTarget->GetGUIDLow(), m_caster->GetMapId(), m_caster->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
@@ -6929,6 +7117,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
     switch (m_spellInfo->Id)
     {
         case 1122: // Inferno
+        case 48739: // Winterfin First Responder
             amount = 1;
             break;
         case 49028: // Dancing Rune Weapon

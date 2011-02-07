@@ -1091,6 +1091,18 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
 {
     switch(GetAuraType())
     {
+        case SPELL_AURA_PERIODIC_DAMAGE:
+            switch (GetId())
+            {
+                case 45032: // Curse of Agony - Sathrovarr
+                case 45034:
+                    if((m_tickNumber-1) % 5 == 0 && (m_tickNumber-1) > 0)
+                        SetAmount(GetAmount() * 2);
+                    break;
+                default: 
+                    break;
+            }
+            break;
         case SPELL_AURA_DUMMY:
             // Haunting Spirits
             if (GetId() == 7057)
@@ -1285,6 +1297,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
                 switch (GetId())
                 {
                     case 43093: case 31956: case 38801:  // Grievous Wound
+                    case 48920:                          // Grievous Bite
                     case 35321: case 38363: case 39215:  // Gushing Wound
                         if (target->IsFullHealth())
                         {
@@ -1305,6 +1318,18 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
                         }
                         break;
                     }
+                }
+            }
+
+            //Special Spells triggered
+            if (GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
+            {
+                switch (GetId())
+                {
+                case 22682: // Shadow Flame
+                    if(m_tickNumber == GetTotalTicks())
+                        caster->CastSpell(target,22993,true);
+                    break;
                 }
             }
 
@@ -1363,6 +1388,14 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
                         case 72855: // Unbound Plague
                         case 72856: // Unbound Plague
                             damage *= uint32(pow(1.25f, int32(m_tickNumber)));
+                            break;
+                        case 68948: // Irresistible Cologne Spray
+                            if (target->HasAura(68530))
+                                damage = 0;
+                            break;
+                        case 68607: // Alluring Perfume Spray
+                            if (target->HasAura(68529))
+                                damage = 0;
                             break;
                         default:
                             break;
@@ -1953,6 +1986,28 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
 
                 break;
             }
+            // Dementia
+            case 41404:
+            {
+                uint32 trigger_spell_id;
+                if(rand()%2)
+                    trigger_spell_id = 41406;
+                else
+                    trigger_spell_id = 41409;
+
+                Unit* triggertarget = GetTriggerTarget(target);
+                target->CastSpell(triggertarget, trigger_spell_id, true, 0, this, GetCasterGUID());
+            }break;
+            case 47407: // Direbrew's Disarm (precast)
+                caster->CastSpell(caster, 47409, true);
+                break;
+            case 58600: // No fly Zone - Dalaran
+                if (GetTickNumber() == 10)
+                {
+                    target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+                    target->RemoveAurasByType(SPELL_AURA_FLY);
+                }
+                break;
             case 62292: // Blaze (Pool of Tar)
                 // should we use custom damage?
                 target->CastSpell((Unit*)NULL, m_spellProto->EffectTriggerSpell[m_effIndex], true);
@@ -1971,6 +2026,12 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     target->CastSpell(target, 64774, true, NULL, NULL, GetCasterGUID());
                     target->RemoveAura(64821);
                 }
+                break;
+            case 68614: // Concentrated Irresistible Cologne Spill
+                caster->CastSpell(target, 68934, false);
+                break;
+            case 68798: // Concentrated Alluring Perfume Spill
+                caster->CastSpell(target, 68927, false);
                 break;
         }
         break;
@@ -2275,6 +2336,14 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                         target->SummonCreature(17870, 0, 0, 0, target->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
                         return;
                     }
+                    // Doomfire
+                    case 31944:
+                    {
+                        const int32 damage = 2250 - (150 * m_tickNumber-1) > 0 ? 2250 - (150 * m_tickNumber-1) : 0;
+                        target->CastCustomSpell(target, 31969, &damage, NULL, NULL, true, 0, this);
+
+                        return;
+                    }
                     // Flame Quills
                     case 34229:
                     {
@@ -2308,8 +2377,28 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                     }
                     // Tear of Azzinoth Summon Channel - it's not really supposed to do anything,and this only prevents the console spam
                     case 39857:
-                        triggerSpellId = 39856;
+                        triggerSpellId = 39856; 
                         break;
+                    // Prismatic Shield
+                    case 40879:
+                    {
+                        switch(rand()%6)
+                        {
+                        case 0: triggerSpellId = 40880; break;
+                        case 1: triggerSpellId = 40882; break;
+                        case 2: triggerSpellId = 40883; break;
+                        case 3: triggerSpellId = 40891; break;
+                        case 4: triggerSpellId = 40896; break;
+                        case 5: triggerSpellId = 40897; break;
+                        }
+                    }break;
+                   // Aura of Desire
+                    case 41350:
+                    {
+                        AuraEffect * aurEff = this->GetBase()->GetEffect(1);
+                        aurEff->SetAmount(aurEff->GetAmount()-5 < -100 ? -100 : aurEff->GetAmount()-5);
+                        break;
+                    }
                     // Personalized Weather
                     case 46736:
                         triggerSpellId = 46737;
@@ -2398,15 +2487,15 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                 {
                     Unit *permafrostCaster = NULL;
                     if (caster->HasAura(66193)) permafrostCaster = caster->GetAura(66193)->GetCaster();
-                    if (caster->HasAura(67855)) permafrostCaster = caster->GetAura(67855)->GetCaster();
-                    if (caster->HasAura(67856)) permafrostCaster = caster->GetAura(67856)->GetCaster();
+                    if (caster->HasAura(67855)) permafrostCaster = caster->GetAura(67855)->GetCaster(); 
+                    if (caster->HasAura(67856)) permafrostCaster = caster->GetAura(67856)->GetCaster(); 
                     if (caster->HasAura(67857)) permafrostCaster = caster->GetAura(67857)->GetCaster();
-
+                
                     if (permafrostCaster)
                     {
                         if (Creature *permafrostCasterAsCreature = permafrostCaster->ToCreature())
                             permafrostCasterAsCreature->DespawnOrUnsummon(3000);
-
+ 
                         caster->CastSpell(caster, 66181, false);
                         caster->RemoveAllAuras();
                         if (Creature *casterAsCreature = caster->ToCreature())
@@ -3037,16 +3126,13 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
         case FORM_GHOUL:                                    // 0x07
             PowerType = POWER_ENERGY;
             break;
-
         case FORM_BEAR:                                     // 0x05
         case FORM_DIREBEAR:                                 // 0x08
-
         case FORM_BATTLESTANCE:                             // 0x11
         case FORM_DEFENSIVESTANCE:                          // 0x12
         case FORM_BERSERKERSTANCE:                          // 0x13
             PowerType = POWER_RAGE;
             break;
-
         case FORM_TREE:                                     // 0x02
         case FORM_TRAVEL:                                   // 0x03
         case FORM_AQUA:                                     // 0x04
@@ -3062,7 +3148,54 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
         case FORM_GHOSTWOLF:                                // 0x10
 
         case FORM_TEST:                                     // 0x14
+            break;
         case FORM_ZOMBIE:                                   // 0x15
+            //Effekt 1 : 43945 - Verringert Speed, Aura die langsam einen Schaden macht, Bite als nahkampf procc
+            //Effekt 2 : 44305 - Faction Override, Languarge Override, 
+            //Effekt 3 : 48050 - Kein PvP Ziel, Items ignorieren, Angreifbar
+            //Effekt 4 : 54059 - Disarm
+            //Effekt 5 : 54145 - Attackpower 1, Resessitenzen �nderung
+            //Effekt 6 : 54147 - Modifizier Skill 95, Immun 85
+            //Effekt 7 : 54162 - Legt HP Fest, Regeneration unterbrechen, Vollheilen
+            
+            //Tansform 1 : 43964 - normal ?
+            //Tansform 1 : 43966 - gro�
+            //Tansform 1 : 43967 - klein
+            //Tansform 1 : 43968 - winzig
+            if(target->GetTypeId() == TYPEID_PLAYER)
+            {
+                uint32 transformSpell;
+                switch(target->getRace())
+                {
+                case RACE_BLOODELF:
+                case RACE_HUMAN:
+                case RACE_NIGHTELF:
+                case RACE_ORC:
+                case RACE_TROLL:
+                case RACE_UNDEAD_PLAYER:
+                    transformSpell = 43964;
+                    break;
+                case RACE_DRAENEI:
+                case RACE_TAUREN:
+                    transformSpell = 43966;
+                    break;
+                case RACE_DWARF:
+                case RACE_GNOME:
+                    transformSpell = 43967;
+                    break;
+                }
+
+                target->CastSpell(target,transformSpell,true);
+
+                target->CastSpell(target,43945,true);
+                target->CastSpell(target,44305,true);
+                target->CastSpell(target,48050,true);
+                target->CastSpell(target,54059,true);
+                target->CastSpell(target,54145,true);
+                target->CastSpell(target,54147,true);
+                target->CastSpell(target,54162,true);
+            }
+            break;
         case FORM_METAMORPHOSIS:                            // 0x16
         case FORM_UNDEAD:                                   // 0x19
         case FORM_MASTER_ANGLER:                            // 0x1A
@@ -3225,6 +3358,22 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
                     target->SetPower(POWER_RAGE,Rage_val);
                 break;
             }
+            case FORM_ZOMBIE:
+                //Clean Up
+
+                target->RemoveAurasDueToSpell(43964);
+                target->RemoveAurasDueToSpell(43966);
+                target->RemoveAurasDueToSpell(43967);
+                target->RemoveAurasDueToSpell(43968);
+
+                target->RemoveAurasDueToSpell(43945);
+                target->RemoveAurasDueToSpell(44305);
+                target->RemoveAurasDueToSpell(48050);
+                target->RemoveAurasDueToSpell(54059);
+                target->RemoveAurasDueToSpell(54145);
+                target->RemoveAurasDueToSpell(54147);
+                target->RemoveAurasDueToSpell(54162);
+                break;
             default:
                 break;
         }
@@ -4271,7 +4420,7 @@ void AuraEffect::HandleAuraControlVehicle(AuraApplication const * aurApp, uint8 
         return;
 
     if (apply)
-    {
+    {   
         caster->EnterVehicle(target->GetVehicleKit(), m_amount - 1, aurApp);
     }
     else
@@ -5836,19 +5985,19 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                         {
                             case 1: damage = 0;     break;
                             case 2: damage = 500;   break;
-                            case 3: damage = 1000;  break;
-                            case 4: damage = 1500;  break;
-                            case 5: damage = 4000;  break;
-                            case 6: damage = 12000; break;
-                            default:damage = 20000 + 1000 * (GetBase()->GetStackAmount() - 7); break;
+                            case 3: damage = 1500;  break;
+                            case 4: damage = 4000;  break;
+                            case 5: damage = 12000; break;
+                            case 6: damage = 20000; break;
+                            default:damage = 20000 + 1000 * (GetBase()->GetStackAmount() - 6); break;
                         }
                         if (damage)
-                            caster->CastCustomSpell(28836, SPELLVALUE_BASE_POINT0, damage, target);
+                            caster->CastCustomSpell(28836, SPELLVALUE_BASE_POINT0, damage, target, true);
                     }
                     break;
                 case 63322: // Saronite Vapors
                 {
-                    int32 mana = int32(GetAmount() * pow(2.0f, GetBase()->GetStackAmount())); // mana restore - bp * 2^stackamount
+                    int32 mana = int32(GetAmount() * pow(2.0f, GetBase()->GetStackAmount())); // mana restore - bp * 2^stackamount 
                     int32 damage = mana * 2; // damage
                     caster->CastCustomSpell(target, 63337, &mana, NULL, NULL, true);
                     caster->CastCustomSpell(target, 63338, &damage, NULL, NULL, true);
@@ -5923,13 +6072,13 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                         case 46308: // Burning Winds casted only at creatures at spawn
                             target->CastSpell(target,47287,true,NULL,this);
                             break;
-                        case 52172:  // Coyote Spirit Despawn Aura
-                        case 60244:  // Blood Parrot Despawn Aura
-                            target->CastSpell((Unit*)NULL, GetAmount(), true, NULL, this);
-                            break;
                         case 58600: // Restricted Flight Area
                             if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                                 target->CastSpell(target, 58601, true);
+                            break;
+                        case 52172:  // Coyote Spirit Despawn Aura
+                        case 60244:  // Blood Parrot Despawn Aura
+                            target->CastSpell((Unit*)NULL, GetAmount(), true, NULL, this);
                             break;
                     }
                     break;
