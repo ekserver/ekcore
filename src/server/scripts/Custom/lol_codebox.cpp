@@ -89,7 +89,7 @@ private:
             
             item_id = fields[0].GetInt32();
             quantity = fields[1].GetUInt32();
-            uses = fields[2].GetUInt32();
+            uses = fields[2].GetUInt8();
             account = fields[3].GetUInt32();
             charguid = fields[4].GetUInt64();
             newlevel = fields[5].GetUInt8();
