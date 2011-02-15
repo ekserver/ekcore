@@ -67,6 +67,30 @@ class CoredSignalHandler : public Trinity::SignalHandler
                 #endif /* _WIN32 */
                     World::StopNow(SHUTDOWN_EXIT_CODE);
                     break;
+                #ifdef WITH_AUTOBACKTRACE
+                case SIGUSR1:
+                    sLog->outError("Start User Backtrace.");
+                    char buffer[50]; // 24 chars + pid
+
+                    sprintf(buffer, "./createbacktrace %u user", getpid());
+                    if(system(buffer))
+                        sLog->outError("User Backtrace created!");
+                    else
+                        sLog->outError("User Backtrace creation failed!");
+                    break;
+                case SIGSEGV:
+                case SIGILL:
+                case SIGABRT:
+                case SIGBUS:
+                case SIGFPE: {
+                    char buffer[50]; // 26 chars + pid + signum
+
+                    sprintf(buffer, "./createbacktrace %u crash, %u", getpid(), SigNum);
+                    system(buffer);
+                    exit(CRASH_EXIT_CODE);
+                    break;
+                }
+                #endif /* WITH_AUTOBACKTRACE */
             }
         }
 };
@@ -77,6 +101,7 @@ public:
     FreezeDetectorRunnable() { _delaytime = 0; }
     uint32 m_loops, m_lastchange;
     uint32 w_loops, w_lastchange;
+    uint32 frozenLoop, frozenCount;
     uint32 _delaytime;
     void SetDelayTime(uint32 t) { _delaytime = t; }
     void run(void)
@@ -88,6 +113,8 @@ public:
         w_loops = 0;
         m_lastchange = 0;
         w_lastchange = 0;
+        frozenLoop = 0;
+        frozenCount = 0;
         while (!World::IsStopped())
         {
             ACE_Based::Thread::Sleep(1000);
@@ -101,8 +128,36 @@ public:
             // possible freeze
             else if (getMSTimeDiff(w_lastchange,curtime) > _delaytime)
             {
+                #ifdef WITH_AUTOBACKTRACE
+                frozenCount++;
+                
+                if(frozenCount > 2) // kick into the servers ass
+                {
+                    sLog->outError("World Thread hangs, kicking out server!");
+                    *((uint32 volatile*)NULL) = 0;
+                }
+
+                if(w_loops != frozenLoop)
+                {
+                    sLog->outError("World Thread hangs, create backtrace!");
+                    char buffer[50]; // 26 chars + pid
+
+                    sprintf(buffer, "./createbacktrace %u freeze", getpid());
+                    if(system(buffer))
+                        sLog->outError("World Thread hangs, backtrace created!");
+                    else
+                        sLog->outError("World Thread hangs, backtrace creation failed!");
+                    w_lastchange = curtime;
+                    frozenLoop = w_loops;
+                }
+                else
+                {
+                    sLog->outError("World Thread hangs, hang count: %u", frozenCount);
+                }
+                #else /* WITH_AUTOBACKTRACE */
                 sLog->outError("World Thread hangs, kicking out server!");
                 *((uint32 volatile*)NULL) = 0;                       // bang crash
+                #endif /* WITH_AUTOBACKTRACE */
             }
         }
         sLog->outString("Anti-freeze thread exiting without problems.");
@@ -169,6 +224,11 @@ int Master::Run()
 
     // Initialise the signal handlers
     CoredSignalHandler SignalINT, SignalTERM;
+    
+    #ifdef WITH_AUTOBACKTRACE
+    CoredSignalHandler SignalSEGV, SignalILL, SignalABRT, SignalBUS, SignalFPE, SignalUSR1;
+    #endif /* WITH_AUTOBACKTRACE */
+    
     #ifdef _WIN32
     CoredSignalHandler SignalBREAK;
     #endif /* _WIN32 */
@@ -177,6 +237,16 @@ int Master::Run()
     ACE_Sig_Handler Handler;
     Handler.register_handler(SIGINT, &SignalINT);
     Handler.register_handler(SIGTERM, &SignalTERM);
+    
+    #ifdef WITH_AUTOBACKTRACE
+    Handler.register_handler(SIGSEGV, &SignalSEGV);
+    Handler.register_handler(SIGILL, &SignalILL);
+    Handler.register_handler(SIGABRT, &SignalABRT);
+    Handler.register_handler(SIGBUS, &SignalBUS);
+    Handler.register_handler(SIGFPE, &SignalFPE);
+    Handler.register_handler(SIGUSR1, &SignalUSR1);
+    #endif /* WITH_AUTOBACKTRACE */
+    
     #ifdef _WIN32
     Handler.register_handler(SIGBREAK, &SignalBREAK);
     #endif /* _WIN32 */
