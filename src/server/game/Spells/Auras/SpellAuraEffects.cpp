@@ -294,7 +294,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModSpellHealingPercentFromAttackPower,     //238 SPELL_AURA_MOD_SPELL_HEALING_OF_ATTACK_POWER implemented in Unit::SpellBaseHealingBonus
     &AuraEffect::HandleAuraModScale,                              //239 SPELL_AURA_MOD_SCALE_2 only in Noggenfogger Elixir (16595) before 2.3.0 aura 61
     &AuraEffect::HandleAuraModExpertise,                          //240 SPELL_AURA_MOD_EXPERTISE
-    &AuraEffect::HandleForceMoveForward,                          //241 SPELL_AURA_FORCE_MOVE_FORWARD Forces the player to move forward
+    &AuraEffect::HandleForceMoveForward,                          //241 SPELL_AURA_FORCE_MOVE_FORWARD Forces the caster to move forward
     &AuraEffect::HandleNULL,                                      //242 SPELL_AURA_MOD_SPELL_DAMAGE_FROM_HEALING - 2 test spells: 44183 and 44182
     &AuraEffect::HandleAuraModFaction,                            //243 SPELL_AURA_MOD_FACTION
     &AuraEffect::HandleComprehendLanguage,                        //244 SPELL_AURA_COMPREHEND_LANGUAGE
@@ -636,7 +636,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                 if (AuraEffect const * aurEff = caster->GetAuraEffect(34241,0))
                     amount += cp * aurEff->GetAmount();
 
-                amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
+                amount += uint32(CalculatePctU(caster->GetTotalAttackPowerValue(BASE_ATTACK), cp));
             }
             // Rend
             else if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARRIOR && GetSpellProto()->SpellFamilyFlags[0] & 0x20)
@@ -1143,9 +1143,9 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                                     }
                                     else
                                     {
-                                        //**********************************************
+                                        // **********************************************
                                         // This feature uses only in arenas
-                                        //**********************************************
+                                        // **********************************************
                                         // Here need increase mana regen per tick (6 second rule)
                                         // on 0 tick -   0  (handled in 2 second)
                                         // on 1 tick - 166% (handled in 4 second)
@@ -1558,25 +1558,25 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
 
                 // Tenacity increase healing % taken
                 if (AuraEffect const* Tenacity = target->GetAuraEffect(58549, 0))
-                    AddPctN(TakenTotalMod, Tenacity->GetAmount());
+                    AddFlatPctN(TakenTotalMod, Tenacity->GetAmount());
 
                 // Healing taken percent
                 float minval = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
                 if (minval)
-                    AddPctF(TakenTotalMod, minval);
+                    AddFlatPctF(TakenTotalMod, minval);
 
                 float maxval = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
                 if (maxval)
-                    AddPctF(TakenTotalMod, maxval);
+                    AddFlatPctF(TakenTotalMod, maxval);
 
                 // Healing over time taken percent
                 float minval_hot = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HOT_PCT);
                 if (minval_hot)
-                    AddPctF(TakenTotalMod, minval_hot);
+                    AddFlatPctF(TakenTotalMod, minval_hot);
 
                 float maxval_hot = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HOT_PCT);
                 if (maxval_hot)
-                    AddPctF(TakenTotalMod, maxval_hot);
+                    AddFlatPctF(TakenTotalMod, maxval_hot);
 
                 TakenTotalMod = std::max(TakenTotalMod, 0.0f);
 
@@ -1917,7 +1917,7 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
             }
             case 54798: // FLAMING Arrow Triggered Effect
             {
-                if (!target->ToCreature() || !caster->ToCreature()->IsVehicle())
+                if (!target || !target->ToCreature() || !caster->IsVehicle())
                     return;
 
                 Unit *rider = caster->GetVehicleKit()->GetPassenger(0);
@@ -1931,10 +1931,10 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     target->CastSpell(target, 54683, true);
 
                 // Credit Frostworgs
-                if (target->ToCreature()->GetEntry() == 29358)
+                if (target->GetEntry() == 29358)
                     rider->CastSpell(rider, 54896, true);
                 // Credit Frost Giants
-                else if (target->ToCreature()->GetEntry() == 29351)
+                else if (target->GetEntry() == 29351)
                     rider->CastSpell(rider, 54893, true);
 
                 break;
@@ -2300,6 +2300,12 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                     case 46736:
                         triggerSpellId = 46737;
                         break;
+                    // Shield Level 1
+                    case 63130:
+                    // Shield Level 2
+                    case 63131:
+                    // Shield Level 3
+                    case 63132:
                     // Ball of Flames Visual
                     case 71706:
                         return;
@@ -2378,15 +2384,15 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                 {
                     Unit *permafrostCaster = NULL;
                     if (caster->HasAura(66193)) permafrostCaster = caster->GetAura(66193)->GetCaster();
-                    if (caster->HasAura(67855)) permafrostCaster = caster->GetAura(67855)->GetCaster(); 
-                    if (caster->HasAura(67856)) permafrostCaster = caster->GetAura(67856)->GetCaster(); 
+                    if (caster->HasAura(67855)) permafrostCaster = caster->GetAura(67855)->GetCaster();
+                    if (caster->HasAura(67856)) permafrostCaster = caster->GetAura(67856)->GetCaster();
                     if (caster->HasAura(67857)) permafrostCaster = caster->GetAura(67857)->GetCaster();
-                
+
                     if (permafrostCaster)
                     {
                         if (Creature *permafrostCasterAsCreature = permafrostCaster->ToCreature())
                             permafrostCasterAsCreature->DespawnOrUnsummon(3000);
- 
+
                         caster->CastSpell(caster, 66181, false);
                         caster->RemoveAllAuras();
                         if (Creature *casterAsCreature = caster->ToCreature())
@@ -3154,7 +3160,11 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
         {
             target->SetShapeshiftForm(FORM_NONE);
             if (target->getClass() == CLASS_DRUID)
+            {
                 target->setPowerType(POWER_MANA);
+                // Remove movement impairing effects also when shifting out
+                target->RemoveMovementImpairingAuras();
+            }
         }
 
         if (modelid > 0)
@@ -3217,7 +3227,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
     {
         // Dash
         if (AuraEffect * aurEff =target->GetAuraEffect(SPELL_AURA_MOD_INCREASE_SPEED, SPELLFAMILY_DRUID, 0, 0, 0x8))
-            aurEff->RecalculateAmount();        
+            aurEff->RecalculateAmount();
 
         // Disarm handling
         // If druid shifts while being disarmed we need to deal with that since forms aren't affected by disarm
@@ -4001,9 +4011,6 @@ void AuraEffect::HandleForceMoveForward(AuraApplication const * aurApp, uint8 mo
 
     Unit * target = aurApp->GetTarget();
 
-    if (target->GetTypeId() != TYPEID_PLAYER)
-        return;
-
     if (apply)
         target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FORCE_MOVE);
     else
@@ -4247,7 +4254,7 @@ void AuraEffect::HandleAuraControlVehicle(AuraApplication const * aurApp, uint8 
         return;
 
     if (apply)
-    {   
+    {
         caster->EnterVehicle(target->GetVehicleKit(), m_amount - 1, aurApp);
     }
     else
@@ -4442,11 +4449,19 @@ void AuraEffect::HandleModMechanicImmunity(AuraApplication const * aurApp, uint8
             break;
         case 34471: // The Beast Within
         case 19574: // Bestial Wrath
-            mechanic = (1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT) | (1 << MECHANIC_FEAR) | (1 << MECHANIC_STUN);
+            mechanic = (1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT) | (1 << MECHANIC_FEAR) | (1 << MECHANIC_STUN) | (1 << MECHANIC_SLEEP) | (1 << MECHANIC_CHARM) | (1 << MECHANIC_SAPPED) | (1 << MECHANIC_HORROR) | (1 << MECHANIC_POLYMORPH) | (1 << MECHANIC_DISORIENTED) | (1 << MECHANIC_FREEZE) | (1 << MECHANIC_TURN);
             target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_SNARE, apply);
             target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_ROOT, apply);
             target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_FEAR, apply);
             target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_STUN, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_SLEEP, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_CHARM, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_SAPPED, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_HORROR, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_FREEZE, apply);
+            target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_TURN, apply);
             break;
         default:
             if (GetMiscValue() < 1)
@@ -5524,10 +5539,22 @@ void AuraEffect::HandleModDamageDone(AuraApplication const * aurApp, uint8 mode,
     }
 }
 
-void AuraEffect::HandleModDamagePercentDone(AuraApplication const * /*aurApp*/, uint8 mode, bool /*apply*/) const
+void AuraEffect::HandleModDamagePercentDone(AuraApplication const * aurApp, uint8 mode, bool apply) const
 {
-    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
+
+    Player* target = aurApp->GetTarget()->ToPlayer();
+    if (!target)
+        return;
+
+    if (target->HasItemFitToSpellRequirements(GetSpellProto()))
+    {
+        aurApp->GetTarget()->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, GetAmount()/100.0f, apply);
+        aurApp->GetTarget()->UpdateDamagePhysical(BASE_ATTACK);
+        aurApp->GetTarget()->UpdateDamagePhysical(OFF_ATTACK);
+        aurApp->GetTarget()->UpdateDamagePhysical(RANGED_ATTACK);
+    }
 }
 
 void AuraEffect::HandleModOffhandDamagePercent(AuraApplication const * aurApp, uint8 mode, bool apply) const
@@ -5789,6 +5816,8 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     if (target->GetTypeId() == TYPEID_PLAYER)
                         if (Unit * spellTarget = ObjectAccessor::GetUnit(*target,target->ToPlayer()->GetComboTarget()))
                             target->CastSpell(spellTarget, 51699, true);
+                        else if (Unit * spellTarget = target->ToPlayer()->GetSelectedUnit())
+                            target->CastSpell(spellTarget, 51699, true);
                    break;
                 case 28832: // Mark of Korth'azz
                 case 28833: // Mark of Blaumeux
@@ -5813,7 +5842,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     break;
                 case 63322: // Saronite Vapors
                 {
-                    int32 mana = int32(GetAmount() * pow(2.0f, GetBase()->GetStackAmount())); // mana restore - bp * 2^stackamount 
+                    int32 mana = int32(GetAmount() * pow(2.0f, GetBase()->GetStackAmount())); // mana restore - bp * 2^stackamount
                     int32 damage = mana * 2; // damage
                     caster->CastCustomSpell(target, 63337, &mana, NULL, NULL, true);
                     caster->CastCustomSpell(target, 63338, &damage, NULL, NULL, true);

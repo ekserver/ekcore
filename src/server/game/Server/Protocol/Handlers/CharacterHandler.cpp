@@ -193,6 +193,10 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt32(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW, stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_ACCOUNT_INSTANCELOCKTIMES);
+    stmt->setUInt32(0, m_accountId);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES, stmt);
+
     return res;
 }
 
@@ -294,13 +298,20 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     }
 
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(class_);
-    ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(race_);
-
-    if (!classEntry || !raceEntry)
+    if (!classEntry)
     {
         data << (uint8)CHAR_CREATE_FAILED;
         SendPacket(&data);
-        sLog->outError("Class: %u or Race %u not found in DBC (Wrong DBC files?) or Cheater?", class_, race_);
+        sLog->outError("Class (%u) not found in DBC while creating new char for account (ID: %u): wrong DBC files or cheater?", class_, GetAccountId());
+        return;
+    }
+
+    ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(race_);
+    if (!raceEntry)
+    {
+        data << (uint8)CHAR_CREATE_FAILED;
+        SendPacket(&data);
+        sLog->outError("Race (%u) not found in DBC while creating new char for account (ID: %u): wrong DBC files or cheater?", race_, GetAccountId());
         return;
     }
 
@@ -1276,7 +1287,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recv_data)
     }
 
     Field *fields = result->Fetch();
-    uint32 at_loginFlags = fields[0].GetUInt32();
+    uint32 at_loginFlags = fields[0].GetUInt16();
 
     if (!(at_loginFlags & AT_LOGIN_CUSTOMIZE))
     {
@@ -1475,7 +1486,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recv_data)
     Field *fields = result->Fetch();
     uint32 playerClass = fields[0].GetUInt32();
     uint32 level = fields[1].GetUInt32();
-    uint32 at_loginFlags = fields[2].GetUInt32();
+    uint32 at_loginFlags = fields[2].GetUInt16();
     uint32 used_loginFlag = ((recv_data.GetOpcode() == CMSG_CHAR_RACE_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
 
     if (!sObjectMgr->GetPlayerInfo(race, playerClass))

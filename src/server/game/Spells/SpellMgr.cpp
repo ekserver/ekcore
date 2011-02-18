@@ -770,6 +770,9 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
             // Amplify Magic, Dampen Magic
             if (spellproto->SpellFamilyFlags[0] == 0x00002000)
                 return true;
+            // Ignite
+            if (spellproto->SpellIconID == 45)
+                return true;
             break;
         case SPELLFAMILY_WARRIOR:
             // Shockwave
@@ -2344,7 +2347,7 @@ void SpellMgr::LoadPetDefaultSpells()
         }
     }
 
-    
+
     sLog->outString(">> Loaded %u summonable creature templates in %u ms", countCreature, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
 }
@@ -3609,6 +3612,24 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 49838: // Stop Time
+        case 50526: // Wandering Plague
+        case 52916: // Honor Among Thieves
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+            count++;
+            break;
+        case 61407: // Energize Cores
+        case 62136: // Energize Cores
+        case 54069: // Energize Cores
+        case 56251: // Energize Cores
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENTRY_SRC;
+            count++;
+            break;
+        case 50785: // Energize Cores
+        case 59372: // Energize Cores
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENEMY_SRC;
+            count++;
+            break;
         // Bind
         case 3286:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
@@ -3649,6 +3670,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 26029: // dark glare
         case 37433: // spout
         case 43140: case 43215: // flame breath
+        case 70461: // Coldflame Trap
             mSpellCustomAttr[i] |= SPELL_ATTR0_CU_CONE_LINE;
             count++;
             break;
@@ -3684,6 +3706,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 69538: case 69553: case 69610:     // Ooze Combine
         case 71447: case 71481:                 // Bloodbolt Splash
         case 71482: case 71483:                 // Bloodbolt Splash
+        case 71390:                             // Pact of the Darkfallen
             mSpellCustomAttr[i] |= SPELL_ATTR0_CU_EXCLUDE_SELF;
             count++;
             break;
@@ -3941,6 +3964,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
             count++;
             break;
+        case 33206: // Pain Suppression
+            spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_STUNNED;
+            count++;
+            break;
         case 53241: // Marked for Death (Rank 1)
         case 53243: // Marked for Death (Rank 2)
         case 53244: // Marked for Death (Rank 3)
@@ -3958,13 +3985,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 70893: // Culling The Herd
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_MASTER;
-            count++;
-            break;
-        case 71708: // Empowered Flare
-        case 72785: // Empowered Flare
-        case 72786: // Empowered Flare
-        case 72787: // Empowered Flare
-            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
             count++;
             break;
         // ICECROWN CITADEL SPELLS
@@ -3990,6 +4010,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 70834: // Bone Storm (Lord Marrowgar)
         case 70835: // Bone Storm (Lord Marrowgar)
         case 70836: // Bone Storm (Lord Marrowgar)
+        case 72864: // Death Plague (Rotting Frost Giant)
         case 72378: // Blood Nova (Deathbringer Saurfang)
         case 73058: // Blood Nova (Deathbringer Saurfang)
             spellInfo->EffectRadiusIndex[0] = 12;
@@ -4001,6 +4022,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 72443: // Boiling Blood (Deathbringer Saurfang)
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             spellInfo->EffectImplicitTargetB[0] = 0;
+            count++;
+            break;
+        case 70460: // Coldflame Jets (Traps after Saurfang)
+            spellInfo->DurationIndex = 1;   // 10 seconds
             count++;
             break;
         case 71413: // Green Ooze Summon (Professor Putricide)
@@ -4047,12 +4072,34 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectRadiusIndex[0] = 28;   // another missing radius
             count++;
             break;
+        case 71708: // Empowered Flare (Blood Prince Council)
+        case 72785: // Empowered Flare (Blood Prince Council)
+        case 72786: // Empowered Flare (Blood Prince Council)
+        case 72787: // Empowered Flare (Blood Prince Council)
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+            count++;
+            break;
         case 71340: // Pact of the Darkfallen (Blood-Queen Lana'thel)
             spellInfo->DurationIndex = 21;
             count++;
             break;
         case 71266: // Swarming Shadows
             spellInfo->AreaGroupId = 0;
+            count++;
+            break;
+        case 71357: // Order Whelp
+            spellInfo->EffectRadiusIndex[0] = 22;
+            count++;
+            break;
+        case 70598: // Sindragosa's Fury
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
+            count++;
+            break;
+        case 69846: // Frost Bomb
+            spellInfo->speed = 10;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_TARGET_ANY;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ANY;
+            spellInfo->Effect[1] = 0;
             count++;
             break;
         case 49224: // Magic Suppression
@@ -4101,11 +4148,21 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DurationIndex = 30;
             count++;
             break;
+        case 53480: // Roar of Sacrifice Split damage
+            spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
+            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_SPLIT_DAMAGE_PCT;
+            spellInfo->EffectMiscValue[1] = 127;
+            count++;
+            break;
+        case 23126: // World Enlarger
+            spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_SPELL_ATTACK;
+            count++;
+            break;
         default:
             break;
         }
 
-        switch(spellInfo->SpellFamilyName)
+        switch (spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_WARRIOR:
                 // Shout

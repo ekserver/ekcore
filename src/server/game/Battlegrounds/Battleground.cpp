@@ -782,6 +782,47 @@ void Battleground::EndBattleground(uint32 winner)
                     winner_matchmaker_rating, loser_matchmaker_rating, winner_change, loser_change);
                 SetArenaTeamRatingChangeForTeam(winner, winner_change);
                 SetArenaTeamRatingChangeForTeam(GetOtherTeam(winner), loser_change);
+                /** World of Warcraft Armory **/
+                uint32 maxChartID;
+                QueryResult result = CharacterDatabase.PQuery("SELECT MAX(gameid) FROM armory_game_chart");
+                if(!result)
+                    maxChartID = 0;
+                else
+                {
+                    maxChartID = (*result)[0].GetUInt32();
+                    result.release();
+                }
+                uint32 gameID = maxChartID+1;
+                for(BattlegroundScoreMap::const_iterator itr = m_PlayerScores.begin(); itr != m_PlayerScores.end(); ++itr)
+                {
+                    Player *plr = sObjectMgr->GetPlayer(itr->first);
+                    if (!plr)
+                        continue;
+                    uint32 plTeamID = plr->GetArenaTeamId(winner_arena_team->GetSlot());
+                    int changeType;
+                    uint32 resultRating;
+                    uint32 resultTeamID;
+                    int32 ratingChange;
+                    if (plTeamID == winner_arena_team->GetId())
+                    {
+                        changeType = 1; //win
+                        resultRating = winner_team_rating;
+                        resultTeamID = plTeamID;
+                        ratingChange = winner_change;
+                    }
+                    else
+                    {
+                        changeType = 2; //lose
+                        resultRating = loser_team_rating;
+                        resultTeamID = loser_arena_team->GetId();
+                        ratingChange = loser_change;
+                    }
+                    std::ostringstream sql_query;
+                    //                                                        gameid,              teamid,                     guid,                    changeType,             ratingChange,               teamRating,                  damageDone,                          deaths,                          healingDone,                           damageTaken,,                           healingTaken,                         killingBlows,                      mapId,                 start,                   end
+                    sql_query << "INSERT INTO armory_game_chart VALUES ('" << gameID << "', '" << resultTeamID << "', '" << plr->GetGUID() << "', '" << changeType << "', '" << ratingChange  << "', '" << resultRating << "', '" << itr->second->DamageDone << "', '" << itr->second->Deaths << "', '" << itr->second->HealingDone << "', '" << itr->second->DamageTaken << "', '" << itr->second->HealingTaken << "', '" << itr->second->KillingBlows << "', '" << m_MapId << "', '" << uint32(time(NULL)) << "', '" << uint32(time(NULL) + m_StartTime / 1000) << "')";
+                    CharacterDatabase.Execute(sql_query.str().c_str());
+                }
+                /** World of Warcraft Armory **/
                 sLog->outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: +%d, Loser rating: %d", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_change, loser_change);
                 if (sWorld->getBoolConfig(CONFIG_ARENA_LOG_EXTENDED_INFO))
                     for (Battleground::BattlegroundScoreMap::const_iterator itr = GetPlayerScoresBegin(); itr != GetPlayerScoresEnd(); itr++)
@@ -1198,52 +1239,53 @@ void Battleground::AddPlayer(Player *plr)
 
     // setup BG group membership
     PlayerAddedToBGCheckIfBGIsRunning(plr);
-    AddOrSetPlayerToCorrectBgGroup(plr, guid, team);
+    AddOrSetPlayerToCorrectBgGroup(plr, team);
 
     // Log
     sLog->outDetail("BATTLEGROUND: Player %s joined the battle.", plr->GetName());
 }
 
 /* this method adds player to his team's bg group, or sets his correct group if player is already in bg group */
-void Battleground::AddOrSetPlayerToCorrectBgGroup(Player *plr, uint64 plr_guid, uint32 team)
+void Battleground::AddOrSetPlayerToCorrectBgGroup(Player *player, uint32 team)
 {
+    uint64 playerGuid = player->GetGUID();
     Group* group = GetBgRaid(team);
     if (!group)                                      // first player joined
     {
         group = new Group;
         SetBgRaid(team, group);
-        group->Create(plr_guid, plr->GetName());
+        group->Create(playerGuid, player->GetName());
     }
     else                                            // raid already exist
     {
-        if (group->IsMember(plr_guid))
+        if (group->IsMember(playerGuid))
         {
-            uint8 subgroup = group->GetMemberGroup(plr_guid);
-            plr->SetBattlegroundRaid(group, subgroup);
+            uint8 subgroup = group->GetMemberGroup(playerGuid);
+            player->SetBattlegroundRaid(group, subgroup);
         }
         else
         {
-            group->AddMember(plr_guid, plr->GetName());
-            if (Group* originalGroup = plr->GetOriginalGroup())
-                if (originalGroup->IsLeader(plr_guid))
-                    group->ChangeLeader(plr_guid);
+            group->AddMember(playerGuid, player->GetName());
+            if (Group* originalGroup = player->GetOriginalGroup())
+                if (originalGroup->IsLeader(playerGuid))
+                    group->ChangeLeader(playerGuid);
         }
     }
 }
 
 // This method should be called when player logs into running battleground
-void Battleground::EventPlayerLoggedIn(Player* player, uint64 plr_guid)
+void Battleground::EventPlayerLoggedIn(Player* player)
 {
     // player is correct pointer
     for (std::deque<uint64>::iterator itr = m_OfflineQueue.begin(); itr != m_OfflineQueue.end(); ++itr)
     {
-        if (*itr == plr_guid)
+        if (*itr == player->GetGUID())
         {
             m_OfflineQueue.erase(itr);
             break;
         }
     }
-    m_Players[plr_guid].OfflineRemoveTime = 0;
+    m_Players[player->GetGUID()].OfflineRemoveTime = 0;
     PlayerAddedToBGCheckIfBGIsRunning(player);
     // if battleground is starting, then add preparation aura
     // we don't have to do that, because preparation aura isn't removed when player logs out
@@ -1396,6 +1438,14 @@ void Battleground::UpdatePlayerScore(Player *Source, uint32 type, uint32 value, 
         case SCORE_HEALING_DONE:                            // Healing Done
             itr->second->HealingDone += value;
             break;
+        /** World of Warcraft Armory **/
+        case SCORE_DAMAGE_TAKEN:
+            itr->second->DamageTaken += value;              // Damage Taken
+            break;
+        case SCORE_HEALING_TAKEN:
+            itr->second->HealingTaken += value;             // Healing Taken
+            break;
+        /** World of Warcraft Armory **/
         default:
             sLog->outError("Battleground: Unknown player score type %u", type);
             break;

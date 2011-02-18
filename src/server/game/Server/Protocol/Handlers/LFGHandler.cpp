@@ -22,7 +22,7 @@
 #include "Group.h"
 #include "LFGMgr.h"
 #include "ObjectMgr.h"
-
+#include "InstanceScript.h"
 
 void BuildPlayerLockDungeonBlock(WorldPacket& data, const LfgLockMap& lock)
 {
@@ -126,7 +126,7 @@ void WorldSession::HandleLfgSetCommentOpcode(WorldPacket&  recv_data)
     recv_data >> comment;
     uint64 guid = GetPlayer()->GetGUID();
     sLog->outDebug("CMSG_SET_LFG_COMMENT [" UI64FMTD "] comment: %s", guid, comment.c_str());
-    
+
     sLFGMgr->SetComment(guid, comment);
 }
 
@@ -256,7 +256,7 @@ void WorldSession::HandleLfgPartyLockInfoRequestOpcode(WorldPacket&  /*recv_data
     uint32 size = 0;
     for (LfgLockPartyMap::const_iterator it = lockMap.begin(); it != lockMap.end(); ++it)
         size += 8 + 4 + uint32(it->second.size()) * (4 + 4);
-    
+
     sLog->outDebug("SMSG_LFG_PARTY_INFO [" UI64FMTD "]", guid);
     WorldPacket data(SMSG_LFG_PARTY_INFO, 1 + size);
     BuildPartyLockDungeonBlock(data, lockMap);
@@ -555,6 +555,7 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
     bool isSameDungeon = false;
     bool isContinue = false;
     Group* grp = dLowGuid ? sObjectMgr->GetGroupByGUID(dLowGuid) : NULL;
+    uint32 completedEncounters = 0;
     if (grp)
     {
         uint64 gguid = grp->GetGUID();
@@ -571,12 +572,31 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
         if (playerDungeons.size() == 1)
             dungeonId = (*playerDungeons.begin());
     }
+
     if (LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(dungeonId))
+    {
         dungeonId = dungeon->Entry();
+
+        // Select a player inside to be get completed encounters from
+        if (grp)
+        {
+            for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+            {
+                Player* groupMember = itr->getSource();
+                if (groupMember && groupMember->GetMapId() == uint32(dungeon->map))
+                {
+                    if (InstanceScript* instance = groupMember->GetInstanceScript())
+                        completedEncounters = instance->GetCompletedEncounterMask();
+                    break;
+                }
+            }
+        }
+    }
+
     data << uint32(dungeonId);                             // Dungeon
     data << uint8(pProp->state);                           // Result state
     data << uint32(proposalId);                            // Internal Proposal ID
-    data << uint32(0);                                     // Bosses killed - FIXME
+    data << uint32(completedEncounters);                   // Bosses killed
     data << uint8(isSameDungeon);                          // Silent (show client window)
     data << uint8(pProp->players.size());                  // Group size
 

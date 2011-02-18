@@ -1379,6 +1379,13 @@ DungeonFinder.Enable = 0
 DBC.EnforceItemAttributes = 1
 
 #
+#   AccountInstancesPerHour
+#        Description: Controls the max amount of different instances player can enter within hour
+#        Default:     5
+
+AccountInstancesPerHour = 5
+
+#
 ###################################################################################################
 
 ###################################################################################################
@@ -2743,6 +2750,20 @@ LevelReq.Auction = 1
 LevelReq.Mail = 1
 
 #
+
+#     Anticheat.Enable
+#        Description: Enables or disables the Anticheat System functionality
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)  
+
+Anticheat.Enable = 1
+
+#     Anticheat.ReportsForIngameWarnings
+#        Description: How many reports the player must have to notify to GameMasters ingame when he generates a new report.
+#        Default:     70
+
+Anticheat.ReportsForIngameWarnings = 70
+      
 ###################################################################################################
 
 #######################################################################

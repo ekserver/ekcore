@@ -305,7 +305,7 @@ void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, floa
     float x, y, z;
     float dist = speedXY * speedZ * 0.1f;
     i_owner->GetNearPoint(i_owner, x, y, z, i_owner->GetObjectSize(), dist, i_owner->GetAngle(srcX, srcY) + M_PI);
-    MoveJump(x, y, z, speedXY, speedZ);
+    MoveJump(x, y, z, speedXY/speedZ, speedZ);
 }
 
 void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
@@ -323,7 +323,7 @@ void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
 void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float speedZ)
 {
     uint32 moveFlag = SPLINEFLAG_TRAJECTORY | SPLINEFLAG_WALKING;
-    uint32 time = uint32(speedXY * 100);
+    uint32 time = uint32(speedZ * 100);
 
     // Instantly interrupt non melee spells being casted
     if (i_owner->IsNonMeleeSpellCasted(true))

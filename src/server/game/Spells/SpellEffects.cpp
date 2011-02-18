@@ -16,6 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AnticheatMgr.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
 #include "WorldPacket.h"
@@ -582,14 +583,6 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                             // Chance has been successfully rolled
                             if (roll_chance_i(aurEff->GetAmount()))
                                 m_caster->CastSpell(unitTarget, 48301, true);
-                }
-                // Smite
-                else if (m_spellInfo->SpellFamilyFlags[0] & 0x80)
-                {
-                    // Glyph of Smite
-                    if (AuraEffect * aurEff = m_caster->GetAuraEffect(55692, 0))
-                        if (unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x100000, 0, 0, m_caster->GetGUID()))
-                            AddPctN(damage, aurEff->GetAmount());
                 }
                 // Improved Mind Blast (Mind Blast in shadow form bonus)
                 else if (m_caster->GetShapeshiftForm() == FORM_SHADOW && (m_spellInfo->SpellFamilyFlags[0] & 0x00002000))
@@ -1640,7 +1633,7 @@ void Spell::EffectForceCast(SpellEffIndex effIndex)
     }
 
     Unit * caster = GetTriggeredSpellCaster(spellInfo, m_caster, unitTarget);
- 
+
     caster->CastSpell(unitTarget, spellInfo, true, NULL, NULL, m_originalCasterGUID);
 }
 
@@ -1914,16 +1907,25 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
 
 void Spell::CalculateJumpSpeeds(uint8 i, float dist, float & speedXY, float & speedZ)
 {
-    if (m_spellInfo->EffectMiscValue[i] && m_spellInfo->EffectMiscValueB[i])
+    bool fspeed = false;
+    if (m_spellInfo->EffectMiscValue[i])                        // Fixed Time?
+        speedZ = float(m_spellInfo->EffectMiscValue[i])/10;
+    else if (m_spellInfo->EffectMiscValueB[i])                  // Fixed Speed?
     {
-        speedZ = float(m_spellInfo->EffectMiscValueB[i]) / 10;
-        speedXY = dist * float(m_spellInfo->EffectMiscValue[i]) / speedZ;
+        speedXY = float(m_spellInfo->EffectMiscValueB[i])/10;
+        fspeed = true;
     }
     else
+        speedZ = 10.0f;
+
+    if (fspeed)
     {
-        speedZ = 15.0f;
-        speedXY = dist * 10.0f / speedZ;
+        if (m_spellInfo->EffectValueMultiplier[i] > 0)
+            speedXY *= m_spellInfo->EffectValueMultiplier[i];
+        speedZ = dist / speedXY;
     }
+    else
+        speedXY = dist * 10.0f / speedZ;
 }
 
 void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
@@ -2168,6 +2170,12 @@ void Spell::EffectSendEvent(SpellEffIndex effIndex)
         pTarget = gameObjTarget;
     else
         pTarget = NULL;
+
+    if (unitTarget)
+    {
+        if (ZoneScript* zoneScript = unitTarget->GetZoneScript())
+            zoneScript->ProcessEvent(unitTarget, m_spellInfo->EffectMiscValue[effIndex]);
+    }
 
     m_caster->GetMap()->ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[effIndex], m_caster, pTarget);
 }
@@ -2558,17 +2566,15 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
             delete dynObj;
             return;
         }
-        caster->AddDynObject(dynObj);
         dynObj->GetMap()->Add(dynObj);
 
         if (Aura * aura = Aura::TryCreate(m_spellInfo, dynObj, caster, &m_spellValue->EffectBasePoints[0]))
-            m_spellAura = aura;
-        else
         {
-            ASSERT(false);
-            return;
+            m_spellAura = aura;
+            m_spellAura->_RegisterForTargets();
         }
-        m_spellAura->_RegisterForTargets();
+        else
+            return;
     }
     ASSERT(m_spellAura->GetDynobjOwner());
     m_spellAura->_ApplyEffectForTargets(effIndex);
@@ -2707,6 +2713,13 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
     if (gameObjTarget)
     {
+        // Players shouldn't be able to loot gameobjects that are currently despawned
+        if (!gameObjTarget->isSpawned() && !player->isGameMaster())
+        {
+            sLog->outError("Possible hacking attempt: Player %s [guid: %u] tried to loot a gameobject [entry: %u id: %u] which is on respawn time without being in GM mode!",
+                            player->GetName(), player->GetGUIDLow(), gameObjTarget->GetEntry(), gameObjTarget->GetGUIDLow());
+            return;
+        }
         // special case, already has GossipHello inside so return and avoid calling twice
         if (gameObjTarget->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
         {
@@ -3390,14 +3403,10 @@ void Spell::EffectAddFarsight(SpellEffIndex effIndex)
     }
     dynObj->SetDuration(duration);
     dynObj->SetUInt32Value(DYNAMICOBJECT_BYTES, 0x80000002);
-    m_caster->AddDynObject(dynObj);
 
     dynObj->setActive(true);    //must before add to map to be put in world container
     dynObj->GetMap()->Add(dynObj); //grid will also be loaded
-
-    // Need to update visibility of object for client to accept farsight guid
-    m_caster->ToPlayer()->SetViewpoint(dynObj, true);
-    //m_caster->ToPlayer()->UpdateVisibilityOf(dynObj);
+    dynObj->SetCasterViewpoint();
 }
 
 void Spell::EffectUntrainTalents(SpellEffIndex /*effIndex*/)
@@ -3979,11 +3988,11 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
             if (m_spellInfo->SpellFamilyFlags[1] & 0x40)
             {
                 // Player can apply only 58567 Sunder Armor effect.
-                bool needCast = !unitTarget->HasAura(58567, m_caster->GetGUID());
+                bool needCast = !unitTarget->HasAura(58567);
                 if (needCast)
                     m_caster->CastSpell(unitTarget, 58567, true);
 
-                if (Aura * aur = unitTarget->GetAura(58567, m_caster->GetGUID()))
+                if (Aura * aur = unitTarget->GetAura(58567))
                 {
                     // 58388 - Glyph of Devastate dummy aura.
                     if (int32 num = (needCast ? 0 : 1) + (m_caster->HasAura(58388) ? 1 : 0))
@@ -4067,7 +4076,7 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
             else if (m_spellInfo->SpellFamilyFlags[0] & 0x00008800 && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
             {
                 if (AuraEffect const* rendAndTear = m_caster->GetDummyAuraEffect(SPELLFAMILY_DRUID, 2859, 0))
-                    AddPctN(totalDamagePercentMod, rendAndTear->GetAmount());
+                    AddFlatPctN(totalDamagePercentMod, rendAndTear->GetAmount());
             }
             break;
         }
@@ -4085,18 +4094,18 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
             {
                 // Glyph of Plague Strike
                 if (AuraEffect const * aurEff = m_caster->GetAuraEffect(58657, EFFECT_0))
-                    AddPctN(totalDamagePercentMod, aurEff->GetAmount());
+                    AddFlatPctN(totalDamagePercentMod, aurEff->GetAmount());
                 break;
             }
             // Blood Strike
             if (m_spellInfo->SpellFamilyFlags[EFFECT_0] & 0x400000)
             {
-                AddPctF(totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) / 2.0f);
+                AddFlatPctF(totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) / 2.0f);
 
                 // Glyph of Blood Strike
                 if (m_caster->GetAuraEffect(59332, EFFECT_0))
                     if (unitTarget->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED))
-                       AddPctN(totalDamagePercentMod, 20);
+                       AddFlatPctN(totalDamagePercentMod, 20);
                 break;
             }
             // Death Strike
@@ -4105,7 +4114,7 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
                 // Glyph of Death Strike
                 if (AuraEffect const * aurEff = m_caster->GetAuraEffect(59336, EFFECT_0))
                     if (uint32 runic = std::min<uint32>(m_caster->GetPower(POWER_RUNIC_POWER), SpellMgr::CalculateSpellEffectAmount(aurEff->GetSpellProto(), EFFECT_1)))
-                        AddPctN(totalDamagePercentMod, runic);
+                        AddFlatPctN(totalDamagePercentMod, runic);
                 break;
             }
             // Obliterate (12.5% more damage per disease)
@@ -4118,19 +4127,19 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
                     if (roll_chance_i(aurEff->GetAmount()))
                         consumeDiseases = false;
 
-                AddPctF(totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID(), consumeDiseases) / 2.0f);
+                AddFlatPctF(totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID(), consumeDiseases) / 2.0f);
                 break;
             }
             // Blood-Caked Strike - Blood-Caked Blade
             if (m_spellInfo->SpellIconID == 1736)
             {
-                AddPctF(totalDamagePercentMod, unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) * 12.5f);
+                AddFlatPctF(totalDamagePercentMod, unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) * 12.5f);
                 break;
             }
             // Heart Strike
             if (m_spellInfo->SpellFamilyFlags[EFFECT_0] & 0x1000000)
             {
-                AddPctN(totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()));
+                AddFlatPctN(totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()));
                 break;
             }
             break;
@@ -4885,7 +4894,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     uint32 spellID = SpellMgr::CalculateSpellEffectAmount(m_spellInfo, 0);
                     uint32 questID = SpellMgr::CalculateSpellEffectAmount(m_spellInfo, 1);
 
-                    if (unitTarget->ToPlayer()->GetQuestStatus(questID) == QUEST_STATUS_COMPLETE && !unitTarget->ToPlayer()->GetQuestRewardStatus (questID))
+                    if (unitTarget->ToPlayer()->GetQuestStatus(questID) == QUEST_STATUS_COMPLETE)
                         unitTarget->CastSpell(unitTarget, spellID, true);
 
                     return;
@@ -6097,6 +6106,9 @@ void Spell::EffectCharge(SpellEffIndex /*effIndex*/)
     if (!target)
         return;
 
+    if (m_caster->ToPlayer())
+        sAnticheatMgr->DisableAnticheatDetection(m_caster->ToPlayer());
+
     float x, y, z;
     target->GetContactPoint(m_caster, x, y, z);
     m_caster->GetMotionMaster()->MoveCharge(x, y, z);
@@ -6110,6 +6122,9 @@ void Spell::EffectChargeDest(SpellEffIndex /*effIndex*/)
 {
     if (m_targets.HasDst())
     {
+        if (m_caster->ToPlayer())
+            sAnticheatMgr->DisableAnticheatDetection(m_caster->ToPlayer());
+
         float x, y, z;
         m_targets.m_dstPos.GetPosition(x, y, z);
         m_caster->GetMotionMaster()->MoveCharge(x, y, z);
@@ -6173,6 +6188,9 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
 
 void Spell::EffectLeapBack(SpellEffIndex effIndex)
 {
+    if (m_caster->ToPlayer())
+        sAnticheatMgr->DisableAnticheatDetection(m_caster->ToPlayer());
+
     float speedxy = float(m_spellInfo->EffectMiscValue[effIndex])/10;
     float speedz = float(damage/10);
     if (!speedxy)
@@ -6791,6 +6809,18 @@ void Spell::EffectActivateRune(SpellEffIndex effIndex)
             --count;
         }
     }
+    // Blood Tap
+    if (m_spellInfo->Id == 45529 && count > 0)
+    {
+        for (uint32 j = 0; j < MAX_RUNES && count > 0; ++j)
+        {
+            if (plr->GetRuneCooldown(j) && plr->GetCurrentRune(j) == RUNE_BLOOD)
+            {
+                plr->SetRuneCooldown(j, 0);
+                --count;
+            }
+        }
+    }
     // Empower rune weapon
     if (m_spellInfo->Id == 47568)
     {
@@ -6804,6 +6834,7 @@ void Spell::EffectActivateRune(SpellEffIndex effIndex)
                 plr->SetRuneCooldown(i, 0);
         }
     }
+    plr->ResyncRunes(MAX_RUNES);
 }
 
 void Spell::EffectCreateTamedPet(SpellEffIndex effIndex)

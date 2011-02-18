@@ -1188,6 +1188,9 @@ void World::LoadConfigSettings(bool reload)
     // DBC_ItemAttributes
     m_bool_configs[CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES] = sConfig->GetBoolDefault("DBC.EnforceItemAttributes", true);
 
+    // Max instances per hour
+    m_int_configs[CONFIG_MAX_INSTANCES_PER_HOUR] = sConfig->GetIntDefault("AccountInstancesPerHour", 5);
+
     // AutoBroadcast
     m_bool_configs[CONFIG_AUTOBROADCAST] = sConfig->GetBoolDefault("AutoBroadcast.On", false);
     m_int_configs[CONFIG_AUTOBROADCAST_CENTER] = sConfig->GetIntDefault("AutoBroadcast.Center", 0);
@@ -1196,6 +1199,9 @@ void World::LoadConfigSettings(bool reload)
     // MySQL ping time interval
     m_int_configs[CONFIG_DB_PING_INTERVAL] = sConfig->GetIntDefault("MaxPingTime", 30);
 
+    m_bool_configs[CONFIG_ANTICHEAT_ENABLE] = sConfig->GetBoolDefault("Anticheat.Enable", true);
+    m_int_configs[CONFIG_ANTICHEAT_REPORTS_INGAME_NOTIFICATION] = sConfig->GetIntDefault("Anticheat.ReportsForIngameWarnings", 70);
+    
     sScriptMgr->OnConfigLoad(reload);
 }
 
@@ -1417,7 +1423,7 @@ void World::SetInitialWorldSettings()
     sGameEventMgr->LoadFromDB();                                 // TODOLEAK: add scopes
 
     sLog->outString("Loading Dungeon boss data...");
-    sLFGMgr->LoadDungeonEncounters();
+    sObjectMgr->LoadInstanceEncounters();
 
     sLog->outString("Loading LFG rewards...");
     sLFGMgr->LoadRewards();
@@ -1534,9 +1540,6 @@ void World::SetInitialWorldSettings()
 
     sLog->outString("Loading GameTeleports...");
     sObjectMgr->LoadGameTele();
-
-    sLog->outString("Loading Npc Text Id...");
-    sObjectMgr->LoadNpcTextId();                                 // must be after load Creature and NpcText
 
     sObjectMgr->LoadGossipScripts();                             // must be before gossip menu options
 
@@ -2617,7 +2620,7 @@ void World::InitDailyQuestResetTime()
     if (result)
     {
         Field *fields = result->Fetch();
-        mostRecentQuestTime = (time_t)fields[0].GetUInt64();
+        mostRecentQuestTime = time_t(fields[0].GetUInt32());
     }
     else
         mostRecentQuestTime = 0;
@@ -2789,7 +2792,7 @@ void World::LoadWorldStates()
     do
     {
         Field *fields = result->Fetch();
-        m_worldstates[fields[0].GetUInt32()] = fields[1].GetUInt64();
+        m_worldstates[fields[0].GetUInt32()] = fields[1].GetUInt32();
         ++count;
     }
     while (result->NextRow());

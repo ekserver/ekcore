@@ -1282,7 +1282,7 @@ public:
         if (pCreature->isCanTrainingAndResetTalentsOf(pPlayer))
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_HELLO_ROGUE1, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
 
-        if (!(pPlayer->GetSpecsCount() == 1 && pCreature->isCanTrainingAndResetTalentsOf(pPlayer) && !(pPlayer->getLevel() < sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))))
+        if (pPlayer->GetSpecsCount() == 1 && pCreature->isCanTrainingAndResetTalentsOf(pPlayer) && pPlayer->getLevel() >= sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_HELLO_ROGUE3, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC);
 
         if (pPlayer->getClass() == CLASS_ROGUE && pPlayer->getLevel() >= 24 && !pPlayer->HasItemCount(17126,1) && !pPlayer->GetQuestRewardStatus(6681))
@@ -1862,6 +1862,61 @@ public:
             // here should be auras (not present in client dbc): 35657, 35658, 35659, 35660 selfcasted by mirror images (stats related?)
             // Clone Me!
             owner->CastSpell(me, 45204, false);
+
+            if (owner->ToPlayer() && owner->ToPlayer()->GetSelectedUnit())
+                me->AI()->AttackStart(owner->ToPlayer()->GetSelectedUnit());
+        }
+
+        void EnterCombat(Unit *who)
+        {
+            if (spells.empty())
+                return;
+
+            for (SpellVct::iterator itr = spells.begin(); itr != spells.end(); ++itr)
+            {
+                if (AISpellInfo[*itr].condition == AICOND_AGGRO)
+                    me->CastSpell(who, *itr, false);
+                else if (AISpellInfo[*itr].condition == AICOND_COMBAT)
+                {
+                    uint32 cooldown = GetAISpellInfo(*itr)->realCooldown;
+                    events.ScheduleEvent(*itr, cooldown);
+                }
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+
+            bool hasCC = false;
+            if (me->GetCharmerOrOwnerGUID() && me->getVictim())
+                hasCC = me->getVictim()->HasAuraType(SPELL_AURA_MOD_CONFUSE);
+
+            if (hasCC)
+            {
+                if (me->HasUnitState(UNIT_STAT_CASTING))
+                    me->CastStop();
+                me->AI()->EnterEvadeMode();
+                return;
+            }
+
+            if (me->HasUnitState(UNIT_STAT_CASTING))
+                return;
+
+            if (uint32 spellId = events.ExecuteEvent())
+            {
+                if (hasCC)
+                {
+                    events.ScheduleEvent(spellId, 500);
+                    return;
+                }
+                DoCast(spellId);
+                uint32 casttime = me->GetCurrentSpellCastTime(spellId);
+                events.ScheduleEvent(spellId, (casttime ? casttime : 500) + GetAISpellInfo(spellId)->realCooldown);
+            }
         }
 
         // Do not reload Creature templates on evade mode enter - prevent visual lost
@@ -2002,8 +2057,9 @@ public:
 
 enum eTrainingDummy
 {
-    NPC_ADVANCED_TARGET_DUMMY                  = 2674,
-    NPC_TARGET_DUMMY                           = 2673
+    NPC_ADVANCED_TARGET_DUMMY                   = 2674,
+    NPC_TARGET_DUMMY                            = 2673,
+    NPC_EYE_FOR_AN_EYE_DUMMY                    = 300001 // custom test dummy
 };
 
 class npc_training_dummy : public CreatureScript
@@ -2039,10 +2095,16 @@ public:
             Reset();
         }
 
-        void DamageTaken(Unit * /*done_by*/, uint32 &damage)
+        void DamageTaken(Unit *done_by, uint32 &damage)
         {
             uiResetTimer = 5000;
             damage = 0;
+            // custom test dummy
+            if (uiEntry == NPC_EYE_FOR_AN_EYE_DUMMY && done_by)
+            {
+                int32 damage = 1000;
+                me->CastCustomSpell(done_by, 26181, &damage, NULL, NULL, true);
+            }
         }
 
         void EnterCombat(Unit * /*who*/)

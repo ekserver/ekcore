@@ -195,7 +195,7 @@ enum ScoreType
     //WS
     SCORE_FLAG_CAPTURES         = 7,
     SCORE_FLAG_RETURNS          = 8,
-    //AB
+    //AB and IC
     SCORE_BASES_ASSAULTED       = 9,
     SCORE_BASES_DEFENDED        = 10,
     //AV
@@ -209,9 +209,10 @@ enum ScoreType
     //SOTA
     SCORE_DESTROYED_DEMOLISHER  = 18,
     SCORE_DESTROYED_WALL        = 19,
-    //IC
-    SCORE_BASE_ASSAULTED        = 20,
-    SCORE_BASE_DEFENDED         = 21
+    /** World of Warcraft Armory **/
+    SCORE_DAMAGE_TAKEN          = 20,
+    SCORE_HEALING_TAKEN         = 21,
+    /** World of Warcraft Armory **/
 };
 
 enum ArenaType
@@ -293,7 +294,8 @@ class BattlegroundScore
 {
     public:
         BattlegroundScore() : KillingBlows(0), Deaths(0), HonorableKills(0),
-            BonusHonor(0), DamageDone(0), HealingDone(0)
+            BonusHonor(0), DamageDone(0), HealingDone(0),
+            DamageTaken(0), HealingTaken(0)
         {}
         virtual ~BattlegroundScore() {}                     //virtual destructor is used when deleting score from scores map
 
@@ -303,6 +305,10 @@ class BattlegroundScore
         uint32 BonusHonor;
         uint32 DamageDone;
         uint32 HealingDone;
+        /** World of Warcraft Armory **/
+        uint32 DamageTaken;
+        uint32 HealingTaken;
+        /** World of Warcraft Armory **/
 };
 
 enum BGHonorMode
@@ -533,7 +539,7 @@ class Battleground
         virtual void EventPlayerDroppedFlag(Player* /*player*/) {}
         virtual void EventPlayerClickedOnFlag(Player* /*player*/, GameObject* /*target_obj*/) {}
         virtual void EventPlayerCapturedFlag(Player* /*player*/) {}
-        void EventPlayerLoggedIn(Player* player, uint64 plr_guid);
+        void EventPlayerLoggedIn(Player* player);
         void EventPlayerLoggedOut(Player* player);
         virtual void EventPlayerDamagedGO(Player* /*plr*/, GameObject* /*go*/, uint8 /*hitType*/, uint32 /*destroyedEvent*/) {}
         virtual void EventPlayerUsedGO(Player* /*player*/, GameObject* /*go*/){}
@@ -548,7 +554,7 @@ class Battleground
 
         virtual void AddPlayer(Player *plr);                // must be implemented in BG subclass
 
-        void AddOrSetPlayerToCorrectBgGroup(Player *plr, uint64 plr_guid, uint32 team);
+        void AddOrSetPlayerToCorrectBgGroup(Player *player, uint32 team);
 
         virtual void RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket);
                                                             // can be extended in in BG subclass

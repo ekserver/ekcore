@@ -16,6 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AnticheatMgr.h"
 #include "Common.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -151,11 +152,11 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     if (mInstance)
     {
         Difficulty diff = GetPlayer()->GetDifficulty(mEntry->IsRaid());
-        if (MapDifficulty const* mapDiff = GetMapDifficultyData(mEntry->MapID,diff))
+        if (MapDifficulty const* mapDiff = GetMapDifficultyData(mEntry->MapID, diff))
         {
             if (mapDiff->resetTime)
             {
-                if (time_t timeReset = sInstanceSaveMgr->GetResetTimeFor(mEntry->MapID,diff))
+                if (time_t timeReset = sInstanceSaveMgr->GetResetTimeFor(mEntry->MapID, diff))
                 {
                     uint32 timeleft = uint32(timeReset - time(NULL));
                     GetPlayer()->SendInstanceResetWarning(mEntry->MapID, diff, timeleft);
@@ -338,6 +339,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         // now client not include swimming flag in case jumping under water
         plMover->SetInWater(!plMover->IsInWater() || plMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ()));
     }
+
+    if (plMover)
+        sAnticheatMgr->StartHackDetection(plMover, movementInfo, opcode);
 
     /*----------------------*/
 
@@ -707,7 +711,7 @@ void WorldSession::HandleRequestVehicleExit(WorldPacket &recv_data)
             if (seat->CanEnterOrExit())
                 GetPlayer()->ExitVehicle();
             else
-                sLog->outError("Player %u tried to exit vehicle, but seatflags %u (ID: %u) don't permit that.", 
+                sLog->outError("Player %u tried to exit vehicle, but seatflags %u (ID: %u) don't permit that.",
                     GetPlayer()->GetGUIDLow(), seat->m_ID, seat->m_flags);
         }
     }

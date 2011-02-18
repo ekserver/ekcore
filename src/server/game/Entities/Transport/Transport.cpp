@@ -176,12 +176,16 @@ void MapManager::LoadTransportNPCs()
 Transport::Transport(uint32 period, uint32 script) : GameObject(), m_period(period), ScriptId(script)
 {
     m_updateFlag = (UPDATEFLAG_TRANSPORT | UPDATEFLAG_HIGHGUID | UPDATEFLAG_HAS_POSITION | UPDATEFLAG_ROTATION);
+    currenttguid = 0;
 }
 
 Transport::~Transport()
 {
-    for (CreatureSet::iterator itr = m_NPCPassengerSet.begin(); itr != m_NPCPassengerSet.end();)
-        (*(itr++))->ForcedDespawn();
+    for (CreatureSet::iterator itr = m_NPCPassengerSet.begin(); itr != m_NPCPassengerSet.end(); ++itr)
+    {
+        (*itr)->SetTransport(NULL);
+        GetMap()->AddObjectToRemoveList(*itr);
+    }
 
     m_NPCPassengerSet.clear();
 

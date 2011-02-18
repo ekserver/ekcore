@@ -754,6 +754,7 @@ class WorldSession
         void HandleWhoisOpcode(WorldPacket& recv_data);
         void HandleResetInstancesOpcode(WorldPacket& recv_data);
         void HandleHearthAndResurrect(WorldPacket& recv_data);
+        void HandleInstanceLockResponse(WorldPacket& recvPacket);
 
         // Looking for Dungeon/Raid
         void HandleLfgSetCommentOpcode(WorldPacket & recv_data);
@@ -881,7 +882,7 @@ class WorldSession
         void moveItems(Item* myItems[], Item* hisItems[]);
 
         // logging helper
-        void LogUnexpectedOpcode(WorldPacket *packet, const char * reason);
+        void LogUnexpectedOpcode(WorldPacket *packet, const char* status, const char *reason);
         void LogUnprocessedTail(WorldPacket *packet);
 
         uint32 m_GUIDLow;                                   // set loggined or recently logout player (while m_playerRecentlyLogout set)

@@ -454,7 +454,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType)/ 14.0f * att_speed;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
-    float total_pct   = addTotalPct ? GetModifierValue(unitMod, TOTAL_PCT) : 1.0f;
+    float total_pct   = addTotalPct ? GetModifierValue(unitMod, TOTAL_PCT) * GetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT) : 1.0f;
 
     float weapon_mindamage = GetWeaponDamageRange(attType, MINDAMAGE);
     float weapon_maxdamage = GetWeaponDamageRange(attType, MAXDAMAGE);
@@ -930,6 +930,7 @@ void Creature::UpdateDamagePhysical(WeaponAttackType attType)
 #define ENTRY_TREANT            1964
 #define ENTRY_FIRE_ELEMENTAL    15438
 #define ENTRY_GHOUL             26125
+#define ENTRY_FERAL_SPIRIT      29264
 
 bool Guardian::UpdateStats(Stats stat)
 {
@@ -991,6 +992,8 @@ bool Guardian::UpdateStats(Stats stat)
                 }
             }
             ownersBonus = float(owner->GetStat(stat)) * mod;
+            // ownersBonus is multiplied by TOTAL_PCT too
+            ownersBonus *=  GetModifierValue(UNIT_MOD_STAT_STAMINA, TOTAL_PCT);
             value += ownersBonus;
         }
     }
@@ -1188,6 +1191,13 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
                 frost = 0;
             SetBonusDamage(int32(frost * 0.4f));
         }
+        else if (GetEntry() == ENTRY_FERAL_SPIRIT)
+        {
+            float dmg_multiplier = 0.3f;
+            if (m_owner->GetAuraEffect(63271, 0)) // Glyph of Feral Spirit
+                dmg_multiplier = 0.6f;
+            bonusAP = m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier;
+        }
     }
 
     SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, val + bonusAP);
@@ -1275,8 +1285,8 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
         {
             case 61682:
             case 61683:
-                AddPctN(mindamage, -(*itr)->GetAmount());
-                AddPctN(maxdamage, -(*itr)->GetAmount());
+                AddPctN(mindamage, -(*itr)->GetAmount() / 2.0f);
+                AddPctN(maxdamage, -(*itr)->GetAmount() / 2.0f);
                 break;
             default:
                 break;

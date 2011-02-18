@@ -540,7 +540,7 @@ public:
 
 enum brunhildar {
     NPC_QUEST_GIVER            = 29592,
-    
+
     SPELL_ICE_PRISON           = 54894,
     SPELL_KILL_CREDIT_PRISONER = 55144,
     SPELL_KILL_CREDIT_DRAKE    = 55143,
@@ -548,7 +548,7 @@ enum brunhildar {
     SPELL_ICE_LANCE            = 55046
 };
 
-class npc_brunnhildar_prisoner : public CreatureScript 
+class npc_brunnhildar_prisoner : public CreatureScript
 {
 public:
     npc_brunnhildar_prisoner() : CreatureScript("npc_brunnhildar_prisoner") { }
@@ -625,7 +625,7 @@ public:
 
                     // drake is empty now, deliver credit for drake and despawn him
                     if (drake->GetVehicleKit()->HasEmptySeat(1) &&
-                        drake->GetVehicleKit()->HasEmptySeat(2) && 
+                        drake->GetVehicleKit()->HasEmptySeat(2) &&
                         drake->GetVehicleKit()->HasEmptySeat(3))
                     {
                         // not working rider->CastSpell(rider, SPELL_KILL_CREDIT_DRAKE, true);
@@ -645,7 +645,7 @@ public:
 
             if (spell->Id != SPELL_ICE_LANCE)
                 return;
-    
+
             me->RemoveAura(SPELL_ICE_PRISON);
             enter_timer = 500;
 
@@ -665,6 +665,55 @@ public:
     }
 };
 
+class npc_icefang : public CreatureScript
+{
+public:
+    npc_icefang() : CreatureScript("npc_icefang") { }
+
+    struct npc_icefangAI : public npc_escortAI
+    {
+        npc_icefangAI(Creature* creature) : npc_escortAI(creature) {}
+
+        void AttackStart(Unit* who) {}
+        void EnterCombat(Unit* who) {}
+        void EnterEvadeMode() {}
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (who->GetTypeId() == TYPEID_PLAYER)
+            {
+                if (apply)
+                    Start(false, true, who->GetGUID());
+            }
+        }
+
+        void WaypointReached(uint32 wp)
+        {
+        }
+
+        void JustDied(Unit* killer)
+        {
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+
+            if (!UpdateVictim())
+                return;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_icefangAI (creature);
+    }
+};
+
 void AddSC_storm_peaks()
 {
     new npc_agnetta_tyrsdottar;
@@ -676,4 +725,5 @@ void AddSC_storm_peaks()
     new npc_injured_goblin;
     new npc_roxi_ramrocket;
     new npc_brunnhildar_prisoner;
+    new npc_icefang;
 }

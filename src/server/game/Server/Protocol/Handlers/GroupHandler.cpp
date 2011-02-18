@@ -237,11 +237,12 @@ void WorldSession::HandleGroupDeclineOpcode(WorldPacket & /*recv_data*/)
     Group  *group  = GetPlayer()->GetGroupInvite();
     if (!group) return;
 
+    // Remember leader if online (group pointer will be invalid if group gets disbanded)
+    Player *leader = sObjectMgr->GetPlayer(group->GetLeaderGUID());
+
     // uninvite, group can be deleted
     GetPlayer()->UninviteFromGroup();
 
-    // remember leader if online
-    Player *leader = sObjectMgr->GetPlayer(group->GetLeaderGUID());
     if (!leader || !leader->GetSession())
         return;
 
@@ -838,7 +839,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recv_data)
     uint64 Guid;
     recv_data >> Guid;
 
-    Player *player = HashMapHolder<Player>::Find(Guid); 
+    Player *player = HashMapHolder<Player>::Find(Guid);
     if (!player)
     {
         WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 3+4+2);
