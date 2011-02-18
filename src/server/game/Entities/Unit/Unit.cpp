@@ -14185,7 +14185,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                     // Skip melee hits and spells ws wrong school or zero cost
                     if (procSpell &&
                         (procSpell->manaCost != 0 || procSpell->ManaCostPercentage != 0) && // Cost check
-                        (triggeredByAura->GetMiscValue() & procSpell->SchoolMask) == 0)         // School check
+                        (triggeredByAura->GetMiscValue() & procSpell->SchoolMask))          // School check
                         takeCharges = true;
                     break;
                 case SPELL_AURA_MECHANIC_IMMUNITY:
@@ -14250,7 +14250,23 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
         }
         // Remove charge (aura can be removed by triggers)
         if (useCharges && takeCharges)
-            i->aura->DropCharge();
+        {
+            if (GetTypeId() == TYPEID_PLAYER)
+            {
+                // Check Dummy Proc Cooldown
+                if (!this->ToPlayer()->HasSpellCooldown(0x80000000 | Id))
+                {
+                    i->aura->DropCharge();
+                    // Add Dummy Proc Cooldown (if any) if spell procs form it's own aura
+                    if (cooldown && spellInfo->Id == Id)
+                        this->ToPlayer()->AddSpellCooldown(0x80000000 | Id, 0, time(NULL) + cooldown);
+                }
+            }
+            else
+            {
+                i->aura->DropCharge();
+            }
+        }
 
         if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
             SetCantProc(false);
