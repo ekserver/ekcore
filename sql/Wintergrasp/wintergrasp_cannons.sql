@@ -1,5 +1,5 @@
 -- Spawn Wintergrasp Cannon
-INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`, `npcflag`, `unit_flags`, `dynamicflags`) VALUES 
+INSERT INTO `creature` (`id`, `map`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`, `npcflag`, `unit_flags`, `dynamicflags`) VALUES 
 (28366, 571, 1, 256, 0, 0, 5391.18, 3061.34, 419.616, 1.64085, 1, 0, 0, 50000, 0, 0, 0, 0, 0, 0),
 (28366, 571, 1, 256, 0, 0, 5352.22, 3061.24, 421.101, 1.67148, 1, 0, 0, 50000, 0, 0, 0, 0, 0, 0),
 (28366, 571, 1, 256, 0, 0, 5266.07, 2976.55, 421.067, 3.12367, 1, 0, 0, 50000, 0, 0, 0, 0, 0, 0),
