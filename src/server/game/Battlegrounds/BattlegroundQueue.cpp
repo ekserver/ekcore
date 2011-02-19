@@ -221,8 +221,8 @@ GroupQueueInfo * BattlegroundQueue::AddGroup(Player *leader, Group* grp, Battleg
                 // System message
                 else
                 {
-                	                    // Announce to Channel bgannounce
-                   if( sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_CHANNEL) )
+                    // Announce to Channel bgannounce
+                    if( sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_CHANNEL) )
                     {
                         ChannelMgr* cMgr = channelMgr(HORDE);
                         Channel* chBg = cMgr->GetJoinChannel("bgannounce", HORDE);
