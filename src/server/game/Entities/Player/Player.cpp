@@ -6686,7 +6686,7 @@ uint32 Player::CalculateExperienceBoost(uint32 xp, bool inGroup)
 {
     if( getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) && (GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL) )
     {
-        if(inGroup)
+        if(!inGroup)
             xp = uint32(xp * sWorld->getRate(RATE_XP_BOOST_SOLO));
         else
             xp = uint32(xp * sWorld->getRate(RATE_XP_BOOST_GROUP));
