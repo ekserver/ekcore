@@ -18019,6 +18019,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 17851, 54501, 2, 'Consume Shadows - Rank 3'),
 ( 17850, 54501, 2, 'Consume Shadows - Rank 2'),
 ( 17767, 54501, 2, 'Consume Shadows - Rank 1'),
+(-11129,-28682, 0, 'Combustion'),
 (-5143, -36032, 0, 'Arcane Missiles Rank 1'),
 (-5144, -36032, 0, 'Arcane Missiles Rank 2'),
 (-5145, -36032, 0, 'Arcane Missiles Rank 3'),
@@ -18151,6 +18152,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 67623,-67620, 1, 'Remove Paralytic Toxin when hit by Burning Bite'),
 (-66683, 68667, 0, 'Icehowl - Surge of Adrenaline'),
 (-67661, 68667, 0, 'Icehowl - Surge of Adrenaline'),
+( 65940, 65941, 0, 'Trial of the Crusader: Shattering Throw'),
 -- Forge of Souls
 (-68839, 68846, 0, 'Bronjahm: Corrupt Soul Summon'),
 -- Icecrown Citadel
@@ -18176,7 +18178,6 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 71479, 71482, 1, 'Blood-Queen: Bloodbolt Splash'),
 ( 71480, 71483, 1, 'Blood-Queen: Bloodbolt Splash'),
 ( 71952, 70995, 1, 'Blood-Queen: Presence of the Darkfallen'),
-( 70117, 70122, 1, 'Sindragosa - Icy Grip'),
 ( 70157, 69700, 2, 'Sindragosa - Ice Tomb resistance'),
 -- Isle of Conquest
 ( 66548, 66550, 0, 'Isle of Conquest (IN>OUT)'),
