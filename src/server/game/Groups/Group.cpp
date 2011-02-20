@@ -1189,7 +1189,7 @@ void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_lev
         if (!member->IsAtGroupRewardDistance(victim))        // at req. distance
             continue;
 
-        if( member->GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL )
+        if( member->HasItemOrGemWithIdEquipped(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID), 1) )
             boostItemCount ++;
 
         ++count;

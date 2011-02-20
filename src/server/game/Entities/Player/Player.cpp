@@ -6684,7 +6684,7 @@ ReputationRank Player::GetReputationRank(uint32 faction) const
 //Calculate XP.Boost VIP Item Experiance Bonus - LandOfLegends Changes
 uint32 Player::CalculateExperienceBoost(uint32 xp, bool inGroup)
 {
-    if( getLevel() < sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) && (GetItemByEntry(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID)) != NULL) )
+    if( getLevel() <= sWorld->getIntConfig(CONFIG_XP_BOOST_MAXLEVEL) )
     {
         if(inGroup)
             xp = uint32(xp * sWorld->getRate(RATE_XP_BOOST_SOLO));
@@ -22120,7 +22120,7 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
 
                         // XP.Boost
                         if(xpBoost)
-                            itr_xp = CalculateExperienceBoost(itr_xp,true);
+                            itr_xp = pGroupGuy->CalculateExperienceBoost(itr_xp,true);
 
                         pGroupGuy->GiveXP(itr_xp, pVictim, group_rate);
                         if (Pet* pet = pGroupGuy->GetPet())
