@@ -109,6 +109,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     m_workshopCount[TEAM_ALLIANCE] = 0;
     m_workshopCount[TEAM_HORDE] = 0;
     m_tenacityStack = 0;
+    m_ann = 0;
     m_gate = NULL;
 
     std::list<uint32> engGuids;
@@ -1392,12 +1393,18 @@ void OutdoorPvPWG::UpdateClock()
 
     //Announce in all world, comment it if you don't like/need it
     // Announce 30 minutes left
-    if ((m_timer>1800000) && (m_timer<1802000) && (m_wartime==false))
+    if ((m_ann == 0) && (m_timer < 1800000) && (m_wartime == false))
+    {
         sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_30);
+        m_ann = 1;
+    }
 
     // Announce 10 minutes left
-    if ((m_timer>600000) && (m_timer<602000) && (m_wartime==false))
+    if ((m_ann == 1) && (m_timer < 600000) && (m_wartime == false))
+    {
         sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_10);
+        m_ann = 2;
+    }
 }
 
 bool OutdoorPvPWG::Update(uint32 diff)
@@ -1997,6 +2004,7 @@ void OutdoorPvPWG::EndBattle()
 
     m_wartime = false;
     m_timer = sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILLISECONDS;
+    m_ann = 0;
     RemoveOfflinePlayerWGAuras();
     // Update timer in players battlegrounds tab
     sWorld->SendWintergraspState();

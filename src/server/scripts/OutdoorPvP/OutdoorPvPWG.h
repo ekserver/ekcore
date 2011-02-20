@@ -257,6 +257,7 @@ class OutdoorPvPWG : public OutdoorPvP
         // BG end
         void SendInitWorldStatesTo(Player *player = NULL) const;
         uint32 m_timer;
+        uint8 m_ann;
 
     protected:
         // Temporal BG specific till 3.2
