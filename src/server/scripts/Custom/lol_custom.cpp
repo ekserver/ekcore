@@ -2475,8 +2475,10 @@ private:
 #define GOSSIP_ULDUAR_FORGE         "Teleportiere mich zur Colossal Forge (Ignis/Racorscale)"
 #define GOSSIP_ULDUAR_SCRAPYARD     "Teleportiere mich zum Scrapyard (hinter XT_002)"
 #define GOSSIP_ULDUAR_ANTECHAMBER   "Teleportiere mich zur Antechamber of Ulduar (Assembly of Iron)"
-#define GOSSIP_ULDUAR_WALKWAY       "Teleportiere mich zum Shattered Walkway (General Vezax)"
+#define GOSSIP_ULDUAR_WALKWAY       "Teleportiere mich zum Shattered Walkway (hinter Kologarn)"
 #define GOSSIP_ULDUAR_CONSERVATORY  "Teleportiere mich zum the Conservatory of Life (Freya)"
+#define GOSSIP_ULDUAR_SPARK         "Teleportiere mich zum the Spark of Imagination (Mimiron)"
+#define GOSSIP_ULDUAR_MADNESS       "Teleportiere mich zur the Descent into Madness (YoggSaron)"
 
 enum GOSSIP_REPAIRBOT
 {
@@ -2501,7 +2503,9 @@ enum GOSSIP_REPAIRBOT
     TELE_ULDUAR_ANTECHAMBER = 25,
     TELE_ULDUAR_WALKWAY = 26,
     TELE_ULDUAR_CONSERVATORY = 27,
-    TELE_ULDUAR_MAX = 29,
+    TELE_ULDUAR_SPARK = 28,
+    TELE_ULDUAR_MADNESS = 29,
+    TELE_ULDUAR_MAX = 30,
 };
 
 enum MAPS
@@ -2520,15 +2524,17 @@ float TeleportPointsSunwell[6][3] =
     {1649,  553, 34},// KilJaden
 };
 
-float TeleportPointsUlduar[7][3] =
+float TeleportPointsUlduar[9][3] =
 {
     {-706.122f, -92.6024f, 429.876f}, // Base Camp
     {131.248f, -35.3802f, 409.804f}, // Grounds
     {553.233f, -12.3247f, 409.679f}, // Forge
     {926.292f, -11.4635f, 418.595f}, //Scrapyard
-    {498.09f, -24.246f, 420.967f}, // Antechamber
+    {1498.09f, -24.246f, 420.967f}, // Antechamber
     {1859.45f, -24.1f, 448.9f}, // Walkway
-    {2086.27f, -24.3134f, 421.239f}, //Conservatory
+    {2086.27f, -24.3134f, 421.239f}, // Conservatory
+    {2518.13f, 2569.34f, 421.382f}, // Spark
+    {1855.03f, -11.629f, 334.58f}, //Descent into Madness
 };
 
 class npc_wyrm_debug_repairbot : public CreatureScript
@@ -2588,6 +2594,8 @@ public:
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_ANTECHAMBER, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_ANTECHAMBER);
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_WALKWAY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_WALKWAY);
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_CONSERVATORY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_CONSERVATORY);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_SPARK, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SPARK);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_MADNESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_MADNESS);
                 }
             }
         }
@@ -2648,13 +2656,14 @@ public:
         if(_Creature->GetMapId() == MAP_ULDUAR && action-GOSSIP_ACTION_INFO_DEF > TELE_ULDUAR && action-GOSSIP_ACTION_INFO_DEF < TELE_ULDUAR_MAX)
             switch(action)
             {
-            case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_BASE_CAMP: player->TeleportTo(603, TeleportPointsUlduar[0][0],TeleportPointsUlduar[0][1],TeleportPointsUlduar[0][2], 0.0f); break;
-            case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_GROUNDS: player->TeleportTo(603, TeleportPointsUlduar[1][0],TeleportPointsUlduar[1][1],TeleportPointsUlduar[1][2], 0.0f); break;
-            case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_FORGE: player->TeleportTo(603, TeleportPointsUlduar[2][0],TeleportPointsUlduar[2][1],TeleportPointsUlduar[2][2], 0.0f); break;
-            case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SCRAPYARD: player->TeleportTo(603, TeleportPointsUlduar[3][0],TeleportPointsUlduar[3][1],TeleportPointsUlduar[3][2], 0.0f); break;
-            case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_ANTECHAMBER: player->TeleportTo(603, TeleportPointsUlduar[4][0],TeleportPointsUlduar[4][1],TeleportPointsUlduar[4][2], 0.0f); break;
-            case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_WALKWAY: player->TeleportTo(603, TeleportPointsUlduar[5][0],TeleportPointsUlduar[5][1],TeleportPointsUlduar[5][2], 0.0f); break;
-            case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_CONSERVATORY: player->TeleportTo(603, TeleportPointsUlduar[6][0],TeleportPointsUlduar[6][1],TeleportPointsUlduar[6][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_BASE_CAMP: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[0][0],TeleportPointsUlduar[0][1],TeleportPointsUlduar[0][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_GROUNDS: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[1][0],TeleportPointsUlduar[1][1],TeleportPointsUlduar[1][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_FORGE: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[2][0],TeleportPointsUlduar[2][1],TeleportPointsUlduar[2][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SCRAPYARD: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[3][0],TeleportPointsUlduar[3][1],TeleportPointsUlduar[3][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_ANTECHAMBER: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[4][0],TeleportPointsUlduar[4][1],TeleportPointsUlduar[4][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_WALKWAY: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[5][0],TeleportPointsUlduar[5][1],TeleportPointsUlduar[5][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_CONSERVATORY: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[6][0],TeleportPointsUlduar[6][1],TeleportPointsUlduar[6][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_MADNESS: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[8][0],TeleportPointsUlduar[8][1],TeleportPointsUlduar[8][2], 0.0f); break;
             }
 
         return true;
