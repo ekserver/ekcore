@@ -2634,7 +2634,7 @@ public:
                 break;
             }
 
-        if(_Creature->GetMapId() == MAP_SUNWELL && action > TELE_SUNWELL && action < TELE_SUNWELL_MAX)
+        if(_Creature->GetMapId() == MAP_SUNWELL && action-GOSSIP_ACTION_INFO_DEF > TELE_SUNWELL && action-GOSSIP_ACTION_INFO_DEF < TELE_SUNWELL_MAX)
             switch(action)
             {
                 case GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_START: player->TeleportTo(MAP_SUNWELL, TeleportPointsSunwell[0][0],TeleportPointsSunwell[0][1],TeleportPointsSunwell[0][2],0.0f); break;
@@ -2645,7 +2645,7 @@ public:
                 case GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_KIL:   player->TeleportTo(MAP_SUNWELL, TeleportPointsSunwell[5][0],TeleportPointsSunwell[5][1],TeleportPointsSunwell[5][2],0.0f); break;
             }
 
-        if(_Creature->GetMapId() == MAP_ULDUAR && action > TELE_ULDUAR && action < TELE_ULDUAR_MAX)
+        if(_Creature->GetMapId() == MAP_ULDUAR && action-GOSSIP_ACTION_INFO_DEF > TELE_ULDUAR && action-GOSSIP_ACTION_INFO_DEF < TELE_ULDUAR_MAX)
             switch(action)
             {
             case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_BASE_CAMP: player->TeleportTo(603, TeleportPointsUlduar[0][0],TeleportPointsUlduar[0][1],TeleportPointsUlduar[0][2], 0.0f); break;
