@@ -2663,6 +2663,7 @@ public:
                 case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_ANTECHAMBER: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[4][0],TeleportPointsUlduar[4][1],TeleportPointsUlduar[4][2], 0.0f); break;
                 case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_WALKWAY: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[5][0],TeleportPointsUlduar[5][1],TeleportPointsUlduar[5][2], 0.0f); break;
                 case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_CONSERVATORY: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[6][0],TeleportPointsUlduar[6][1],TeleportPointsUlduar[6][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SPARK: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[7][0],TeleportPointsUlduar[7][1],TeleportPointsUlduar[7][2], 0.0f); break;
                 case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_MADNESS: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[8][0],TeleportPointsUlduar[8][1],TeleportPointsUlduar[8][2], 0.0f); break;
             }
 
