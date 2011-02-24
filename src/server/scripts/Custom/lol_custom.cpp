@@ -2451,6 +2451,225 @@ private:
     }
 };
 
+#include "ScriptPCH.h"
+
+/*######
+## npc_wyrm_debug_repairbot
+######*/
+
+#define GOSSIP_REPAIR               "Repariere meine Ausruestung."
+#define GOSSIP_REPAIR_DEAK          "Reparieren deaktiveren"
+#define GOSSIP_REPAIR_AKTI          "Reparieren aktivieren"
+
+// Sunwell
+#define GOSSIP_SUNWELL_START        "Bringe mich zum Eingang zurueck."
+#define GOSSIP_SUNWELL_KALEG        "Teleportiere mich vor Kalecgos."
+#define GOSSIP_SUNWELL_BRUT         "Teleportiere mich vor Brutallus Felmyst."
+#define GOSSIP_SUNWELL_TWINS        "Teleportiere mich zu den Eredar twins."
+#define GOSSIP_SUNWELL_MURU         "Teleportiere mich zu Muru."
+#define GOSSIP_SUNWELL_KIL          "Teleportiere mich zu KilJaden"
+
+// Ulduar
+#define GOSSIP_ULDUAR_BASE_CAMP     "Teleportiere mich zum Expedition Base Camp (Start)"
+#define GOSSIP_ULDUAR_GROUNDS       "Teleportiere mich zu Formation Grounds (vor Flame Leviathan)"
+#define GOSSIP_ULDUAR_FORGE         "Teleportiere mich zur Colossal Forge (Ignis/Racorscale)"
+#define GOSSIP_ULDUAR_SCRAPYARD     "Teleportiere mich zum Scrapyard (hinter XT_002)"
+#define GOSSIP_ULDUAR_ANTECHAMBER   "Teleportiere mich zur Antechamber of Ulduar (Assembly of Iron)"
+#define GOSSIP_ULDUAR_WALKWAY       "Teleportiere mich zum Shattered Walkway (hinter Kologarn)"
+#define GOSSIP_ULDUAR_CONSERVATORY  "Teleportiere mich zum the Conservatory of Life (Freya)"
+#define GOSSIP_ULDUAR_SPARK         "Teleportiere mich zum the Spark of Imagination (Mimiron)"
+#define GOSSIP_ULDUAR_MADNESS       "Teleportiere mich zur the Descent into Madness (YoggSaron)"
+
+enum GOSSIP_REPAIRBOT
+{
+    REPARATUR = 1,
+    DEAK_REPAIR = 2,
+    AKTI_REPAIR = 3,
+
+    TELE_SUNWELL = 10,
+    TELE_SUNWELL_KALEG = 11,
+    TELE_SUNWELL_BRUT = 12,
+    TELE_SUNWELL_TWINS = 13,
+    TELE_SUNWELL_MURU = 14,
+    TELE_SUNWELL_KIL = 15,
+    TELE_SUNWELL_START = 16,
+    TELE_SUNWELL_MAX = 19,
+
+    TELE_ULDUAR = 20,
+    TELE_ULDUAR_BASE_CAMP = 21,
+    TELE_ULDUAR_GROUNDS = 22,
+    TELE_ULDUAR_FORGE = 23,
+    TELE_ULDUAR_SCRAPYARD = 24,
+    TELE_ULDUAR_ANTECHAMBER = 25,
+    TELE_ULDUAR_WALKWAY = 26,
+    TELE_ULDUAR_CONSERVATORY = 27,
+    TELE_ULDUAR_SPARK = 28,
+    TELE_ULDUAR_MADNESS = 29,
+    TELE_ULDUAR_MAX = 30,
+};
+
+enum MAPS
+{
+    MAP_SUNWELL     = 580,
+    MAP_ULDUAR      = 603,
+};
+
+float TeleportPointsSunwell[6][3] = 
+{
+    {1744,  920, 16},// Start
+    {1700, 1052, 53},// Kalecgos
+    {1554,  645, 51},// Brutallus Fellmyst
+    {1822,  688, 33},// Eredar Twins
+    {1878,  566, 72},// Muru
+    {1649,  553, 34},// KilJaden
+};
+
+float TeleportPointsUlduar[9][3] =
+{
+    {-706.122f, -92.6024f, 429.876f}, // Base Camp
+    {131.248f, -35.3802f, 409.804f}, // Grounds
+    {553.233f, -12.3247f, 409.679f}, // Forge
+    {926.292f, -11.4635f, 418.595f}, //Scrapyard
+    {1498.09f, -24.246f, 420.967f}, // Antechamber
+    {1859.45f, -24.1f, 448.9f}, // Walkway
+    {2086.27f, -24.3134f, 421.239f}, // Conservatory
+    {2518.13f, 2569.34f, 421.382f}, // Spark
+    {1855.03f, -11.629f, 334.58f}, //Descent into Madness
+};
+
+class npc_wyrm_debug_repairbot : public CreatureScript
+{
+public:
+    npc_wyrm_debug_repairbot() : CreatureScript("npc_wyrm_debug_repairbot") { }
+
+    // Infos zur Gossip Symbol
+    // 0 -  Sprechblase
+    // 1 -  Geldsack
+    // 2 -  Sieht aus wie eine Feder -> Flugmeister?
+    // 3 -  Buch -> Lernen
+    // 4 -  Zahnrad -> ???
+    // 5 -  Zahnrad -> ???
+    // 6 -  Geldsack
+    // 7 -  Sprechblase mit 3 Punkte
+    // 8 -  Tarbat Zeichen (Wappenrock)
+    // 9 -  2 Gekräutzte Schwerter
+    // 10 - 1 Gelber Punkt
+    // Nicht mehr als 10 eingeben
+
+    bool OnGossipHello(Player* player, Creature* _Creature)
+    {
+        InstanceScript* pInstance = _Creature->GetInstanceScript();
+
+        if(pInstance)
+        {
+            //repair
+            if(player->isGameMaster())
+            {
+                //if( pInstance->GetData(DATA_REPAIR_BOT_STATE) == 1)
+                //    player->ADD_GOSSIP_ITEM(4, GOSSIP_REPAIR_DEAK, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + DEAK_REPAIR);
+                //else
+                //    player->ADD_GOSSIP_ITEM(4, GOSSIP_REPAIR_AKTI, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + AKTI_REPAIR);
+            }
+
+            //if(pInstance->GetData(DATA_REPAIR_BOT_STATE) == 1)
+            //    player->ADD_GOSSIP_ITEM(4, GOSSIP_REPAIR, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + REPARATUR);
+
+            switch(_Creature->GetMapId())
+            {
+                case MAP_SUNWELL:
+                {
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SUNWELL_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_START);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SUNWELL_KALEG, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_KALEG);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SUNWELL_BRUT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_BRUT);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SUNWELL_TWINS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_TWINS);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SUNWELL_MURU, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_MURU);
+                    //player->ADD_GOSSIP_ITEM(0, GOSSIP_SUNWELL_KIL, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_KIL);
+                }
+                case MAP_ULDUAR:
+                {
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_BASE_CAMP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_BASE_CAMP);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_GROUNDS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_GROUNDS);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_FORGE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_FORGE);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_SCRAPYARD, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SCRAPYARD);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_ANTECHAMBER, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_ANTECHAMBER);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_WALKWAY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_WALKWAY);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_CONSERVATORY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_CONSERVATORY);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_SPARK, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SPARK);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_MADNESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_MADNESS);
+                }
+            }
+        }
+
+        player->SEND_GOSSIP_MENU(player->GetGossipTextId(_Creature), _Creature->GetGUID());
+
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+    {
+        player->CLOSE_GOSSIP_MENU();
+        if(action < 10)
+            switch(action)
+            {
+                case GOSSIP_ACTION_INFO_DEF + REPARATUR:
+                {
+                    player->DurabilityRepairAll(false,0,false);
+                    _Creature->MonsterWhisper("Reparatur Job erledigt. *biep*",player->GetGUID());
+                }
+                break;
+                case GOSSIP_ACTION_INFO_DEF + DEAK_REPAIR:
+                {
+                    InstanceScript* pInstance = _Creature->GetInstanceScript();
+
+                    //if(pInstance && player->isGameMaster())
+                    //{
+                    //    pInstance->SetData(DATA_REPAIR_BOT_STATE,0);
+                    //    _Creature->MonsterWhisper("Reparaturmodus deaktiviert. *biep*",player->GetGUID());
+                    //}
+
+                }
+                break;
+                case GOSSIP_ACTION_INFO_DEF + AKTI_REPAIR:
+                {
+                    InstanceScript* pInstance = _Creature->GetInstanceScript();
+
+                    //if(pInstance && player->isGameMaster())
+                    //{
+                    //    pInstance->SetData(DATA_REPAIR_BOT_STATE,1);
+                    //    _Creature->MonsterWhisper("Reparaturmodus deaktiviert. *biep*",player->GetGUID());
+                    //}
+                }
+                break;
+            }
+
+        if(_Creature->GetMapId() == MAP_SUNWELL && action-GOSSIP_ACTION_INFO_DEF > TELE_SUNWELL && action-GOSSIP_ACTION_INFO_DEF < TELE_SUNWELL_MAX)
+            switch(action)
+            {
+                case GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_START: player->TeleportTo(MAP_SUNWELL, TeleportPointsSunwell[0][0],TeleportPointsSunwell[0][1],TeleportPointsSunwell[0][2],0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_KALEG: player->TeleportTo(MAP_SUNWELL, TeleportPointsSunwell[1][0],TeleportPointsSunwell[1][1],TeleportPointsSunwell[1][2],0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_BRUT:  player->TeleportTo(MAP_SUNWELL, TeleportPointsSunwell[2][0],TeleportPointsSunwell[2][1],TeleportPointsSunwell[2][2],0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_TWINS: player->TeleportTo(MAP_SUNWELL, TeleportPointsSunwell[3][0],TeleportPointsSunwell[3][1],TeleportPointsSunwell[3][2],0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_MURU:  player->TeleportTo(MAP_SUNWELL, TeleportPointsSunwell[4][0],TeleportPointsSunwell[4][1],TeleportPointsSunwell[4][2],0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_SUNWELL_KIL:   player->TeleportTo(MAP_SUNWELL, TeleportPointsSunwell[5][0],TeleportPointsSunwell[5][1],TeleportPointsSunwell[5][2],0.0f); break;
+            }
+
+        if(_Creature->GetMapId() == MAP_ULDUAR && action-GOSSIP_ACTION_INFO_DEF > TELE_ULDUAR && action-GOSSIP_ACTION_INFO_DEF < TELE_ULDUAR_MAX)
+            switch(action)
+            {
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_BASE_CAMP: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[0][0],TeleportPointsUlduar[0][1],TeleportPointsUlduar[0][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_GROUNDS: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[1][0],TeleportPointsUlduar[1][1],TeleportPointsUlduar[1][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_FORGE: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[2][0],TeleportPointsUlduar[2][1],TeleportPointsUlduar[2][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SCRAPYARD: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[3][0],TeleportPointsUlduar[3][1],TeleportPointsUlduar[3][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_ANTECHAMBER: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[4][0],TeleportPointsUlduar[4][1],TeleportPointsUlduar[4][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_WALKWAY: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[5][0],TeleportPointsUlduar[5][1],TeleportPointsUlduar[5][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_CONSERVATORY: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[6][0],TeleportPointsUlduar[6][1],TeleportPointsUlduar[6][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SPARK: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[7][0],TeleportPointsUlduar[7][1],TeleportPointsUlduar[7][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_MADNESS: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[8][0],TeleportPointsUlduar[8][1],TeleportPointsUlduar[8][2], 0.0f); break;
+            }
+
+        return true;
+    }
+};
 
 void AddSC_lol_custom()
 {
@@ -2492,7 +2711,8 @@ void AddSC_lol_custom()
     new npc_night_elf_mohawk(); //UPDATE creature_template SET scriptname = 'npc_night_elf_mohawk' WHERE entry = 31111;
     new vehicle_wyrm_default();
     new npc_item_quest_giver();
-    
+    new npc_wyrm_debug_repairbot();
+
     if(sConfig->GetBoolDefault("Chatticker.Enabled", false))
         new global_chatticker_playerscript();
 }

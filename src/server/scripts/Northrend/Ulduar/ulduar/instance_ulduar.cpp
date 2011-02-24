@@ -61,6 +61,10 @@ public:
         uint64 uiXT002GUID;
         uint64 uiAssemblyGUIDs[3];
         uint64 uiKologarnGUID;
+        uint64 uiFocusedEyebeamGUID;
+        uint64 uiFocusedEyebeamRightGUID;
+        uint64 uiLeftArmGUID;
+        uint64 uiRightArmGUID;
         uint64 uiAuriayaGUID;
         uint64 uiMimironGUID;
         uint64 uiHodirGUID;
@@ -82,6 +86,8 @@ public:
         uint64 uiHodirChestGUID;
         uint64 uiFreyaChestGUID;
 
+        std::set<uint64> mRubbleSpawns;
+
         void Initialize()
         {
             SetBossNumber(MAX_ENCOUNTER);
@@ -90,6 +96,10 @@ public:
             uiExpCommanderGUID    = 0;
             uiXT002GUID           = 0;
             uiKologarnGUID        = 0;
+            uiFocusedEyebeamGUID  = 0;
+            uiFocusedEyebeamRightGUID = 0;
+            uiLeftArmGUID         = 0;
+            uiRightArmGUID        = 0;
             uiAuriayaGUID         = 0;
             uiMimironGUID         = 0;
             uiHodirGUID           = 0;
@@ -157,9 +167,14 @@ public:
                     uiAssemblyGUIDs[2] = creature->GetGUID();
                     break;
 
+                // Kologarn
                 case NPC_KOLOGARN:
                     uiKologarnGUID = creature->GetGUID();
                     break;
+                case NPC_RUBBLE:
+                    mRubbleSpawns.insert(creature->GetGUID());
+                    break;
+
                 case NPC_AURIAYA:
                     uiAuriayaGUID = creature->GetGUID();
                     break;
@@ -297,8 +312,28 @@ public:
                     break;
                 case TYPE_KOLOGARN:
                     if (state == DONE)
+                    {
                         if (GameObject* go = instance->GetGameObject(uiKologarnChestGUID))
                             go->SetRespawnTime(go->GetRespawnDelay());
+                    }
+                    if (state != IN_PROGRESS)
+                    {
+                        std::set<uint64>::const_iterator itr;
+                        for (itr = mRubbleSpawns.begin(); itr != mRubbleSpawns.end(); )
+                        {
+                            if (Creature* rubble = instance->GetCreature((*itr)))
+                            {
+                                if (rubble->isSummon())
+                                {
+                                    rubble->DestroyForNearbyPlayers();
+                                    rubble->ToTempSummon()->UnSummon();
+                                }
+                                else
+                                    rubble->DisappearAndDie();
+                            }
+                            mRubbleSpawns.erase(itr++);
+                        }
+                    }
                     break;
                 case TYPE_HODIR:
                     if (state == DONE)
@@ -340,6 +375,19 @@ public:
             }
         }
 
+        void SetData64(uint32 type, uint64 data)
+        {
+            switch (type)
+            {
+                case DATA_LEFT_ARM:
+                    uiLeftArmGUID = data;
+                    break;
+                case DATA_RIGHT_ARM:
+                    uiRightArmGUID = data;
+                    break;
+            }
+        }
+
         uint64 GetData64(uint32 data)
         {
             switch(data)
@@ -349,6 +397,8 @@ public:
                 case TYPE_RAZORSCALE:           return uiRazorscaleGUID;
                 case TYPE_XT002:                return uiXT002GUID;
                 case TYPE_KOLOGARN:             return uiKologarnGUID;
+                case DATA_LEFT_ARM:             return uiLeftArmGUID;
+                case DATA_RIGHT_ARM:            return uiRightArmGUID;
                 case TYPE_AURIAYA:              return uiAuriayaGUID;
                 case TYPE_MIMIRON:              return uiMimironGUID;
                 case TYPE_HODIR:                return uiHodirGUID;

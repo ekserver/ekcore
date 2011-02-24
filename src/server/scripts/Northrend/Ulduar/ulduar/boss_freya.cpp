@@ -18,6 +18,36 @@
 #include "ScriptPCH.h"
 #include "ulduar.h"
 
+/*
+LandofLegends - Entwicklungsnotizen:
+
+Spells wurden bereits viele getestet und entsprechend gefixt .. Spellfixes findet man am Ende des Scripts
+
+Notizen:
+Bis jetzt ist der Anfang fertig ...
+Freya fügt sich ihr Heilspell zu
+anschließend werden die NPCs gespawnt
+Aufladungen des Spells werden noch nicht runtergenommen wenn ein NPCs stirbt:
+Dazu einfach ein DoEvent Funktion benutzen ... Trigger bestimmen (enum) diesen vom NPC script triggern lassen
+Um Aufladungen zu entferen (oder hinzuzufügen) kann man sich auch YoggSaron script anschauen
+
+Pilze un Bäume müssen gescriptet werden. Spells suchen (testen) und gegebenfalls fixen. Spawnspells für Freya funktionieren bereits.
+
+Spell natural bomb bereits gefixt
+
+TO DO:
+Prio 1:
+Aufladungen Spell entferen wenn Add stirbt
+Freyas Spells testen und fixen 
+
+Prio 2:
+Hardmode fehlt
+Spawnen der richtigen Kiste am ende des Kampfes
+Scripten der NPCs
+Archievments Scripten
+
+*/
+
 enum Yells
 {
     SAY_AGGRO                                   = -1603180,

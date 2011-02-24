@@ -18,6 +18,38 @@
 #include "ScriptPCH.h"
 #include "ulduar.h"
 
+/*
+LandofLegends - Entwicklungsnotizen:
+
+Spells wurden alle schon gefixt. 
+Sara:
+Death Ray muss getestet werden bzw. gefixt
+Brain Link entweder per workaround fixen (Mutter Sharaz) oder spellscript
+YoggSaron:
+Phase 3 Spells testen und fixen.
+
+Script ist zu 50% fertig.
+Phase 1 ist komplett 
+Phase 2 ist halb fertig ...
+    Portale werden erstell ... mann kann sich reinporten
+    Gehirn castet Maddness spell nocht nicht richtig 
+    Rausteleportieren Gameobjekte fehlen noch
+    Spells von Sara noch nicht richtig impelementiert alle
+Phase 3 noch komplett unfertig
+    Spells von YoggSaron fixen und testen
+    NPCs spawnen lassen
+
+TO DO:
+Prio 1:
+    Phasen fertigscripten
+    Non Heroic Modus einbauen (Wächter unterstüzung einbauen)
+Prio 2:
+    Legendäre Waffen Quest fixen
+    Archievments - teilweise schon erledigt
+    Loot
+    Tentakel brauch VehicleID damit ein Spell funktioniert
+*/
+
 enum Sara_Yells
 {
     SAY_SARA_PREFIGHT_1                         = -1603310,
@@ -540,7 +572,7 @@ public:
         {
             if(m_Phase == PHASE_NONE)
             {
-                if(target && me->GetDistance2d(target) <= 100 && target->ToPlayer() && !target->ToPlayer()->isGameMaster())
+                if(target && me->GetDistance2d(target) <= 100 && target->ToPlayer() && !target->ToPlayer()->isGameMaster() && me->IsWithinLOSInMap(target))
                 {
                     SetPhase(PHASE_SARA);
                     EnterCombat(target);

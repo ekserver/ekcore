@@ -30,9 +30,10 @@ public:
             { "player",         SEC_GAMEMASTER,     true,  &HandleAntiCheatPlayerCommand,         "", NULL },
             { "delete",         SEC_ADMINISTRATOR,  true,  &HandleAntiCheatDeleteCommand,         "", NULL },
             { "handle",         SEC_ADMINISTRATOR,  true,  &HandleAntiCheatHandleCommand,         "", NULL },
-            { "jail",           SEC_GAMEMASTER,     true,  &HandleAnticheatJailCommand,         "", NULL },
-            { "warn",           SEC_GAMEMASTER,     true,  &HandleAnticheatWarnCommand,         "", NULL },
-            { NULL,             0,                     false, NULL,                                           "", NULL }
+            { "jail",           SEC_GAMEMASTER,     true,  &HandleAnticheatJailCommand,           "", NULL },
+            { "warn",           SEC_GAMEMASTER,     true,  &HandleAnticheatWarnCommand,           "", NULL },
+            { "targetmarker",   SEC_MODERATOR,      true,  &HandleAnticheatTargetMarkerCommand,   "", NULL },
+            { NULL,             0,                  false, NULL,                                  "", NULL }
         };
 
         static ChatCommand commandTable[] =
@@ -298,6 +299,40 @@ public:
             } while (resultDB->NextRow());
         }
 
+        return true;
+    }
+    
+    static bool HandleAnticheatTargetMarkerCommand(ChatHandler* handler, const char* args)
+    {
+        Player *target = handler->getSelectedPlayer();
+        if(!target)
+            return false;
+        
+        int32 spawntime = 30;
+        char* spawntimeString = strtok((char*)args, " ");
+        if(spawntimeString)
+            spawntime = atoi(spawntimeString);
+        
+        GameObject* pGameObj = new GameObject;
+    
+        Map *map = target->GetMap();
+        
+        float x = target->GetPositionX();
+        float y = target->GetPositionY();
+        float z = target->GetPositionZ();
+        
+        if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), 2000000, map, target->GetPhaseMask(), x, y, z, target->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 100, GO_STATE_READY))
+        {
+            delete pGameObj;
+            return false;
+        }
+        pGameObj->SetRespawnTime(spawntime < 1 ? 1800 : spawntime * MINUTE);
+        pGameObj->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_MODERATOR);
+        pGameObj->SetOwnerGUID(handler->GetSession()->GetPlayer()->GetGUID());
+        pGameObj->SetSpawnedByDefault(false);
+        
+        map->Add(pGameObj);
+        
         return true;
     }
 };

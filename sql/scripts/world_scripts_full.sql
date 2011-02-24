@@ -850,6 +850,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_high_overlord_saurfang_icc' WHE
 UPDATE `creature_template` SET `ScriptName`='npc_muradin_bronzebeard_icc' WHERE `entry`=37200;
 UPDATE `creature_template` SET `ScriptName`='npc_saurfang_event' WHERE `entry` IN (37920,37830);
 UPDATE `creature_template` SET `ScriptName`='npc_frost_freeze_trap' WHERE `entry`=37744;
+UPDATE `creature_template` SET `ScriptName`='npc_alchemist_adrianna' WHERE `entry`=38501;
 UPDATE `creature_template` SET `ScriptName`='boss_festergut' WHERE `entry`=36626;
 UPDATE `creature_template` SET `ScriptName`='npc_stinky_icc' WHERE `entry`=37025;
 UPDATE `creature_template` SET `ScriptName`='boss_rotface' WHERE `entry`=36627;
@@ -1171,7 +1172,6 @@ UPDATE `creature_template` SET `ScriptName`='npc_drake_dealer_hurlunk' WHERE `en
 UPDATE `creature_template` SET `ScriptName`='npc_invis_legion_teleporter' WHERE `entry`=21807;
 UPDATE `creature_template` SET `ScriptName`='npcs_flanis_swiftwing_and_kagrosh' WHERE `entry` IN (21725,21727);
 UPDATE `creature_template` SET `ScriptName`='npc_murkblood_overseer' WHERE `entry`=23309;
-UPDATE `creature_template` SET `ScriptName`='npc_neltharaku' WHERE `entry`=21657;
 UPDATE `creature_template` SET `ScriptName`='npc_oronok_tornheart' WHERE `entry`=21183;
 UPDATE `creature_template` SET `ScriptName`='mob_mature_netherwing_drake' WHERE `entry`=21648;
 UPDATE `creature_template` SET `ScriptName`='mob_enslaved_netherwing_drake' WHERE `entry`=21722;
@@ -1534,8 +1534,6 @@ UPDATE `creature_template` SET `ScriptName`='mob_lightning_elemental' WHERE `ent
 UPDATE `creature_template` SET `ScriptName`='mob_rune_of_summoning' WHERE `entry`=33051;
 UPDATE `creature_template` SET `ScriptName`= 'mob_rune_of_power' WHERE entry = 33705;
 UPDATE `creature_template` SET `ScriptName`='boss_kologarn' WHERE `entry`=32930;
-UPDATE `creature_template` SET `ScriptName`='npc_right_arm' WHERE `entry`=32934;
-UPDATE `creature_template` SET `ScriptName`='npc_left_arm' WHERE `entry`=32933;
 UPDATE `creature_template` SET `ScriptName`='boss_general_vezax' WHERE `entry`=33271;
 UPDATE `creature_template` SET `ScriptName`='npc_saronite_vapors' WHERE `entry`=33488;
 UPDATE `creature_template` SET `ScriptName`='npc_saronite_animus' WHERE `entry`=33524;
@@ -1915,6 +1913,8 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 72444, 'spell_deathbringer_mark_of_the_fallen_champion'),
 ( 72445, 'spell_deathbringer_mark_of_the_fallen_champion'),
 ( 72446, 'spell_deathbringer_mark_of_the_fallen_champion'),
+( 72155, 'spell_icc_harvest_blight_specimen'),
+( 72162, 'spell_icc_harvest_blight_specimen'),
 ( 71123, 'spell_stinky_precious_decimate'),
 ( 73032, 'spell_festergut_pungent_blight'),
 ( 73031, 'spell_festergut_pungent_blight'),
@@ -1928,6 +1928,18 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 71222, 'spell_festergut_blighted_spores'),
 ( 73033, 'spell_festergut_blighted_spores'),
 ( 73034, 'spell_festergut_blighted_spores'),
+( 69159, 'spell_festergut_gaseous_blight'),
+( 70135, 'spell_festergut_gaseous_blight'),
+( 70136, 'spell_festergut_gaseous_blight'),
+( 70137, 'spell_festergut_gaseous_blight'),
+( 69161, 'spell_festergut_gaseous_blight'),
+( 70138, 'spell_festergut_gaseous_blight'),
+( 70139, 'spell_festergut_gaseous_blight'),
+( 70140, 'spell_festergut_gaseous_blight'),
+( 69163, 'spell_festergut_gaseous_blight'),
+( 70468, 'spell_festergut_gaseous_blight'),
+( 70469, 'spell_festergut_gaseous_blight'),
+( 70470, 'spell_festergut_gaseous_blight'),
 ( 69782, 'spell_rotface_ooze_flood'),
 ( 69796, 'spell_rotface_ooze_flood'),
 ( 69798, 'spell_rotface_ooze_flood'),
@@ -1938,6 +1950,10 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 69839, 'spell_rotface_unstable_ooze_explosion_init'),
 ( 69832, 'spell_rotface_unstable_ooze_explosion'),
 ( 71441, 'spell_rotface_unstable_ooze_explosion_suicide'),
+( 69507, 'spell_rotface_slime_spray'),
+( 71213, 'spell_rotface_slime_spray'),
+( 73189, 'spell_rotface_slime_spray'),
+( 73190, 'spell_rotface_slime_spray'),
 ( 70701, 'spell_putricide_expunged_gas'),
 ( 70343, 'spell_putricide_slime_puddle'),
 ( 70351, 'spell_putricide_unstable_experiment'),
@@ -2045,6 +2061,12 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 62521, 'spell_attuned_to_nature_dose_reduction'),
 ( 62524, 'spell_attuned_to_nature_dose_reduction'),
 ( 62525, 'spell_attuned_to_nature_dose_reduction'),
+( 63633, 'spell_ulduar_rubble_summon'),
+( 65594, 'spell_ulduar_cancel_stone_grip'),
+( 62056, 'spell_ulduar_stone_grip'),
+( 63985, 'spell_ulduar_stone_grip'),
+( 64224, 'spell_ulduar_stone_grip_absorb'),
+( 64225, 'spell_ulduar_stone_grip_absorb'),
 -- quest
 (  8913, 'spell_q55_sacred_cleansing'),
 ( 17271, 'spell_q5206_test_fetid_skull'),
