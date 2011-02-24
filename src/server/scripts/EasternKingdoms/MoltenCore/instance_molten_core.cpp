@@ -238,7 +238,7 @@ public:
                     if(data == DONE)
                         if(GameObject* pGo = instance->GetGameObject(m_uiFirelordCacheGUID))
                         {
-                            pGo->SetRespawnTime(-1800);
+                            pGo->SetRespawnTime(90000000);
                             pGo->Respawn();
                         }
                 }
