@@ -95,11 +95,11 @@ private:
             newlevel = fields[5].GetUInt8();
             const char* dbcode = fields[6].GetCString();
             
-            sLog->outDebug("CodeBox: Found Code (%s) in DB", dbcode);
+            sLog->outDebug(LOG_FILTER_TSCR, "CodeBox: Found Code (%s) in DB", dbcode);
 
             if(!strcmp(dbcode, sCode))
             {
-                sLog->outDebug("CodeBox: DB Code %s matches player code %s", dbcode, sCode);
+                sLog->outDebug(LOG_FILTER_TSCR, "CodeBox: DB Code %s matches player code %s", dbcode, sCode);
                 found = true;
                 break;
             }
