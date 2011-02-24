@@ -400,7 +400,7 @@ uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, Spe
                 break;
             case POWER_RUNE:
             case POWER_RUNIC_POWER:
-                sLog->outDebug("CalculateManaCost: Not implemented yet!");
+                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateManaCost: Not implemented yet!");
                 break;
             default:
                 sLog->outError("CalculateManaCost: Unknown power type '%d' in spell %d", spellInfo->powerType, spellInfo->Id);
@@ -1223,7 +1223,7 @@ void SpellMgr::LoadSpellTargetPositions()
         if (found)
         {
 //            if (!sSpellMgr->GetSpellTargetPosition(i))
-//                sLog->outDebug("Spell (ID: %u) does not have record in `spell_target_position`", i);
+//                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell (ID: %u) does not have record in `spell_target_position`", i);
         }
     }
 
@@ -4038,7 +4038,16 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_MASTER;
             count++;
             break;
+        // ULDUAR SPELLS
+        //
+        case 63342: // Focused Eyebeam Summon Trigger
+            spellInfo->MaxAffectedTargets = 1;
+            count++;
+            break;
+        // ENDOF ULDUAR SPELLS
+        //
         // ICECROWN CITADEL SPELLS
+        //
         // THESE SPELLS ARE WORKING CORRECTLY EVEN WITHOUT THIS HACK
         // THE ONLY REASON ITS HERE IS THAT CURRENT GRID SYSTEM
         // DOES NOT ALLOW FAR OBJECT SELECTION (dist > 333)

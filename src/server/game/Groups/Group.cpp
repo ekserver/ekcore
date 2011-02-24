@@ -67,7 +67,7 @@ Group::~Group()
 {
     if (m_bgGroup)
     {
-        sLog->outDebug("Group::~Group: battleground group being deleted.");
+        sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Group::~Group: battleground group being deleted.");
         if (m_bgGroup->GetBgRaid(ALLIANCE) == this) m_bgGroup->SetBgRaid(ALLIANCE, NULL);
         else if (m_bgGroup->GetBgRaid(HORDE) == this) m_bgGroup->SetBgRaid(HORDE, NULL);
         else sLog->outError("Group::~Group: battleground group is not linked to the correct battleground.");
@@ -405,7 +405,7 @@ bool Group::AddMember(Player *player)
     return true;
 }
 
-uint32 Group::RemoveMember(const uint64 &guid, const RemoveMethod &method /* = GROUP_REMOVEMETHOD_DEFAULT */, uint64 kicker /* = 0 */, const char* reason /* = NULL */)
+bool Group::RemoveMember(const uint64 &guid, const RemoveMethod &method /*= GROUP_REMOVEMETHOD_DEFAULT*/, uint64 kicker /*= 0*/, const char* reason /*= NULL*/)
 {
     BroadcastGroupUpdate();
 
@@ -505,12 +505,15 @@ uint32 Group::RemoveMember(const uint64 &guid, const RemoveMethod &method /* = G
         }
 
         SendUpdate();
+
+        return true;
     }
     // If group size before player removal <= 2 then disband it
     else
+    {
         Disband();
-
-    return m_memberSlots.size();
+        return false;
+    }
 }
 
 void Group::ChangeLeader(const uint64 &guid)
@@ -632,11 +635,16 @@ void Group::Disband(bool hideDestroy /* = false */)
         CharacterDatabase.CommitTransaction(trans);
         ResetInstances(INSTANCE_RESET_GROUP_DISBAND, false, NULL);
         ResetInstances(INSTANCE_RESET_GROUP_DISBAND, true, NULL);
+
+        // If the deleted group guid is lower than the one we have stored for the next group creation,
+        // use this one instead.
+        if (lowguid < sObjectMgr->GetNextGroupGuid())
+            sObjectMgr->SetNextGroupGuid(lowguid);
+
     }
 
-    m_guid = 0;
-    m_leaderGuid = 0;
-    m_leaderName = "";
+    sObjectMgr->RemoveGroup(this);
+    delete this;
 }
 
 /*********************************************************/
@@ -934,7 +942,7 @@ void Group::NeedBeforeGreed(Loot *loot, WorldObject* pLootedObject)
 
 void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
 {
-    sLog->outDebug("Group::MasterLoot (SMSG_LOOT_MASTER_LIST, 330)");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "Group::MasterLoot (SMSG_LOOT_MASTER_LIST, 330)");
 
     uint32 real_count = 0;
 
@@ -1752,7 +1760,7 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave *save, bool permanent, boo
     bind.save = save;
     bind.perm = permanent;
     if (!load)
-        sLog->outDebug("Group::BindToInstance: %d is now bound to map %d, instance %d, difficulty %d", GUID_LOPART(GetGUID()), save->GetMapId(), save->GetInstanceId(), save->GetDifficulty());
+        sLog->outDebug(LOG_FILTER_MAPS, "Group::BindToInstance: %d is now bound to map %d, instance %d, difficulty %d", GUID_LOPART(GetGUID()), save->GetMapId(), save->GetInstanceId(), save->GetDifficulty());
     return &bind;
 }
 

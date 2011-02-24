@@ -42,17 +42,20 @@ enum eTypes
     TYPE_BRAIN_DOOR_1,
     TYPE_BRAIN_DOOR_2,
     TYPE_BRAIN_DOOR_3,
-
+    
+    // Assembly of Iorn
     DATA_STEELBREAKER,
     DATA_MOLGEIM,
     DATA_BRUNDIR,
 
     DATA_EXP_COMMANDER,
-    DATA_RIGHT_ARM,
+
+    // Kologarn:
     DATA_LEFT_ARM,
+    DATA_RIGHT_ARM,
 };
 
-enum eBossNPCs
+enum eNPCs
 {
     NPC_LEVIATHAN               = 33113,
     NPC_IGNIS                   = 33118,
@@ -63,6 +66,11 @@ enum eBossNPCs
     NPC_MOLGEIM                 = 32927,
     NPC_BRUNDIR                 = 32857,
     NPC_KOLOGARN                = 32930,
+    NPC_FOCUSED_EYEBEAM         = 33632,
+    NPC_FOCUSED_EYEBEAM_RIGHT   = 33802,
+    NPC_LEFT_ARM                = 32933,
+    NPC_RIGHT_ARM               = 32934,
+    NPC_RUBBLE                  = 33768,
     NPC_AURIAYA                 = 33515,
     NPC_MIMIRON                 = 33350,
     NPC_HODIR                   = 32845,
