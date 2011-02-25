@@ -192,10 +192,9 @@ public:
                 DoMeleeAttackIfReady();
         }
     };
-
 };
 
-// just to prevent infecting wound from not stacking, remove if core-fixed
+// just to prevent infected wound from not stacking, TODO: remove if core-fixed
 class mob_gluth_zombie : public CreatureScript
 {
 public:

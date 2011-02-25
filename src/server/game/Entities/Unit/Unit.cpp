@@ -10014,6 +10014,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     if (!spellProto || !pVictim || damagetype == DIRECT_DAMAGE)
         return pdamage;
 
+    // TODO: has side-effects?
+    if (spellProto->AttributesEx4 & SPELL_ATTR4_FIXED_DAMAGE)
+        return pdamage;
+
     // For totems get damage bonus from owner
     if (GetTypeId() == TYPEID_UNIT && this->ToCreature()->isTotem())
         if (Unit *owner = GetOwner())
