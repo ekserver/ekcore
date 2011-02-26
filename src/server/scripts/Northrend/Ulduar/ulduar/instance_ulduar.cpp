@@ -76,6 +76,7 @@ public:
         uint64 uiAlgalonGUID;
         uint64 uiLeviathanDoor[7];
         uint64 uiLeviathanGateGUID;
+        uint64 uiVezaxDoorGUID;
         uint64 uiYoggSaronDoorGUID;
         uint64 uiYoggSaronBrainDoor1GUID;
         uint64 uiYoggSaronBrainDoor2GUID;
