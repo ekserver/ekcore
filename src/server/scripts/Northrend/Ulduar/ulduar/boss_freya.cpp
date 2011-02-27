@@ -533,8 +533,7 @@ public:
                 case SPELL_ATTUNED_TO_NATURE_REMOVE_10 : count = 10; break;
                 case SPELL_ATTUNED_TO_NATURE_REMOVE_25 : count = 25; break;
                 }
-
-                if(Aura* aur = unitTarget->GetAura(SPELL_ATTUNED_TO_NATURE, GetCaster()->GetGUID()))
+                if(Aura* aur = unitTarget->GetAura(SPELL_ATTUNED_TO_NATURE, unitTarget->GetGUID()))
                     aur->ModStackAmount(-count);
             }
         }
@@ -548,6 +547,36 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_attuned_to_nature_remove_SpellScript();
+    }
+};
+
+class spell_summon_wave_effect_10mob_spell : public SpellScriptLoader
+{
+public:
+    spell_summon_wave_effect_10mob_spell() : SpellScriptLoader("spell_summon_wave_effect_10mob") { }
+
+    class spell_summon_wave_effect_10mob_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_summon_wave_effect_10mob_SpellScript);
+
+        void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+        {
+            if (!GetCaster() || GetCaster()->GetTypeId() != TYPEID_UNIT)
+                    return;
+
+            for(uint8 i = 0; i < 10; i++)
+                GetCaster()->CastSpell(GetCaster(),SPELL_SUMMON_WAVE_10_SUMMON,true);
+        }
+
+        void Register()
+        {
+            OnEffect += SpellEffectFn(spell_summon_wave_effect_10mob_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_summon_wave_effect_10mob_SpellScript();
     }
 };
 
@@ -578,7 +607,7 @@ public:
             if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 2; 
-                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_2);
+                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_2,true);
             }
         }
 
@@ -626,7 +655,7 @@ public:
             if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 10; 
-                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10);
+                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
             }
         }
 
@@ -673,7 +702,7 @@ public:
             if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 10; 
-                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10);
+                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
             }
         }
 
@@ -726,7 +755,7 @@ public:
             if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 10; 
-                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10);
+                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
             }
         }
 
@@ -778,7 +807,7 @@ public:
             if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 25; 
-                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_25);
+                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_25,true);
             }
         }
 
@@ -1260,13 +1289,15 @@ UPDATE gameobject_template SET ScriptName = "mob_natural_bomb" WHERE ENTRY = 194
 UPDATE creature_template SET faction_A = 16 WHERE Entry = 33168;
 UPDATE creature_template SET faction_H = 16 WHERE Entry = 33168;
 
-DELETE FROM spell_scriptname WHERE spell_id = 64648;
+DELETE FROM spell_script_names WHERE spell_id = 64648;
 INSERT INTO spell_script_names (spell_id,ScriptName) VALUES (64648,"spell_freya_natural_bomb_spell");
-DELETE FROM spell_scriptname WHERE spell_id IN (62524,62525,62521);
+DELETE FROM spell_script_names WHERE spell_id IN (62524,62525,62521);
 INSERT INTO spell_script_names (spell_id,ScriptName) VALUES
 (62524,"spell_attuned_to_nature_remove"),
 (62525,"spell_attuned_to_nature_remove"),
 (62521,"spell_attuned_to_nature_remove");
+DELETE FROM spell_script_names WHERE spell_id = 62688;
+INSERT INTO spell_script_names (spell_id,ScriptName) VALUES (62688,"spell_summon_wave_effect_10mob");
 */
 
 void AddSC_boss_freya()
@@ -1275,6 +1306,7 @@ void AddSC_boss_freya()
     new mob_natural_bomb();
     new spell_freya_natural_bomb_spell();
     new spell_attuned_to_nature_remove_spell();
+    new spell_summon_wave_effect_10mob_spell();
     new mob_detonating_lasher();
     new mob_ancient_water_spirit();
     new mob_storm_lasher();
