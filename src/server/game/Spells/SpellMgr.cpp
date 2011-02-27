@@ -4046,6 +4046,8 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         // ULDUAR SPELLS
         //
+        case 63024: // XT-002 Gravity Bomb
+        case 64234: // XT-002 Gravity Bomb
         case 63342: // Focused Eyebeam Summon Trigger
             spellInfo->MaxAffectedTargets = 1;
             count++;
