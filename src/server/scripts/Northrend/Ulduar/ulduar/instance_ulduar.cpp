@@ -32,6 +32,7 @@ enum eGameObjects
     GO_FREYA_CHEST          = 194324,
     GO_LEVIATHAN_DOOR       = 194905,
     GO_LEVIATHAN_GATE       = 194630,
+    GO_MIMIRON_TRAIN        = 194675,
     GO_YOGGSARON_DOOR       = 194773,
     GO_YOGGBRAIN_DOOR_1     = 194635,
     GO_YOGGBRAIN_DOOR_2     = 194636,
@@ -261,6 +262,9 @@ public:
                 case GO_LEVIATHAN_GATE:
                     uiLeviathanGateGUID = go->GetGUID();
                     HandleGameObject(NULL, false, go);
+                    break;
+                case GO_MIMIRON_TRAIN:
+                    go->setActive(true);
                     break;
                 case GO_YOGGSARON_DOOR:
                     uiYoggSaronDoorGUID = go->GetGUID();
