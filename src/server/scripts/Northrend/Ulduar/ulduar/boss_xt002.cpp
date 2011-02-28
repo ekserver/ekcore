@@ -284,6 +284,30 @@ public:
             _JustDied();
         }
 
+        void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
+        {
+            switch(spell->Id)
+            {
+            case SPELL_SEARING_LIGHT_10:
+            case SPELL_SEARING_LIGHT_25:
+                {
+                    if (hardMode)
+                        searing_light_active = true;
+
+                    uiSpawnLifeSparkTimer = TIMER_SPAWN_LIFE_SPARK;
+                    uiSearingLightTarget = pTarget->GetGUID();
+                }
+                break;
+            case SPELL_GRAVITY_BOMB_10:
+            case SPELL_GRAVITY_BOMB_25:
+                {
+                    uiGravityBombTarget = pTarget->GetGUID();
+                    gravity_bomb_active = true;
+                }
+                break;
+            }
+        }
+
         void UpdateAI(const uint32 diff)
         {
             if (!UpdateVictim())
@@ -295,31 +319,19 @@ public:
                 enterHardMode = false;
             }
 
-            // Handles spell casting. These spells only occur during phase 1 and hard mode
+            // Handles spell casting. These spells only occur during phase 1 or hard mode
             if (phase == 1 || hardMode)
             {
                 if (uiSearingLightTimer <= diff)
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                    {
-                        DoCast(pTarget, RAID_MODE(SPELL_SEARING_LIGHT_10, SPELL_SEARING_LIGHT_25));
-                        uiSearingLightTarget = pTarget->GetGUID();
-                    }
-                    uiSpawnLifeSparkTimer = TIMER_SPAWN_LIFE_SPARK;
-                    if (hardMode)
-                        searing_light_active = true;
+                    DoCast(me, RAID_MODE(SPELL_SEARING_LIGHT_10, SPELL_SEARING_LIGHT_25), true);
                     uiSearingLightTimer = TIMER_SEARING_LIGHT;
                 } else uiSearingLightTimer -= diff;
 
                 if (uiGravityBombTimer <= diff)
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                    {
-                        DoCast(pTarget, RAID_MODE(SPELL_GRAVITY_BOMB_10,SPELL_GRAVITY_BOMB_25));
-                        uiGravityBombTarget = pTarget->GetGUID();
-                    }
+                    DoCast(me, RAID_MODE(SPELL_GRAVITY_BOMB_10,SPELL_GRAVITY_BOMB_25), true);
                     uiGravityBombTimer = TIMER_GRAVITY_BOMB;
-                    gravity_bomb_active = true;
                 } else uiGravityBombTimer -= diff;
 
                 if (uiTympanicTantrumTimer <= diff)
@@ -399,8 +411,7 @@ public:
                         DoScriptText(SAY_HEART_CLOSED, me);
                         SetPhaseOne();
                     }
-                    else
-                        uiHeartPhaseTimer -= diff;
+                    else uiHeartPhaseTimer -= diff;
                 }
             }
             else
@@ -417,17 +428,11 @@ public:
                     } else uiSpawnLifeSparkTimer -= diff;
                 }
 
-                DoMeleeAttackIfReady();
-            }
-
-            if (gravity_bomb_active)
-            {
-                if (uiGravityBombAuraTimer <= diff)
+                if (gravity_bomb_active)
                 {
-                    if (Unit *pGravityBombTarget = me->GetUnit(*me, uiGravityBombTarget))
+                    if (uiGravityBombAuraTimer <= diff)
                     {
-                        pGravityBombTarget->RemoveAurasDueToSpell(RAID_MODE(SPELL_GRAVITY_BOMB_10,SPELL_GRAVITY_BOMB_25));
-                        if (hardMode)
+                        if (Unit *pGravityBombTarget = me->GetUnit(*me, uiGravityBombTarget))
                         {
                             //Remains spawned for 3 minutes
                             pGravityBombTarget->SummonCreature(NPC_VOID_ZONE, pGravityBombTarget->GetPositionX(), pGravityBombTarget->GetPositionY(), pGravityBombTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 180000);
@@ -436,8 +441,9 @@ public:
 
                     gravity_bomb_active = false;
                     uiGravityBombAuraTimer = TIMER_GRAVITY_BOMB_AURA;
-                    //gravityBomb();
                 } else uiGravityBombAuraTimer -= diff;
+
+                DoMeleeAttackIfReady();
             }
 
             //Enrage stuff
@@ -458,7 +464,8 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
 
             //Summon the heart npc
-            me->SummonCreature(NPC_XT002_HEART, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7, 0, TEMPSUMMON_TIMED_DESPAWN, TIMER_HEART_PHASE);
+            Creature* heart = me->SummonCreature(NPC_XT002_HEART, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7, 0, TEMPSUMMON_TIMED_DESPAWN, TIMER_HEART_PHASE);
+            heart->SetFlying(true);
 
             // Start "end of phase 2 timer"
             uiHeartPhaseTimer = TIMER_HEART_PHASE;
@@ -486,34 +493,6 @@ public:
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             phase = 1;
         }
-
-        // TODO: put in comment and kept for reference. The spell should be fixed properly in spell system, if necessary.
-        ////Have to do this the custom way since the original spell messes up player movement
-        //void gravityBomb()
-        //{
-        //    uint32 maxDamage = RAID_MODE(GRAVITY_BOMB_DMG_MAX_10, GRAVITY_BOMB_DMG_MAX_25);
-        //    uint32 minDamage = RAID_MODE(GRAVITY_BOMB_DMG_MIN_10, GRAVITY_BOMB_DMG_MIN_25);
-        //    uint16 range = GRAVITY_BOMB_RADIUS;
-        //    Map* pMap = me->GetMap();
-        //    if (pMap && pMap->IsDungeon())
-        //    {
-        //        Map::PlayerList const &PlayerList = pMap->GetPlayers();
-        //        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-        //        {
-        //            //If a player is within the range of the spell
-        //            if (i->getSource() && i->getSource()->GetDistance2d(pGravityBombTarget) <= range)
-        //            {
-        //                //Deal damage to the victim
-        //                int32 damage = urand(minDamage, maxDamage);
-        //                i->getSource()->ModifyHealth(-damage);
-        //                me->SendSpellNonMeleeDamageLog(i->getSource(), SPELL_GRAVITY_BOMB_AURA_10, damage, SPELL_SCHOOL_MASK_SHADOW, 0, 0, false, 0);
-
-        //                //Replacing the tractor beam effect
-        //                i->getSource()->JumpTo(pGravityBombTarget, 5);
-        //            }
-        //        }
-        //    }
-        //}
     };
 };
 
@@ -624,7 +603,6 @@ public:
 
 };
 
-
 /*-------------------------------------------------------
  *
  *        XM-024 PUMMELLER
@@ -691,7 +669,6 @@ public:
 
 };
 
-
 /*-------------------------------------------------------
  *
  *        XE-321 BOOMBOT
@@ -746,7 +723,6 @@ public:
     };
 
 };
-
 
 /*-------------------------------------------------------
  *
@@ -810,7 +786,6 @@ public:
     };
 
 };
-
 
 /*-------------------------------------------------------
  *

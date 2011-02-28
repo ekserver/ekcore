@@ -315,6 +315,13 @@ const Position LichKingTentacleLocation[CONSTANT_MAX_LICHKING_TENTACLE_SPAWNS] =
 const Position BrainLocation = {1980.01f, -25.36f, 265.00f, M_PI};
 const Position SaraLocation = {1980.28f, -25.58f, 325.00f, M_PI};
 
+const Position InnerBrainTeleportLocation[3] = 
+{
+    {2001.40f, -59.66f, 245.07f, 0},
+    {1941.61f, -25.88f, 244.98f, 0},
+    {2001.18f,  9.409f, 245.24f, 0}
+};
+
 class boss_sara : public CreatureScript
 {
 public:
@@ -1643,6 +1650,14 @@ UPDATE creature_template SET scriptname = 'npc_immortal_guardian' WHERE entry = 
 UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 194625;
 
 UPDATE creature_template SET RegenHealth = 0 WHERE entry IN (33134,34332,33890,33954);
+
+DELETE FROM gameobject WHERE id = 194625;
+INSERT INTO gameobject 
+(guid, id, map, spawnMask, phaseMask, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state)
+VALUES 
+(603001, 194625, 603, 3, 1, 2001.40, -59.66, 245.07, 0, 0, 0, 0, 0, 60, 100, 1),
+(603002, 194625, 603, 3, 1, 1941.61, -25.88, 244.98, 0, 0, 0, 0, 0, 60, 100, 1),
+(603003, 194625, 603, 3, 1, 2001.18,  9.409, 245.24, 0, 0, 0, 0, 0, 60, 100, 1);
 */
 
 void AddSC_boss_yoggsaron()
@@ -1654,5 +1669,6 @@ void AddSC_boss_yoggsaron()
     new npc_descend_into_madness();
     new npc_brain_of_yogg_saron();
     new boss_yogg_saron();
+    new npc_immortal_guardian();
     new go_flee_to_surface();
 }
