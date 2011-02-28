@@ -21,33 +21,34 @@
 /*
 LandofLegends - Entwicklungsnotizen:
 
-Spells wurden alle schon gefixt. 
-Sara:
-Death Ray muss getestet werden bzw. gefixt
-Brain Link entweder per workaround fixen (Mutter Sharaz) oder spellscript
-YoggSaron:
-Phase 3 Spells testen und fixen.
+Allgemein:
+Abbrüfen ob Keeper benutzt werden
+Keeper scripten - (Non Heroic Modus)
+Loot
+Legendaere Waffen Quest fixen
+Archievments - teilweise schon erledigt
 
-Script ist zu 50% fertig.
-Phase 1 ist komplett 
-Phase 2 ist halb fertig ...
-    Portale werden erstell ... mann kann sich reinporten
-    Gehirn castet Maddness spell nocht nicht richtig 
-    Rausteleportieren Gameobjekte fehlen noch
-    Spells von Sara noch nicht richtig impelementiert alle
-Phase 3 noch komplett unfertig
-    Spells von YoggSaron fixen und testen
-    NPCs spawnen lassen
+Script ist zu 80% fertig.
 
-TO DO:
-Prio 1:
-    Phasen fertigscripten
-    Non Heroic Modus einbauen (Wächter unterstüzung einbauen)
-Prio 2:
-    Legendäre Waffen Quest fixen
-    Archievments - teilweise schon erledigt
-    Loot
-    Tentakel brauch VehicleID damit ein Spell funktioniert
+Phase 1 ist komplett
+Phase 2 ist fast fertig
+  Allgemein:
+    Rausteleportieren Gameobjekte fehlen noch (DB- oder Scriptspawn)
+    Die kleinen Geschichten muessen noch gescriptet werden
+    Yells raussuchen
+  Sara:
+    Death Ray muss getestet werden bzw. gefixt
+    Brain Link entweder per workaround fixen (Mutter Sharaz) oder spellscript
+  YoggSauron:
+    Maddnesspell vom Gehirn hat noch kein Effekt (fuer Tests erstmal aus lassen) wird aber gecastet korrekt
+    Spells von Sara noch nicht richtig implementiert alle
+    Tentakle Spawns Timer fixen
+    Tentakle brauch vehicleID
+    MindControl bei Sanity = 0
+Phase 3 fast fertig
+    Spell Lunatic Gaze testen fixen
+    Empower Shadows scripten
+    Yells raussuchen
 */
 
 enum Sara_Yells
@@ -108,6 +109,7 @@ enum Entrys
     ENTRY_AZURE_CONSORT                         = 33717, // 2 on North East of the room
     ENTRY_SUIT_OF_ARMOR                         = 33433, // around the Room
     ENTRY_DEATHSWORN_ZEALOT                     = 33567, // 3 Groups of 3 ... left middle right
+    ENTRY_IMMORTAL_GUARDIAN                     = 33988,
     OBJECT_FLEE_TO_SURFACE                      = 194625,
 };
 
@@ -190,7 +192,7 @@ enum Spells
     //  Influence Tentacle
     SPELL_GRIM_REPRISAL                         = 63305, // Dummy aura
     SPELL_GRIM_REPRISAL_DAMAGE                  = 64039, // Damage 1
-    //  Yogg-Sauron
+    //  Yogg-Saron
     SPELL_EXTINGUISH_ALL_LIFE                   = 64166, // After 15 Minutes
     SPELL_SHADOWY_BARRIER                       = 63894,
     SPELL_SUMMON_CRUSHER_TENTACLE               = 64139,
@@ -201,6 +203,29 @@ enum Spells
     SPELL_SHATTERED_ILLUSIONS                   = 64173,
     //  Mind Portal 
     SPELL_TELEPORT                              = 64027, // Not Used
+    //  Lauthing Skull
+    SPELL_LS_LUNATIC_GAZE                       = 64167,
+    SPELL_LS_LUNATIC_GAZE_EFFECT                = 64168,
+    //Phase 3:
+    //  Yogg-Saron
+    SPELL_DEAFENING_ROAR                        = 64189, // Cast only on 25plr Mode and only with 0-3 Keepers active
+    SPELL_SUMMON_IMMORTAL_GUARDIAN              = 64158,
+
+    SPELL_SHADOW_BEACON                         = 64465, // Casted on Immortal Guardian - trigger 64466
+    SPELL_EMPOWERING_SHADOWS_SCRP_1             = 64466, // Script Effekt ... as index 64467
+    SPELL_EMPOWERING_SHADOWS_SCRP_2             = 64467, // I dont need this
+    SPELL_EMPOWERING_SHADOWS_HEAL_10            = 64468, // 10plr Heal
+    SPELL_EMPOWERING_SHADOWS_HEAL_25            = 64486, // 20plr Heal
+
+    SPELL_LUNATIC_GAZE                          = 64163, // Triggers 4 Times 64164
+    SPELL_LUNATIC_GAZE_EFFECT                   = 64164, // needs sanity scripting
+
+    //  Immortal Guardian - under 1% no damage
+    SPELL_DRAIN_LIFE_10                         = 64159,
+    SPELL_DRAIN_LIFE_25                         = 33988,
+
+    SPELL_WEAKENED                              = 64162, // Dummy on low health for Titan Storm and Shadow Beacon
+    SPELL_EMPOWERED                             = 65294, // stacks 9 times ... on 100% hp it have 9 stacks .. but with <10% it havent any
 };
 
 enum BossPhase
@@ -287,7 +312,8 @@ const Position LichKingTentacleLocation[CONSTANT_MAX_LICHKING_TENTACLE_SPAWNS] =
     {1910.28f,  -102.96f, 240.00f, (1.35f*M_PI)}
 };
 
-const Position BrainLocation = {1980.01f, -25.36f, 270.00f, M_PI};
+const Position BrainLocation = {1980.01f, -25.36f, 265.00f, M_PI};
+const Position SaraLocation = {1980.28f, -25.58f, 325.00f, M_PI};
 
 class boss_sara : public CreatureScript
 {
@@ -311,6 +337,7 @@ public:
         SummonList Summons;
 
         BossPhase m_Phase;
+        uint32 amountKeeper;
 
         uint64 guidYogg;
         uint64 guidYoggBrain;
@@ -338,6 +365,10 @@ public:
 
         BrainEventPhase currentBrainEventPhase;
 
+        // Phase 3
+        uint32 uiDeafeningRoar_Timer;
+        uint32 uiShadowBeacon_Timer;
+
         void CloudHandling(bool remove)
         {
             std::list<Creature*> CloudList;
@@ -358,9 +389,10 @@ public:
             guidEventTentacles = std::list<uint64>();
 
             me->InterruptNonMeleeSpells(false);
-            // Zur�ck an Home ... muss nicht sein ist aber besser so
+            // Zurueck an Home ... muss nicht sein ist aber besser so
             Position pos = me->GetHomePosition();
             me->NearTeleportTo(pos.m_positionX,pos.m_positionY,pos.m_positionZ,pos.m_orientation);
+            me->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
             me->RemoveAurasDueToSpell(SPELL_SARA_SHADOWY_BARRIER);
 
             // Remove Random MoveMaster
@@ -368,6 +400,7 @@ public:
             me->GetMotionMaster()->MoveIdle();
 
             // Reset Display
+            me->setFaction(35);
             me->SetVisible(true);
             me->SetDisplayId(me->GetNativeDisplayId());
             // Reset Health
@@ -388,7 +421,7 @@ public:
             // Spawn Yoggy if not spawned
             Creature* yogg = me->GetCreature(*me,guidYogg);
             if(!yogg)
-                DoSummon(ENTRY_YOGG_SARON,me->GetHomePosition(),0,TEMPSUMMON_MANUAL_DESPAWN);
+                DoSummon(ENTRY_YOGG_SARON,SaraLocation,0,TEMPSUMMON_MANUAL_DESPAWN);
             Creature* yoggbrain = me->GetCreature(*me,guidYoggBrain);
             if(!yoggbrain)
                 DoSummon(ENTRY_BRAIN_OF_YOGG_SARON,BrainLocation,0,TEMPSUMMON_MANUAL_DESPAWN);
@@ -411,6 +444,9 @@ public:
             uiTentacle_Timer = urand(3000,5000);
             uiMadness_Timer = 60000;
 
+            uiDeafeningRoar_Timer = urand(30000,60000);
+            uiShadowBeacon_Timer = 30000;
+
             uiEnrage_Timer = 900000;
 
             if(Creature* yogg = me->GetCreature(*me,guidYogg))
@@ -420,6 +456,9 @@ public:
 
             if(m_pInstance)
                 m_pInstance->SetBossState(TYPE_YOGGSARON,IN_PROGRESS);
+
+            // TO DO: Only Debug 
+            amountKeeper = 3;
         }
 
         void ReceiveEmote(Player* pPlayer, uint32 emote)
@@ -529,6 +568,9 @@ public:
 
         void SetPhase(BossPhase newPhase)
         {
+            if(m_Phase == newPhase)
+                return;
+
             //Sayings
             switch(newPhase)
             {
@@ -549,9 +591,25 @@ public:
                 {
                     yogg->SetHealth(yogg->CountPctFromMaxHealth(30));
                     yogg->RemoveAurasDueToSpell(SPELL_SHADOWY_BARRIER);
+                    yogg->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
                     DoScriptText(SAY_PHASE3,yogg);
                 }
 
+                // Alle Spieler aus BrainRoom rauswerfen
+                if(me->GetMap() && me->GetMap()->IsDungeon())
+                {
+                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                    if (!players.isEmpty())
+                        for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                            if (Player* plr = itr->getSource())
+                                if(plr->isAlive() && IsPlayerInBrainRoom(plr))
+                                {
+                                    plr->NearTeleportTo(SaraLocation.GetPositionX(),SaraLocation.GetPositionY(),SaraLocation.GetPositionZ(),M_PI,false);
+                                    plr->JumpTo(30.0f,5.0f,true);
+                                }
+                }
+                uiGuardianSummon_Timer = 20000;
+                uilastGuardianSummon_Timer = 35000;
                 break;
             }
 
@@ -600,6 +658,7 @@ public:
                 break;
             case ENTRY_BRAIN_OF_YOGG_SARON:
                 guidYoggBrain = pSummoned->GetGUID();
+                pSummoned->setActive(true);
                 break;
             case ENTRY_RUBY_CONSORT:
             case ENTRY_OBSIDIAN_CONSORT:
@@ -676,6 +735,12 @@ public:
         Creature* GetRandomCloudTarget(float range = 100.0f)
         {
             return GetRandomEntryTarget(ENTRY_OMINOUS_CLOUD);
+        }
+
+        // For Immortal Guardian Heal
+        Creature* GetRandomGuardianTarget(float range = 100.0f)
+        {
+            return GetRandomEntryTarget(ENTRY_IMMORTAL_GUARDIAN);
         }
 
         bool IsPlayerInBrainRoom(Player* pPlayer)
@@ -858,48 +923,60 @@ public:
                         }else uiSpeaking_Timer -= diff;
                     }else
                     {
-                        if(uiPsychosis_Timer <= diff)
+                        if(!me->HasAura(SPELL_SHATTERED_ILLUSIONS))
                         {
-                            if(Player* target = SelectPlayerTargetInRange(500.0f))
-                                if(!IsPlayerInBrainRoom(target))
-                                    DoCast(target,SPELL_PSYCHOSIS,false);
-                            uiPsychosis_Timer = urand(5000,5000);
-                        }else uiPsychosis_Timer -= diff;
-
-                        if(uiMindSpell_Timer <= diff)
-                        {
-                            if(!me->IsNonMeleeSpellCasted(false))
-                            {
-                                switch(urand(0,2))
-                                {
-                                case 0:
-                                    if(Player* target = SelectPlayerTargetInRange(500.0f))
-                                        if(!IsPlayerInBrainRoom(target))
-                                            DoCast(target,SPELL_MALADY_OF_MIND,false);
-                                    break;
-                                case 1:
-                                    break;
-                                case 2:
-                                    break;
-                                }
-                                uiMindSpell_Timer = 30000;
-                            }
-                        }else uiMindSpell_Timer -= diff;
-
-                        if(uiTentacle_Timer <= diff)
-                        {
-                            if(urand(0,2) == 0)
+                            if(uiPsychosis_Timer <= diff)
                             {
                                 if(Player* target = SelectPlayerTargetInRange(500.0f))
                                     if(!IsPlayerInBrainRoom(target))
-                                        target->CastSpell(target,SPELL_SUMMON_CONSTRICTOR_TENTACLES,true);
-                            }else
+                                        DoCast(target,SPELL_PSYCHOSIS,false);
+                                uiPsychosis_Timer = urand(5000,5000);
+                            }else uiPsychosis_Timer -= diff;
+
+                            if(uiMindSpell_Timer <= diff)
                             {
-                                if(Creature* yogg = me->GetCreature(*me,guidYogg))
-                                    yogg->CastSpell(yogg,RAND(SPELL_SUMMON_CRUSHER_TENTACLE,SPELL_SUMMON_CURRUPTOR_TENTACLE),true);
-                            }
-                            uiTentacle_Timer = urand(15000,30000);
-                        }else uiTentacle_Timer -= diff;
+                                if(!me->IsNonMeleeSpellCasted(false))
+                                {
+                                    switch(urand(0,2))
+                                    {
+                                    case 0:
+                                        if(Player* target = SelectPlayerTargetInRange(500.0f))
+                                            if(!IsPlayerInBrainRoom(target))
+                                                DoCast(target,SPELL_MALADY_OF_MIND,false);
+                                        break;
+                                    case 1:
+                                        break;
+                                    case 2:
+                                        break;
+                                    }
+                                    uiMindSpell_Timer = 30000;
+                                }
+                            }else uiMindSpell_Timer -= diff;
+
+                            if(uiTentacle_Timer <= diff)
+                            {
+                                if(urand(0,2) == 0)
+                                {
+                                    if(Player* target = SelectPlayerTargetInRange(500.0f))
+                                        if(!IsPlayerInBrainRoom(target))
+                                            target->CastSpell(target,SPELL_SUMMON_CONSTRICTOR_TENTACLES,true);
+                                }else
+                                {
+                                    if(Creature* yogg = me->GetCreature(*me,guidYogg))
+                                        yogg->CastSpell(yogg,RAND(SPELL_SUMMON_CRUSHER_TENTACLE,SPELL_SUMMON_CURRUPTOR_TENTACLE),true);
+                                }
+                                uiTentacle_Timer = urand(15000,30000);
+                            }else uiTentacle_Timer -= diff;
+                        }else
+                        {
+                            if(Creature* yoggbrain = me->GetCreature(*me,guidYoggBrain))
+                                if(!yoggbrain->IsNonMeleeSpellCasted(false))
+                                {
+                                    if(Creature* yogg = me->GetCreature(*me,guidYogg))
+                                        yogg->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
+                                    me->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
+                                }
+                        }
 
                         if(uiMadness_Timer <= diff)
                         {
@@ -913,21 +990,66 @@ public:
                             uiMadness_Timer = 80000;
                         }else uiMadness_Timer -= diff;
 
-                        if(currentBrainEventPhase != PORTAL_PHASE_BRAIN_NONE)
+                        if(!me->HasAura(SPELL_SHATTERED_ILLUSIONS))
                         {
-                            if(AllSpawnsDeadOrDespawned(guidEventTentacles))
+                            if(currentBrainEventPhase != PORTAL_PHASE_BRAIN_NONE)
                             {
-                                switch(currentBrainEventPhase)
+                                if(AllSpawnsDeadOrDespawned(guidEventTentacles))
                                 {
-                                case PORTAL_PHASE_DRAGON_SOUL: if(m_pInstance) m_pInstance->HandleGameObject(m_pInstance->GetData64(TYPE_BRAIN_DOOR_1),true); break;
-                                case PORTAL_PHASE_LICH_KING: if(m_pInstance) m_pInstance->HandleGameObject(m_pInstance->GetData64(TYPE_BRAIN_DOOR_2),true); break;
-                                case PORTAL_PHASE_KING_LLIANE: if(m_pInstance) m_pInstance->HandleGameObject(m_pInstance->GetData64(TYPE_BRAIN_DOOR_3),true); break;
+                                    switch(currentBrainEventPhase)
+                                    {
+                                    case PORTAL_PHASE_DRAGON_SOUL: if(m_pInstance) m_pInstance->HandleGameObject(m_pInstance->GetData64(TYPE_BRAIN_DOOR_1),true); break;
+                                    case PORTAL_PHASE_LICH_KING: if(m_pInstance) m_pInstance->HandleGameObject(m_pInstance->GetData64(TYPE_BRAIN_DOOR_2),true); break;
+                                    case PORTAL_PHASE_KING_LLIANE: if(m_pInstance) m_pInstance->HandleGameObject(m_pInstance->GetData64(TYPE_BRAIN_DOOR_3),true); break;
+                                    }
+                                    currentBrainEventPhase = PORTAL_PHASE_BRAIN_NONE;
+                                    if(Creature* yogg = me->GetCreature(*me,guidYogg))
+                                        me->AddAura(SPELL_SHATTERED_ILLUSIONS,yogg);
+                                    me->AddAura(SPELL_SHATTERED_ILLUSIONS,me);
                                 }
                             }
                         }
                     }
                     break;
                 case PHASE_YOGG:
+                    if(uiGuardianSummon_Timer <= diff)
+                    {
+                        if(Creature* yogg = me->GetCreature(*me,guidYogg))
+                            yogg->CastSpell(yogg,SPELL_SUMMON_IMMORTAL_GUARDIAN,true);
+
+                        uilastGuardianSummon_Timer = uilastGuardianSummon_Timer-5000 <= 10000 ? 10000 : uilastGuardianSummon_Timer - 5000;
+                        uiGuardianSummon_Timer = uilastGuardianSummon_Timer;
+                    }else uiGuardianSummon_Timer -= diff;
+
+                    if(getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL && amountKeeper < 4)
+                        if(uiDeafeningRoar_Timer <= diff)
+                        {
+                            if(Creature* yogg = me->GetCreature(*me,guidYogg))
+                            {
+                                if(yogg->IsNonMeleeSpellCasted(false))
+                                {
+                                    yogg->CastSpell(yogg,SPELL_DEAFENING_ROAR,false);
+                                    uiDeafeningRoar_Timer = 60000;
+                                }
+                            }
+                        }else uiDeafeningRoar_Timer -= diff;
+
+                    if(uiShadowBeacon_Timer <= diff)
+                    {
+                        if(Creature* yogg = me->GetCreature(*me,guidYogg))
+                        {
+                            if(yogg->IsNonMeleeSpellCasted(false))
+                            {
+                                if(Creature* guard = GetRandomGuardianTarget())
+                                {
+                                    if(guard->HasAura(SPELL_WEAKENED))
+                                            yogg->CastSpell(guard,SPELL_SHADOW_BEACON,false);
+                                }
+                                uiShadowBeacon_Timer = 10000;
+                            }
+                        }
+                    }else uiShadowBeacon_Timer -= diff;
+
                     break;
             }
 
@@ -1310,7 +1432,7 @@ public:
 
         InstanceScript* m_pInstance;
 
-        void Update(const uint32 diff)
+        void UpdateAI(const uint32 diff)
         {
             if(HealthBelowPct(30))
                 if(Creature* cSara = me->GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
@@ -1397,6 +1519,113 @@ public:
     };
 };
 
+class npc_immortal_guardian : public CreatureScript
+{
+public:
+    npc_immortal_guardian() : CreatureScript("npc_immortal_guardian") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_immortal_guardianAI (pCreature);
+    }
+
+    struct npc_immortal_guardianAI : public ScriptedAI
+    {
+        npc_immortal_guardianAI(Creature *c) : ScriptedAI(c)
+        {
+            m_pInstance = c->GetInstanceScript();
+            me->setFaction(14);
+        }
+
+        InstanceScript* m_pInstance;
+
+        uint32 uiDrainLife_Timer;
+
+        Unit* SelectPlayerTargetInRange(float range)
+        {
+            Player *target = NULL;
+            Trinity::AnyPlayerInObjectRangeCheck u_check(me, range, true);
+            Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, target, u_check);
+            me->VisitNearbyObject(range, searcher);
+            return target;
+        }
+
+        void Reset()
+        {
+            if(Unit* target = SelectPlayerTargetInRange(100.0f))
+                me->AI()->AttackStart(target);
+
+            uint32 uiDrainLife_Timer = 10000;
+        }
+
+        void SpellHit(Unit* caster, const SpellEntry* spell)
+        {
+            if(spell->Id == 64172) // Titanic Storm
+            {
+                if(me->HasAura(SPELL_WEAKENED))
+                    me->DealDamage(me,me->GetHealth());
+            }
+        }
+
+        void DamageTaken(Unit* dealer, uint32 &damage)
+        {
+            if(dealer->GetGUID() == me->GetGUID())
+                return;
+
+            if(HealthBelowPct(1))
+                damage = 0;
+
+            if(me->GetHealth() < damage)
+                damage = 0;
+        }
+
+        void Update(const uint32 diff)
+        {
+            if(me->HasAura(SPELL_EMPOWERED))
+            {
+                int8 stacks = int8(uint32(me->GetHealthPct()) / 10);
+                if(stacks > 9) stacks = 9;
+
+                if(stacks > 0)
+                {
+                    me->RemoveAurasDueToSpell(SPELL_WEAKENED);
+                    me->SetAuraStack(SPELL_EMPOWERED,me,stacks);
+                }else
+                {
+                    me->RemoveAurasDueToSpell(SPELL_EMPOWERED);
+                    me->AddAura(SPELL_WEAKENED,me);
+                }
+            }else me->AddAura(SPELL_EMPOWERED,me);
+
+            if(m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
+                return;
+
+            if (!UpdateVictim())
+                return;
+
+            if(uiDrainLife_Timer < diff)
+            {
+                DoCast(me->getVictim(),RAID_MODE(SPELL_DRAIN_LIFE_10,SPELL_DRAIN_LIFE_25));
+                uiDrainLife_Timer = 10000 + (rand()%20000);
+            }else uiDrainLife_Timer -= diff;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+};
+
+class go_flee_to_surface : public GameObjectScript
+{
+public:
+    go_flee_to_surface() : GameObjectScript("go_flee_to_surface") { }
+
+    bool OnGossipHello(Player *pPlayer, GameObject * /*pGO*/)
+    {
+        pPlayer->NearTeleportTo(SaraLocation.GetPositionX(),SaraLocation.GetPositionY(),SaraLocation.GetPositionZ(),M_PI,false);
+        pPlayer->JumpTo(30.0f,5.0f,true);
+        return false;
+    }
+};
 /*
 UPDATE creature_template SET scriptname = 'boss_sara' WHERE entry = 33134;
 UPDATE script_texts SET npc_entry = 33134 WHERE npc_entry = 33288 AND entry IN (-1603330,-1603331,-1603332,-1603333);
@@ -1410,6 +1639,10 @@ UPDATE creature_template SET scriptname = 'npc_descend_into_madness' WHERE entry
 UPDATE creature_template SET scriptname = 'npc_brain_of_yogg_saron' WHERE entry = 33890;
 UPDATE creature_template SET scriptname = 'boss_yogg_saron' WHERE entry = 33288;
 UPDATE creature_template SET scriptname = 'npc_influence_tentacle' WHERE entry in (33716,33720,33719,33717,33433,33567);
+UPDATE creature_template SET scriptname = 'npc_immortal_guardian' WHERE entry = 33988;
+UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 194625;
+
+UPDATE creature_template SET RegenHealth = 0 WHERE entry IN (33134,34332,33890,33954);
 */
 
 void AddSC_boss_yoggsaron()
@@ -1421,4 +1654,5 @@ void AddSC_boss_yoggsaron()
     new npc_descend_into_madness();
     new npc_brain_of_yogg_saron();
     new boss_yogg_saron();
+    new go_flee_to_surface();
 }

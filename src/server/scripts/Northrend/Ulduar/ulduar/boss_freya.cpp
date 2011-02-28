@@ -25,13 +25,13 @@ Spells wurden bereits viele getestet und entsprechend gefixt .. Spellfixes finde
 
 Notizen:
 Bis jetzt ist der Anfang fertig ...
-Freya fügt sich ihr Heilspell zu
+Freya fuegt sich ihr Heilspell zu
 anschließend werden die NPCs gespawnt
 Aufladungen des Spells werden noch nicht runtergenommen wenn ein NPCs stirbt:
 Dazu einfach ein DoEvent Funktion benutzen ... Trigger bestimmen (enum) diesen vom NPC script triggern lassen
-Um Aufladungen zu entferen (oder hinzuzufügen) kann man sich auch YoggSaron script anschauen
+Um Aufladungen zu entferen (oder hinzuzufuegen) kann man sich auch YoggSaron script anschauen
 
-Pilze un Bäume müssen gescriptet werden. Spells suchen (testen) und gegebenfalls fixen. Spawnspells für Freya funktionieren bereits.
+Pilze un Baeume muessen gescriptet werden. Spells suchen (testen) und gegebenfalls fixen. Spawnspells fuer Freya funktionieren bereits.
 
 Spell natural bomb bereits gefixt
 
