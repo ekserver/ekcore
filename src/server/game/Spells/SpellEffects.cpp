@@ -3133,6 +3133,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                         case 12749: // Mithril Mechanical Dragonling
                         case 18662: // Curse of Doom
                         case 19804: // Arcanite Dragonling
+                        case 65783: // Ogre Pinata
                             amount = 1;
                             break;
                         default:
