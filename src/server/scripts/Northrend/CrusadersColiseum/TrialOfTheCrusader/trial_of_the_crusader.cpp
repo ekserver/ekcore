@@ -168,6 +168,9 @@ class npc_announcer_toc10 : public CreatureScript
                     }
                     break;
                 case GOSSIP_ACTION_INFO_DEF+2:
+                    if (Creature* icehowl = Unit::GetCreature(*player, instanceScript->GetData64(NPC_ICEHOWL)))
+                        icehowl->DespawnOrUnsummon();
+                                           
                     if (Creature* jaraxxus = Unit::GetCreature(*player, instanceScript->GetData64(NPC_JARAXXUS)))
                     {
                         jaraxxus->RemoveAurasDueToSpell(SPELL_JARAXXUS_CHAINS);
@@ -182,6 +185,9 @@ class npc_announcer_toc10 : public CreatureScript
                     }
                     break;
                 case GOSSIP_ACTION_INFO_DEF+3:
+                    if (Creature* jaraxxus = Unit::GetCreature(*player, instanceScript->GetData64(NPC_JARAXXUS)))
+                        jaraxxus->DespawnOrUnsummon();
+
                     if (instanceScript->GetData(TYPE_CRUSADERS) != DONE)
                     {
                         if (player->GetTeam() == ALLIANCE)
@@ -204,7 +210,7 @@ class npc_announcer_toc10 : public CreatureScript
                         return true;
 
                     if (GameObject* floor = GameObject::GetGameObject(*player, instanceScript->GetData64(GO_ARGENT_COLISEUM_FLOOR)))
-                        floor->TakenDamage(1000000);
+                        floor->TakenDamage(10000001);
 
                     creature->CastSpell(creature, 69016, false);
 
@@ -319,7 +325,7 @@ class boss_lich_king_toc : public CreatureScript
                             break;
                         case 5080:
                             if (GameObject* pGoFloor = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_ARGENT_COLISEUM_FLOOR)))
-                                pGoFloor->TakenDamage(1000000);
+                                pGoFloor->TakenDamage(10000001);
                             me->CastSpell(me, 69016, false);
                             if (m_pInstance) m_pInstance->SetData(TYPE_LICH_KING, DONE);
                             Creature* pTemp = Unit::GetCreature((*me), m_pInstance->GetData64(NPC_ANUBARAK));
@@ -793,7 +799,7 @@ class npc_tirion_toc : public CreatureScript
                             break;
                         case 6005:
                             DoScriptText(SAY_STAGE_4_06, me);
-                            me->SummonGameObject(202079, 651.71f, 149.18f, 140.79f, 3.14, 0, 0, 1, 1, 604800);
+                            me->SummonGameObject(202079, 651.71f, 149.18f, 140.79f, 3.14f, 0, 0, 1, 1, 604800);
                             m_uiUpdateTimer = 20000;
                             m_pInstance->SetData(TYPE_EVENT, 6010);
                             break;
