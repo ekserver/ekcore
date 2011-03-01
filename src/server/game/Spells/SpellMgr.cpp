@@ -3640,6 +3640,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 36350: //They Must Burn Bomb Aura (self)
+            spellInfo->EffectTriggerSpell[0] = 36325; // They Must Burn Bomb Drop (DND)
+            count++;
+            break;
         case 49838: // Stop Time
         case 50526: // Wandering Plague
         case 52916: // Honor Among Thieves
@@ -4201,6 +4205,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 70890: // Scourge Strike Triggered
             spellInfo->AttributesEx2 |= SPELL_ATTR2_TRIGGERED_CAN_TRIGGER;
+            count++;
+            break;
+        case 49206: // Summon Gargoyle
+            spellInfo->DurationIndex = 587;
             count++;
             break;
         default:
