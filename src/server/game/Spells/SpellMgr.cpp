@@ -4050,6 +4050,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 64234: // XT-002 Gravity Bomb
         case 63018: // XT-002 Searing Light
         case 65121: // XT-002 Searing Light
+        case 65301: // Sara Psychosis
         case 63342: // Focused Eyebeam Summon Trigger
             spellInfo->MaxAffectedTargets = 1;
             count++;

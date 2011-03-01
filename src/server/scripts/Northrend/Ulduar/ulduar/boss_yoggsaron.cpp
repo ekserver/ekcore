@@ -110,6 +110,12 @@ enum Entrys
     ENTRY_SUIT_OF_ARMOR                         = 33433, // around the Room
     ENTRY_DEATHSWORN_ZEALOT                     = 33567, // 3 Groups of 3 ... left middle right
     ENTRY_IMMORTAL_GUARDIAN                     = 33988,
+
+    ENTRY_KEEPER_FREYA                          = 33410,
+    ENTRY_KEEPER_HODIR                          = 33411,
+    ENTRY_KEEPER_MIMIRON                        = 33412,
+    ENTRY_KEEPER_THORIM                         = 33413,
+
     OBJECT_FLEE_TO_SURFACE                      = 194625,
 };
 
@@ -151,6 +157,20 @@ enum Actions
 
 enum Spells
 {
+    //All Phases
+    // Keeper Freya
+    SPELL_RESILIENCE_OF_NATURE                  = 62670,
+    SPELL_SANITY_WELL                           = 64170,
+    // Keeper Thorim
+    SPELL_FURY_OF_THE_STORM                     = 62702,
+    SPELL_TITANIC_STORM                         = 64171,
+    // Keeper Mimiron
+    SPELL_SPEED_OF_INVENTION                    = 62671,
+    SPELL_DESTABILIZATION_MATRIX                = 65210,
+    // Keeper Hodir
+    SPELL_FORTITUDE_OF_FROST                    = 62650,
+    SPELL_HODIRS_PROTECTIVE_GAZE                = 64174,
+    // Sanity
     SPELL_SANITY                                = 63050,
     SPELL_INSANE                                = 63120,
     //Phase 1:
@@ -312,7 +332,7 @@ const Position LichKingTentacleLocation[CONSTANT_MAX_LICHKING_TENTACLE_SPAWNS] =
     {1910.28f,  -102.96f, 240.00f, (1.35f*M_PI)}
 };
 
-const Position BrainLocation = {1980.01f, -25.36f, 265.00f, M_PI};
+const Position BrainLocation = {1980.01f, -25.36f, 260.00f, M_PI};
 const Position SaraLocation = {1980.28f, -25.58f, 325.00f, M_PI};
 
 const Position InnerBrainTeleportLocation[3] = 
@@ -320,6 +340,14 @@ const Position InnerBrainTeleportLocation[3] =
     {2001.40f, -59.66f, 245.07f, 0},
     {1941.61f, -25.88f, 244.98f, 0},
     {2001.18f,  9.409f, 245.24f, 0}
+};
+
+const Position KeeperSpawnLocation[4] = 
+{
+    {1939.15f,  42.47f, 338.46f, 1.7f*M_PI}, // Mimiron
+    {2037.09f,  25.43f, 338.46f, 1.3f*M_PI}, // Freya
+    {2036.88f, -73.66f, 338.46f, 0.7f*M_PI}, // Thorim
+    {1939.94f, -90.49f, 338.46f, 0.3f*M_PI} // Hodir
 };
 
 class boss_sara : public CreatureScript
@@ -439,6 +467,23 @@ public:
             uiRandomYell_Timer = urand(10000,20000);
         }
 
+        void DoSpawnKeeperForSupport() // Despawn on Sara Reset
+        {
+            if(m_pInstance)
+            {
+                uint32 supportFlag = m_pInstance->GetData(DATA_KEEPER_SUPPORT_YOGG);
+
+                if((supportFlag & MIMIRON_SUPPORT) == MIMIRON_SUPPORT)
+                    DoSummon(ENTRY_KEEPER_MIMIRON,KeeperSpawnLocation[0],0,TEMPSUMMON_MANUAL_DESPAWN);
+                if((supportFlag & FREYA_SUPPORT) == FREYA_SUPPORT)
+                    DoSummon(ENTRY_KEEPER_FREYA,KeeperSpawnLocation[1],0,TEMPSUMMON_MANUAL_DESPAWN);
+                if((supportFlag & THORIM_SUPPORT) == THORIM_SUPPORT)
+                    DoSummon(ENTRY_KEEPER_THORIM,KeeperSpawnLocation[2],0,TEMPSUMMON_MANUAL_DESPAWN);
+                if((supportFlag & HODIR_SUPPORT) == HODIR_SUPPORT)
+                    DoSummon(ENTRY_KEEPER_HODIR,KeeperSpawnLocation[3],0,TEMPSUMMON_MANUAL_DESPAWN);
+            }
+        }
+
         void EnterCombat(Unit* /*who*/)
         {
 
@@ -460,6 +505,7 @@ public:
                 DoZoneInCombat(yogg);
 
             SetSanityAura();
+            DoSpawnKeeperForSupport();
 
             if(m_pInstance)
                 m_pInstance->SetBossState(TYPE_YOGGSARON,IN_PROGRESS);
@@ -1202,6 +1248,12 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
+            {
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
+            }
+
             if (!UpdateVictim())
                 return;
 
@@ -1215,7 +1267,6 @@ public:
         }
     };
 };
-
 
 class npc_yogg_saron_tentacle : public CreatureScript
 {
@@ -1295,7 +1346,7 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            if(m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
             {
                 me->DealDamage(me,me->GetMaxHealth());
                 me->RemoveCorpse();
@@ -1476,7 +1527,7 @@ public:
 
         void Update(const uint32 diff)
         {
-            if(m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
                 return;
 
             if(uiSanityCheck_Timer <= diff)
@@ -1621,6 +1672,56 @@ public:
     };
 };
 
+class npc_support_keeper : public CreatureScript
+{
+public:
+    npc_support_keeper() : CreatureScript("npc_support_keeper") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_support_keeperAI (pCreature);
+    }
+
+    struct npc_support_keeperAI : public Scripted_NoMovementAI
+    {
+        npc_support_keeperAI(Creature *c) : Scripted_NoMovementAI(c)
+        {
+            m_pInstance = c->GetInstanceScript();
+        }
+
+        InstanceScript* m_pInstance;
+        
+        void AttackStart(Unit *attacker)
+        {
+        }
+
+        void Reset()
+        {
+            uint32 auraspell = 0;
+            switch(me->GetEntry())
+            {
+            case ENTRY_KEEPER_HODIR:
+                auraspell = SPELL_FORTITUDE_OF_FROST;
+                break;
+            case ENTRY_KEEPER_FREYA:
+                auraspell = SPELL_RESILIENCE_OF_NATURE;
+                break;
+            case ENTRY_KEEPER_THORIM:
+                auraspell = SPELL_FURY_OF_THE_STORM;
+                break;
+            case ENTRY_KEEPER_MIMIRON:
+                auraspell = SPELL_SPEED_OF_INVENTION;
+                break;
+            }
+            DoCast(auraspell);
+        }
+
+        void Update(const uint32 diff)
+        {
+        }
+    };
+};
+
 class go_flee_to_surface : public GameObjectScript
 {
 public:
@@ -1647,6 +1748,7 @@ UPDATE creature_template SET scriptname = 'npc_brain_of_yogg_saron' WHERE entry 
 UPDATE creature_template SET scriptname = 'boss_yogg_saron' WHERE entry = 33288;
 UPDATE creature_template SET scriptname = 'npc_influence_tentacle' WHERE entry in (33716,33720,33719,33717,33433,33567);
 UPDATE creature_template SET scriptname = 'npc_immortal_guardian' WHERE entry = 33988;
+UPDATE creature_template SET scriptname = 'npc_support_keeper' WHERE entry in (33410,33411,33412,33413);
 UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 194625;
 
 UPDATE creature_template SET RegenHealth = 0 WHERE entry IN (33134,34332,33890,33954);
@@ -1670,5 +1772,6 @@ void AddSC_boss_yoggsaron()
     new npc_brain_of_yogg_saron();
     new boss_yogg_saron();
     new npc_immortal_guardian();
+    new npc_support_keeper();
     new go_flee_to_surface();
 }

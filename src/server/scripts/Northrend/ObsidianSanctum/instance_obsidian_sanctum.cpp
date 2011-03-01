@@ -153,6 +153,16 @@ public:
             return 0;
         }
 
+        bool SetBossState(uint32 id, EncounterState state)
+        {
+            if(m_auiEncounter[id] != DONE)
+                m_auiEncounter[id] = state;
+
+            if(state == DONE)
+                SaveToDB();
+
+            return true;
+        }
 
         std::string GetSaveData()
         {

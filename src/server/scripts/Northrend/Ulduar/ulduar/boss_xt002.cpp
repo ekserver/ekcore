@@ -834,7 +834,6 @@ public:
             else uiShockTimer -= diff;
         }
     };
-
 };
 
 void AddSC_boss_xt002()

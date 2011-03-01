@@ -42,6 +42,7 @@ enum eTypes
     TYPE_BRAIN_DOOR_1,
     TYPE_BRAIN_DOOR_2,
     TYPE_BRAIN_DOOR_3,
+    DATA_KEEPER_SUPPORT_YOGG,
     
     // Assembly of Iorn
     DATA_STEELBREAKER,
@@ -95,6 +96,14 @@ enum eAchievementCriteria
 {
     ACHIEVEMENT_CRITERIA_HOT_POCKET_10                   = 10430, //ignis
     ACHIEVEMENT_CRITERIA_HOT_POCKET_25                   = 10431,
+};
+
+enum eKeeperSupport
+{
+    THORIM_SUPPORT = 0x01,
+    HODIR_SUPPORT = 0x02,
+    FREYA_SUPPORT = 0x04,
+    MIMIRON_SUPPORT = 0x08,
 };
 
 #endif

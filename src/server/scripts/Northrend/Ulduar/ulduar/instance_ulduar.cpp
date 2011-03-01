@@ -92,6 +92,8 @@ public:
 
         std::set<uint64> mRubbleSpawns;
 
+        uint32 uiSupportKeeperFlag;
+
         void Initialize()
         {
             SetBossNumber(MAX_ENCOUNTER);
@@ -124,6 +126,7 @@ public:
             uiYoggSaronBrainDoor2GUID = 0;
             uiYoggSaronBrainDoor3GUID = 0;
             flag                    = 0;
+            uiSupportKeeperFlag     = FREYA_SUPPORT|HODIR_SUPPORT|MIMIRON_SUPPORT|THORIM_SUPPORT;
 
             memset(&uiEncounter, 0, sizeof(uiEncounter));
             memset(&uiAssemblyGUIDs, 0, sizeof(uiAssemblyGUIDs));
@@ -460,6 +463,8 @@ public:
             {
                 case TYPE_COLOSSUS:
                     return uiEncounter[type];
+                case DATA_KEEPER_SUPPORT_YOGG:
+                    return uiSupportKeeperFlag;
             }
 
             return 0;
