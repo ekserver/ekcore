@@ -23,12 +23,12 @@ LandofLegends - Entwicklungsnotizen:
 
 Allgemein:
 Abbrüfen ob Keeper benutzt werden
-Keeper scripten - (Non Heroic Modus)
+Keeper secoundary spell prüfen/fixen
 Loot
 Legendaere Waffen Quest fixen
 Archievments - teilweise schon erledigt
 
-Script ist zu 80% fertig.
+Script ist zu 82% fertig.
 
 Phase 1 ist komplett
 Phase 2 ist fast fertig
@@ -116,6 +116,8 @@ enum Entrys
     ENTRY_KEEPER_MIMIRON                        = 33412,
     ENTRY_KEEPER_THORIM                         = 33413,
 
+    ENTRY_SANITY_WELL                           = 33991,
+
     OBJECT_FLEE_TO_SURFACE                      = 194625,
 };
 
@@ -151,8 +153,6 @@ enum Actions
     ACTION_PORTAL_TO_MADNESS_DRAGON = 4,
     ACTION_PORTAL_TO_MADNESS_LICHKING = 5,
     ACTION_BRAIN_UNDER_30_PERCENT = 6,
-    ACTION_SHATTERED_ILLUSIONS = 7,
-    ACTION_SHATTERED_ILLUSIONS_REMOVE = 8
 };
 
 enum Spells
@@ -163,7 +163,8 @@ enum Spells
     SPELL_SANITY_WELL                           = 64170,
     // Keeper Thorim
     SPELL_FURY_OF_THE_STORM                     = 62702,
-    SPELL_TITANIC_STORM                         = 64171,
+    SPELL_TITANIC_STORM                         = 64171, // Triggers 64172
+    SPELL_TITANIC_STORM_DUMMY                   = 64172, // Dummy Spell ... kills weakend guardians
     // Keeper Mimiron
     SPELL_SPEED_OF_INVENTION                    = 62671,
     SPELL_DESTABILIZATION_MATRIX                = 65210,
@@ -184,15 +185,16 @@ enum Spells
     SPELL_SARAS_BLESSING                        = 63134, // On Player
     SPELL_SARAS_ANGER                           = 63147, // On "Enemy"
     //  Guardians of Yogg-Saron 
-    SPELL_DARK_VOLLEY                           = 63038, // Needs Sanaty Scripting
+    SPELL_DOMINATE_MIND                         = 63042, // Removed by blizz, Needs Sanity Scripting
+    SPELL_DARK_VOLLEY                           = 63038, // Needs Sanity Scripting
     SPELL_SHADOW_NOVA                           = 65209, // On Death
     //Phase 2:
     //  Sara - She spams Psychosis without pause on random raid members unless she casts something else. The other three abilities each have a 30 second cooldown, and are used randomly when available.
-    SPELL_PSYCHOSIS                             = 65301, // Needs Sanaty Scripting
+    SPELL_PSYCHOSIS                             = 65301, // Needs Sanity Scripting
     SPELL_BRAIN_LINK                            = 63802, // Only Apply Aura
-    SPELL_BRAIN_LINK_DAMAGE                     = 63803, // Needs Sanaty Scripting
+    SPELL_BRAIN_LINK_DAMAGE                     = 63803, // Needs Sanity Scripting
     SPELL_BRAIN_LINK_DUMMY                      = 63804, // Dummy Effekt
-    SPELL_MALADY_OF_MIND                        = 63830, // Needs Sanaty Scripting, Trigger 63881 on remove
+    SPELL_MALADY_OF_MIND                        = 63830, // Needs Sanity Scripting, Trigger 63881 on remove
     SPELL_DEATH_RAY_PERIODIC                    = 63883, // Trigger 63884
     SPELL_SARA_SHADOWY_BARRIER                  = 64775,
     // Tentacle
@@ -238,7 +240,7 @@ enum Spells
     SPELL_EMPOWERING_SHADOWS_HEAL_25            = 64486, // 20plr Heal
 
     SPELL_LUNATIC_GAZE                          = 64163, // Triggers 4 Times 64164
-    SPELL_LUNATIC_GAZE_EFFECT                   = 64164, // needs sanity scripting
+    SPELL_LUNATIC_GAZE_EFFECT                   = 64164, // Needs Sanity Scripting
 
     //  Immortal Guardian - under 1% no damage
     SPELL_DRAIN_LIFE_10                         = 64159,
@@ -366,6 +368,7 @@ public:
         {
             m_pInstance = c->GetInstanceScript();
             me->SetFlying(true);
+            SetImmuneToPushPullEffects(true);
         }
 
         InstanceScript* m_pInstance;
@@ -403,6 +406,7 @@ public:
         // Phase 3
         uint32 uiDeafeningRoar_Timer;
         uint32 uiShadowBeacon_Timer;
+        uint32 uiLunaticGaze_Timer;
 
         void CloudHandling(bool remove)
         {
@@ -498,6 +502,7 @@ public:
 
             uiDeafeningRoar_Timer = urand(30000,60000);
             uiShadowBeacon_Timer = 30000;
+            uiLunaticGaze_Timer = 12000;
 
             uiEnrage_Timer = 900000;
 
@@ -1074,6 +1079,18 @@ public:
                         uiGuardianSummon_Timer = uilastGuardianSummon_Timer;
                     }else uiGuardianSummon_Timer -= diff;
 
+                    if(uiLunaticGaze_Timer <= diff)
+                    {
+                        if(Creature* yogg = me->GetCreature(*me,guidYogg))
+                        {
+                            if(yogg->IsNonMeleeSpellCasted(false))
+                            {
+                                yogg->CastSpell(yogg,SPELL_LUNATIC_GAZE,false);
+                                uiLunaticGaze_Timer = 12000;
+                            }
+                        }
+                    }else uiLunaticGaze_Timer -= diff;
+
                     if(getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL && amountKeeper < 4)
                         if(uiDeafeningRoar_Timer <= diff)
                         {
@@ -1137,7 +1154,10 @@ public:
 
     struct npc_ominous_cloudAI : public ScriptedAI
     {
-        npc_ominous_cloudAI(Creature *c) : ScriptedAI(c) { }
+        npc_ominous_cloudAI(Creature *c) : ScriptedAI(c) 
+        {
+            SetImmuneToPushPullEffects(true);
+        }
 
         void MoveInLineOfSight(Unit* target)
         {
@@ -1286,6 +1306,7 @@ public:
             SetTentacleType(c->GetEntry());
             once = false;
             me->setFaction(14);
+            SetImmuneToPushPullEffects(true);
         }
 
         InstanceScript* m_pInstance;
@@ -1437,6 +1458,7 @@ public:
     {
         npc_descend_into_madnessAI(Creature *c) : Scripted_NoMovementAI(c)
         {
+            SetImmuneToPushPullEffects(true);
         }
 
         BrainEventPhase bPhase;
@@ -1486,6 +1508,7 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->setFaction(14);
             me->SetFlying(true);
+            SetImmuneToPushPullEffects(true);
         }
 
         InstanceScript* m_pInstance;
@@ -1593,6 +1616,7 @@ public:
         {
             m_pInstance = c->GetInstanceScript();
             me->setFaction(14);
+            SetImmuneToPushPullEffects(true);
         }
 
         InstanceScript* m_pInstance;
@@ -1639,6 +1663,12 @@ public:
 
         void Update(const uint32 diff)
         {
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
+            {
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
+            }
+
             if(me->HasAura(SPELL_EMPOWERED))
             {
                 int8 stacks = int8(uint32(me->GetHealthPct()) / 10);
@@ -1718,6 +1748,13 @@ public:
 
         void Update(const uint32 diff)
         {
+            switch(me->GetEntry())
+            {
+            case ENTRY_KEEPER_THORIM:
+                if(!me->HasAura(SPELL_TITANIC_STORM))
+                    DoCast(SPELL_TITANIC_STORM);
+                break;
+            }
         }
     };
 };
@@ -1769,6 +1806,7 @@ void AddSC_boss_yoggsaron()
     new npc_guardian_of_yogg_saron();
     new npc_yogg_saron_tentacle();
     new npc_descend_into_madness();
+    new npc_influence_tentacle();
     new npc_brain_of_yogg_saron();
     new boss_yogg_saron();
     new npc_immortal_guardian();
