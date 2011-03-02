@@ -878,10 +878,6 @@ public:
                         guidEventTentacles.push_back(summon->GetGUID());
                 }
                 break;
-            case ACTION_SHATTERED_ILLUSIONS:
-                break;
-            case ACTION_SHATTERED_ILLUSIONS_REMOVE:
-                break;
             }
 
             if(Creature* yoggbrain = me->GetCreature(*me,guidYoggBrain))
