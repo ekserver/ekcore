@@ -1159,11 +1159,11 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                             slot[2] = e.action.equip.slot3;
                         }
                         if (!e.action.equip.mask || e.action.equip.mask & 1)
-                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, e.action.equip.slot1);
+                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, slot[0]);
                         if (!e.action.equip.mask || e.action.equip.mask & 2)
-                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, e.action.equip.slot2);
+                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, slot[1]);
                         if (!e.action.equip.mask || e.action.equip.mask & 4)
-                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, e.action.equip.slot3);
+                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, slot[2]);
                     }
                 }
                 break;
@@ -1452,6 +1452,18 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                     if (IsUnit((*itr)))
                         (*itr)->ToUnit()->InterruptNonMeleeSpells(e.action.interruptSpellCasting.withDelayed,e.action.interruptSpellCasting.spell_id,e.action.interruptSpellCasting.withInstant);
                 }
+
+                break;
+            }
+        case SMART_ACTION_SEND_GO_CUSTOM_ANIM:
+            {
+                ObjectList* targets = GetTargets(e, unit);
+                if (!targets)
+                    return;
+
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
+                    if (IsGameObject((*itr)))
+                        (*itr)->ToGameObject()->SendCustomAnim(e.action.sendGoCustomAnim.anim);
 
                 break;
             }
