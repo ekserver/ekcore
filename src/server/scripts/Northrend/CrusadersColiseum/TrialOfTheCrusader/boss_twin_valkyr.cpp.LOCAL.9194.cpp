@@ -843,4 +843,8 @@ void AddSC_boss_twin_valkyr()
     new mob_unleashed_dark();
     new mob_essence_of_twin();
     new spell_powering_up();
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> [Toc] Add support for empowerd effect of Twin Valkyr original patch by TC-FR
