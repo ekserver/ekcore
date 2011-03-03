@@ -316,6 +316,11 @@ public:
             if (!InstanceScript::SetBossState(type, state))
                 return false;
 
+            if(uiEncounter[type] != DONE)
+                uiEncounter[type] = state;
+            if(state == DONE)
+                SaveToDB();
+
             switch (type)
             {
                 case TYPE_LEVIATHAN:

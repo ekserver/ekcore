@@ -509,9 +509,6 @@ public:
             if(Creature* yogg = me->GetCreature(*me,guidYogg))
                 DoZoneInCombat(yogg);
 
-            SetSanityAura();
-            DoSpawnKeeperForSupport();
-
             if(m_pInstance)
                 m_pInstance->SetBossState(TYPE_YOGGSARON,IN_PROGRESS);
 
@@ -633,6 +630,8 @@ public:
             switch(newPhase)
             {
             case PHASE_SARA:
+                DoSpawnKeeperForSupport();
+                SetSanityAura();
                 break;
             case PHASE_BRAIN:
                 me->SetHealth(me->GetMaxHealth());
@@ -1079,7 +1078,7 @@ public:
                     {
                         if(Creature* yogg = me->GetCreature(*me,guidYogg))
                         {
-                            if(yogg->IsNonMeleeSpellCasted(false))
+                            if(!yogg->IsNonMeleeSpellCasted(false))
                             {
                                 yogg->CastSpell(yogg,SPELL_LUNATIC_GAZE,false);
                                 uiLunaticGaze_Timer = 12000;
@@ -1215,6 +1214,11 @@ public:
         {
             m_pInstance = c->GetInstanceScript();
             me->setFaction(14);
+
+            SpellEntry *TempSpell;
+            TempSpell = GET_SPELL(SPELL_SHADOW_NOVA);
+            if (TempSpell)
+                TempSpell->Effect[1] = 0;
         }
         
         InstanceScript* m_pInstance;
@@ -1246,7 +1250,6 @@ public:
         void JustDied(Unit* /*killer*/)
         {
             DoCast(me,SPELL_SHADOW_NOVA,true);
-
             if(m_pInstance)
             {
                 if(Creature* cSara = me->GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
@@ -1544,6 +1547,22 @@ public:
             uiSanityCheck_Timer = 1000;
         }
 
+        void SpellHitTarget(Unit* target, const SpellEntry* spell)
+        {
+            if(!m_pInstance) return;
+
+            if(target && target->ToPlayer())
+            {
+                switch(spell->Id)
+                {
+                case SPELL_LUNATIC_GAZE_EFFECT:
+                    if(Creature* cSara = me->GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
+                        CAST_AI(boss_sara::boss_saraAI,cSara->AI())->ModifySanity(target->ToPlayer(),-4);
+                    break;
+                }
+            }
+        }
+
         void Update(const uint32 diff)
         {
             if(m_pInstance && m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
@@ -1591,6 +1610,7 @@ public:
         void EnterCombat(Unit* attacker)
         {
             me->UpdateEntry(ENTRY_INFULENCE_TENTACLE);
+            me->setFaction(14);
             DoCast(SPELL_GRIM_REPRISAL);
         }
     };
@@ -1657,7 +1677,7 @@ public:
                 damage = 0;
         }
 
-        void Update(const uint32 diff)
+        void UpdateAI(const uint32 diff)
         {
             if(m_pInstance && m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
             {
@@ -1665,7 +1685,6 @@ public:
                 me->RemoveCorpse();
             }
 
-            if(me->HasAura(SPELL_EMPOWERED))
             {
                 int8 stacks = int8(uint32(me->GetHealthPct()) / 10);
                 if(stacks > 9) stacks = 9;
@@ -1673,13 +1692,16 @@ public:
                 if(stacks > 0)
                 {
                     me->RemoveAurasDueToSpell(SPELL_WEAKENED);
+                    if(!me->HasAura(SPELL_EMPOWERED))
+                        me->AddAura(SPELL_EMPOWERED,me);
                     me->SetAuraStack(SPELL_EMPOWERED,me,stacks);
                 }else
                 {
                     me->RemoveAurasDueToSpell(SPELL_EMPOWERED);
-                    me->AddAura(SPELL_WEAKENED,me);
+                    if(!me->HasAura(SPELL_WEAKENED))
+                        me->AddAura(SPELL_WEAKENED,me);
                 }
-            }else me->AddAura(SPELL_EMPOWERED,me);
+            }
 
             if(m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
                 return;
@@ -1767,6 +1789,81 @@ public:
         return false;
     }
 };
+
+class spell_keeper_support_aura_targeting : public SpellScriptLoader
+{
+    public:
+        spell_keeper_support_aura_targeting() : SpellScriptLoader("spell_keeper_support_aura_targeting") { }
+
+    class spell_keeper_support_aura_targeting_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_keeper_support_aura_targeting_AuraScript)
+        void HandleEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            std::list<Unit*> targetList;
+            aurEff->GetTargetList(targetList);
+
+            for(std::list<Unit*>::iterator iter = targetList.begin(); iter != targetList.end(); ++iter)
+                if(!(*iter)->ToPlayer() && (*iter)->GetGUID() != GetCasterGUID() )
+                    (*iter)->RemoveAurasDueToSpell(GetSpellProto()->Id);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_keeper_support_aura_targeting_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_keeper_support_aura_targeting_AuraScript();
+    }
+};
+
+class DontLooksDirectlyInGazeCheck
+{
+    public:
+        DontLooksDirectlyInGazeCheck(Unit* caster) : _caster(caster) { }
+
+        bool operator() (Unit* unit)
+        {
+            Position pos;
+            _caster->GetPosition(&pos);
+            return !unit->HasInArc(static_cast<float>(M_PI), &pos);
+        }
+
+    private:
+        Unit* _caster;
+};
+
+class spell_lunatic_gaze_targeting : public SpellScriptLoader
+{
+    public:
+        spell_lunatic_gaze_targeting() : SpellScriptLoader("spell_lunatic_gaze_targeting") { }
+
+        class spell_lunatic_gaze_targeting_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_lunatic_gaze_targeting_SpellScript)
+
+            void FilterTargets(std::list<Unit*>& unitList)
+            {
+                unitList.remove_if(DontLooksDirectlyInGazeCheck(GetCaster()));
+            }
+
+            void Register()
+            {
+                OnUnitTargetSelect += SpellUnitTargetFn(spell_lunatic_gaze_targeting_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_AREA_ENEMY_SRC);
+                OnUnitTargetSelect += SpellUnitTargetFn(spell_lunatic_gaze_targeting_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_AREA_ENEMY_SRC);
+            }
+        };
+
+        // function which creates SpellScript
+        SpellScript *GetSpellScript() const
+        {
+            return new spell_lunatic_gaze_targeting_SpellScript();
+        }
+};
+
 /*
 UPDATE creature_template SET scriptname = 'boss_sara' WHERE entry = 33134;
 UPDATE script_texts SET npc_entry = 33134 WHERE npc_entry = 33288 AND entry IN (-1603330,-1603331,-1603332,-1603333);
@@ -1793,6 +1890,21 @@ VALUES
 (603001, 194625, 603, 3, 1, 2001.40, -59.66, 245.07, 0, 0, 0, 0, 0, 60, 100, 1),
 (603002, 194625, 603, 3, 1, 1941.61, -25.88, 244.98, 0, 0, 0, 0, 0, 60, 100, 1),
 (603003, 194625, 603, 3, 1, 2001.18,  9.409, 245.24, 0, 0, 0, 0, 0, 60, 100, 1);
+
+DELETE FROM spell_script_names WHERE spell_id IN (62670,62671,62702,62650);
+INSERT INTO spell_script_names (spell_id,Scriptname)
+VALUES
+(62670,'spell_keeper_support_aura_targeting'),
+(62671,'spell_keeper_support_aura_targeting'),
+(62702,'spell_keeper_support_aura_targeting'),
+(62650,'spell_keeper_support_aura_targeting');
+
+DELETE FROM spell_script_names WHERE spell_id IN (64164);
+INSERT INTO spell_script_names (spell_id,Scriptname)
+VALUES
+(64164,'spell_lunatic_gaze_targeting');
+
+
 */
 
 void AddSC_boss_yoggsaron()
@@ -1808,4 +1920,7 @@ void AddSC_boss_yoggsaron()
     new npc_immortal_guardian();
     new npc_support_keeper();
     new go_flee_to_surface();
+
+    new spell_keeper_support_aura_targeting();
+    new spell_lunatic_gaze_targeting();
 }
