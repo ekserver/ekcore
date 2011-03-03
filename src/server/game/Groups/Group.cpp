@@ -1209,7 +1209,7 @@ void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_lev
         if (victim->getLevel() > gray_level && (!not_gray_member_with_max_level || not_gray_member_with_max_level->getLevel() < member->getLevel()))
             not_gray_member_with_max_level = member;
     }
-    withXPBoost = boostItemCount > 0;
+    withXPBoost = boostItemCount > 0 && count > 1;      // we get the item xp boost only if more then one member is in kill range and one or more members are equipped with the item
 }
 
 void Group::SendTargetIconList(WorldSession *session)
