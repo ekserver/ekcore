@@ -1002,18 +1002,20 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
     if (damage < 0)
         return;
 
-    if (spellInfo->AttributesEx4 & SPELL_ATTR4_FIXED_DAMAGE)
-    {
-        damageInfo->damage = damage;
-        return;
-    }
-
     Unit *pVictim = damageInfo->target;
     if (!pVictim || !pVictim->isAlive())
         return;
 
     SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
     uint32 crTypeMask = pVictim->GetCreatureTypeMask();
+
+    if (spellInfo->AttributesEx4 & SPELL_ATTR4_FIXED_DAMAGE)
+    {
+        CalcAbsorbResist(pVictim, damageSchoolMask, SPELL_DIRECT_DAMAGE, damage, &damageInfo->absorb, &damageInfo->resist, spellInfo);
+        damage -= damageInfo->absorb + damageInfo->resist;
+        damageInfo->damage = damage;
+        return;
+    }
 
     if (IsDamageReducedByArmor(damageSchoolMask, spellInfo))
         damage = CalcArmorReducedDamage(pVictim, damage, spellInfo, attackType);
@@ -1972,7 +1974,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
         DealDamageMods(pVictim, damageInfo.damage, &damageInfo.absorb);
         SendAttackStateUpdate(&damageInfo);
 
-        ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
+        ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage + damageInfo.absorb, damageInfo.attackType);
         DealMeleeDamage(&damageInfo,true);
 
         if (GetTypeId() == TYPEID_PLAYER)
