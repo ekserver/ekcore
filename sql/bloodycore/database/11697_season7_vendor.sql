@@ -16,5 +16,5 @@ INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `Exte
 DELETE FROM `npc_vendor` WHERE `entry` = 33927 AND `item` IN (42561, 42566, 42572);
 INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES
 (33927, 0, 42561, 0, 0, 2701),
-(33927, 0, 42567, 0, 0, 2701),
+(33927, 0, 42566, 0, 0, 2701),
 (33927, 0, 42572, 0, 0, 2701);
