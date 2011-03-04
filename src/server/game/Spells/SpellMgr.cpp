@@ -4046,6 +4046,9 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         // ULDUAR SPELLS
         //
+        case 65210: // Keeper Mimiron Destabilization Matrix
+            // Ignore LoS (because Mimiron stands in a Tube and is out of LoS)
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_LOS;
         case 63024: // XT-002 Gravity Bomb
         case 64234: // XT-002 Gravity Bomb
         case 63018: // XT-002 Searing Light
@@ -4054,6 +4057,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 64465: // Yogg Saron Shadow Beacon
         case 63342: // Focused Eyebeam Summon Trigger
             spellInfo->MaxAffectedTargets = 1;
+            count++;
+            break;
+        case 63802: // Sara Brain Link
+            spellInfo->MaxAffectedTargets = 2;
             count++;
             break;
         // ENDOF ULDUAR SPELLS

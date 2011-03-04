@@ -23,30 +23,25 @@ LandofLegends - Entwicklungsnotizen:
 
 Allgemein:
 Abbrüfen ob Keeper benutzt werden
-Keeper secoundary spell prüfen/fixen
+Keeper Hodir secoundary spell prüfen/fixen
 Loot
 Legendaere Waffen Quest fixen
 Archievments - teilweise schon erledigt
 
-Script ist zu 82% fertig.
+Script ist zu 87% fertig.
 
 Phase 1 ist komplett
 Phase 2 ist fast fertig
   Allgemein:
-    Rausteleportieren Gameobjekte fehlen noch (DB- oder Scriptspawn)
     Die kleinen Geschichten muessen noch gescriptet werden
     Yells raussuchen
+    Skulls spawnen
   Sara:
     Death Ray muss getestet werden bzw. gefixt
-    Brain Link entweder per workaround fixen (Mutter Sharaz) oder spellscript
   YoggSauron:
-    Maddnesspell vom Gehirn hat noch kein Effekt (fuer Tests erstmal aus lassen) wird aber gecastet korrekt
-    Spells von Sara noch nicht richtig implementiert alle
     Tentakle Spawns Timer fixen
     Tentakle brauch vehicleID
-    MindControl bei Sanity = 0
 Phase 3 fast fertig
-    Spell Lunatic Gaze testen fixen
     Empower Shadows scripten
     Yells raussuchen
 */
@@ -110,6 +105,7 @@ enum Entrys
     ENTRY_SUIT_OF_ARMOR                         = 33433, // around the Room
     ENTRY_DEATHSWORN_ZEALOT                     = 33567, // 3 Groups of 3 ... left middle right
     ENTRY_IMMORTAL_GUARDIAN                     = 33988,
+    ENTRY_LAUGHING_SKULL                        = 33990,
 
     ENTRY_KEEPER_FREYA                          = 33410,
     ENTRY_KEEPER_HODIR                          = 33411,
@@ -160,20 +156,23 @@ enum Spells
     //All Phases
     // Keeper Freya
     SPELL_RESILIENCE_OF_NATURE                  = 62670,
-    SPELL_SANITY_WELL                           = 64170,
+    SPELL_SANITY_WELL                           = 64170, // Send Script Effect ... Scripted in Keeper Script (Summon)
+    SPELL_SANITY_WELL_OPTIC                     = 63288, // Optical Effect ... Green Light 
+    SPELL_SANITY_WELL_DEBUFF                    = 64169, // Damage Debuff if you stand in the well
     // Keeper Thorim
     SPELL_FURY_OF_THE_STORM                     = 62702,
     SPELL_TITANIC_STORM                         = 64171, // Triggers 64172
     SPELL_TITANIC_STORM_DUMMY                   = 64172, // Dummy Spell ... kills weakend guardians
     // Keeper Mimiron
     SPELL_SPEED_OF_INVENTION                    = 62671,
-    SPELL_DESTABILIZATION_MATRIX                = 65210,
+    SPELL_DESTABILIZATION_MATRIX                = 65210, // No AoE ... Target every Tentakle or Guardian Random
     // Keeper Hodir
     SPELL_FORTITUDE_OF_FROST                    = 62650,
     SPELL_HODIRS_PROTECTIVE_GAZE                = 64174,
     // Sanity
     SPELL_SANITY                                = 63050,
-    SPELL_INSANE                                = 63120,
+    SPELL_INSANE                                = 63120, // MindControl
+    SPELL_INSANE_2                              = 64464, // Let all player looks like FacelessOnes
     //Phase 1:
     SPELL_SUMMON_GUARDIAN                       = 63031,
     SPELL_OMINOUS_CLOUD                         = 60977,
@@ -287,7 +286,7 @@ const Position BrainPortalLocation[4] =
     {1995.53f,  -39.78f, 325.5f, 0},
     {1969.25f,  -42.00f, 325.5f, 0}
     /*
-     ToDo: 6 Weitere Portale f�r 25 Mode
+     ToDo: 6 Weitere Portale fuer 25 Mode
     */
 };
 
@@ -350,6 +349,16 @@ const Position KeeperSpawnLocation[4] =
     {2037.09f,  25.43f, 338.46f, 1.3f*M_PI}, // Freya
     {2036.88f, -73.66f, 338.46f, 0.7f*M_PI}, // Thorim
     {1939.94f, -90.49f, 338.46f, 0.3f*M_PI} // Hodir
+};
+
+const Position FreyaSanityWellLocation[6] = 
+{
+    {1901.21f, -48.69f, 332.00f, 0}, 
+    {1901.90f,  -2.78f, 332.00f, 0},
+    {1993.58f,  45.56f, 332.00f, 0},
+    {1985.87f, -91.10f, 330.20f, 0},
+    {2040.12f, -39.16f, 329.00f, 0},
+    {2040.50f, -11.13f, 330.50f, 0}
 };
 
 class boss_sara : public CreatureScript
@@ -534,6 +543,12 @@ public:
             }
         }
 
+        void DamageTaken(Unit *attacker, uint32 &damage)
+        {
+            if(damage > me->GetHealth())
+                damage = me->GetHealth()-1;
+        }
+
         //void SpellHit(Unit* caster, const SpellEntry* spell)
         //{
         //    switch(spell->Id)
@@ -561,7 +576,12 @@ public:
                 if(Aura* aur = target->GetAura(SPELL_SANITY, GetGUID()))
                 {
                     newamount = aur->GetStackAmount();
-                    newamount += amount;
+                    if(newamount > 0)
+                        newamount += amount;
+
+                    if(newamount > 100)
+                        newamount = 100;
+
                     if(newamount <= 0)
                         target->RemoveAurasDueToSpell(SPELL_SANITY);
                     else
@@ -665,6 +685,12 @@ public:
                                     plr->JumpTo(30.0f,5.0f,true);
                                 }
                 }
+
+                Summons.DespawnEntry(ENTRY_BRAIN_PORTAL);
+
+                if(Creature* yoggbrain = me->GetCreature(*me,guidYoggBrain))
+                    yoggbrain->InterruptNonMeleeSpells(false);
+
                 uiGuardianSummon_Timer = 20000;
                 uilastGuardianSummon_Timer = 35000;
                 break;
@@ -723,8 +749,14 @@ public:
             case ENTRY_EMERAL_CONSORT:
             case ENTRY_DEATHSWORN_ZEALOT:
             case ENTRY_SUIT_OF_ARMOR:
-                pSummoned->SetReactState(REACT_PASSIVE);
+                pSummoned->SetReactState(REACT_DEFENSIVE);
                 pSummoned->setFaction(4);
+                break;
+            case ENTRY_KEEPER_FREYA:
+            case ENTRY_KEEPER_HODIR:
+            case ENTRY_KEEPER_MIMIRON:
+            case ENTRY_KEEPER_THORIM:
+                pSummoned->setActive(true);
                 break;
             }
 
@@ -888,7 +920,7 @@ public:
             if(uiRandomYell_Timer <= diff)
             {
                 SaraRandomYell();
-                uiRandomYell_Timer = urand(20000,30000);
+                uiRandomYell_Timer = urand(40000,60000);
             }else uiRandomYell_Timer -= diff;
 
             switch(m_Phase)
@@ -955,7 +987,7 @@ public:
                             case 4:
                                 me->SetDisplayId(SARA_TRANSFORM);
                                 DoCast(me,SPELL_SARA_SHADOWY_BARRIER,false);
-                                me->GetMotionMaster()->MovePoint(1,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()+15);
+                                me->GetMotionMaster()->MovePoint(1,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()+20);
                                 if(Creature* yogg = me->GetCreature(*me,guidYogg))
                                 {
                                     //yogg->SetDisplayId(YOGGSARON_NORMAL);
@@ -998,6 +1030,7 @@ public:
                                                 DoCast(target,SPELL_MALADY_OF_MIND,false);
                                         break;
                                     case 1:
+                                        DoCast(SPELL_BRAIN_LINK);
                                         break;
                                     case 2:
                                         break;
@@ -1510,6 +1543,23 @@ public:
             SetImmuneToPushPullEffects(true);
         }
 
+        bool IsPlayerInBrainRoom(Player* pPlayer)
+        {
+            return pPlayer->GetPositionZ() < 300;
+        }
+
+        void SpellHitTarget(Unit *target, const SpellEntry *spell)
+        {
+            if(!target->ToPlayer())
+                return;
+
+            if(spell->Id == SPELL_INDUCE_MADNESS)
+            {
+                if(IsPlayerInBrainRoom(target->ToPlayer()))
+                    target->RemoveAurasDueToSpell(SPELL_SANITY);
+            }
+        }
+
         InstanceScript* m_pInstance;
 
         void UpdateAI(const uint32 diff)
@@ -1563,7 +1613,7 @@ public:
             }
         }
 
-        void Update(const uint32 diff)
+        void UpdateAI(const uint32 diff)
         {
             if(m_pInstance && m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
                 return;
@@ -1579,7 +1629,15 @@ public:
                                 if(plr->isAlive() && !plr->isGameMaster())
                                     if(!plr->HasAura(SPELL_SANITY) && !plr->HasAura(SPELL_INSANE))
                                     {
-                                        DoCast(plr,SPELL_INSANE,true);
+                                        // Dont make GMs Insane
+                                        if(plr->GetSession()->GetSecurity() > SEC_PLAYER)
+                                            continue;
+
+                                        // Do Not Cast because its AoE and need better targeting scripting
+                                        //DoCast(plr,SPELL_INSANE,true);
+                                        //DoCast(plr,SPELL_INSANE_2,true);
+                                        me->AddAura(SPELL_INSANE,plr);
+                                        me->AddAura(SPELL_INSANE_2,plr);
                                         DoScriptText(RAND(WHISP_INSANITY_1,WHISP_INSANITY_2),me,plr);
                                     }
                 }
@@ -1720,6 +1778,37 @@ public:
     };
 };
 
+class AllSaronitCreaturesInRange
+{
+    public:
+        AllSaronitCreaturesInRange(const WorldObject* pObject, float fMaxRange) : m_pObject(pObject), m_fRange(fMaxRange) {}
+        bool operator() (Unit* pUnit)
+        {
+            if (IsSaronitEntry(pUnit->GetEntry()) && m_pObject->IsWithinDist(pUnit,m_fRange,false) && pUnit->isAlive())
+                return true;
+
+            return false;
+        }
+
+    private:
+        const WorldObject* m_pObject;
+        float m_fRange;
+
+        bool IsSaronitEntry(uint32 entry)
+        {
+            switch(entry)
+            {
+            case ENTRY_GUARDIAN_OF_YOGG_SARON:
+            case ENTRY_CONSTRICTOR_TENTACLE:
+            case ENTRY_CORRUPTOR_TENTACLE:
+            case ENTRY_CRUSHER_TENTACLE:
+            case ENTRY_IMMORTAL_GUARDIAN:
+                return true;
+            }
+            return false;
+        }
+};
+
 class npc_support_keeper : public CreatureScript
 {
 public:
@@ -1732,16 +1821,20 @@ public:
 
     struct npc_support_keeperAI : public Scripted_NoMovementAI
     {
-        npc_support_keeperAI(Creature *c) : Scripted_NoMovementAI(c)
+        npc_support_keeperAI(Creature *c) : Scripted_NoMovementAI(c) , Summons(me)
         {
             m_pInstance = c->GetInstanceScript();
         }
 
+        SummonList Summons;
         InstanceScript* m_pInstance;
+
+        uint32 uiSecondarySpell_Timer;
+
+        bool summoning;
+        bool summoned;
         
-        void AttackStart(Unit *attacker)
-        {
-        }
+        void AttackStart(Unit *attacker) {}
 
         void Reset()
         {
@@ -1762,17 +1855,152 @@ public:
                 break;
             }
             DoCast(auraspell);
+
+            summoning = false;
+            summoned = false;
+
+            uiSecondarySpell_Timer = 10000;
         }
 
-        void Update(const uint32 diff)
+        void JustSummoned(Creature* pSummoned)
         {
-            switch(me->GetEntry())
+            Summons.Summon(pSummoned);
+        }
+
+        void DoSummonSanityWells()
+        {
+            for(uint8 i = 0; i < 6 ; i++)
+                DoSummon(ENTRY_SANITY_WELL,FreyaSanityWellLocation[i],0,TEMPSUMMON_MANUAL_DESPAWN);
+        }
+
+        void GetAliveSaronitCreatureListInGrid(std::list<Creature*>& lList, float fMaxSearchRange)
+        {
+            CellPair pair(Trinity::ComputeCellPair(me->GetPositionX(), me->GetPositionY()));
+            Cell cell(pair);
+            cell.data.Part.reserved = ALL_DISTRICT;
+            cell.SetNoCreate();
+
+            AllSaronitCreaturesInRange check(me, fMaxSearchRange);
+            Trinity::CreatureListSearcher<AllSaronitCreaturesInRange> searcher(me, lList, check);
+            TypeContainerVisitor<Trinity::CreatureListSearcher<AllSaronitCreaturesInRange>, GridTypeMapContainer> visitor(searcher);
+
+            cell.Visit(pair, visitor, *(me->GetMap()));
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if(uiSecondarySpell_Timer <= diff)
             {
-            case ENTRY_KEEPER_THORIM:
-                if(!me->HasAura(SPELL_TITANIC_STORM))
-                    DoCast(SPELL_TITANIC_STORM);
-                break;
+                switch(me->GetEntry())
+                {
+                case ENTRY_KEEPER_THORIM:
+                    if(!me->HasAura(SPELL_TITANIC_STORM))
+                        DoCast(SPELL_TITANIC_STORM);
+
+                    uiSecondarySpell_Timer = 10000;
+                    return;
+                case ENTRY_KEEPER_FREYA:
+                    if(!summoned)
+                    {
+                        if(!summoning)
+                        {
+                            DoCast(SPELL_SANITY_WELL);
+                            uiSecondarySpell_Timer = 3000;
+                            summoning = true;
+                        }else
+                        {
+                            DoSummonSanityWells();
+                            summoned = true;
+                        }
+                    }
+                    return;
+                case ENTRY_KEEPER_MIMIRON:
+                    {
+                        std::list<Creature*> creatureList;
+                        GetAliveSaronitCreatureListInGrid(creatureList,5000);
+                        if(!creatureList.empty())
+                        {
+                            std::list<Creature*>::iterator itr = creatureList.begin();
+                            advance(itr, urand(0, creatureList.size()-1));
+                            DoCast((*itr),SPELL_DESTABILIZATION_MATRIX,false);
+                        }
+                    }
+                    uiSecondarySpell_Timer = 30000;
+                    return;
+                }
+                uiSecondarySpell_Timer = 10000;
+            }else uiSecondarySpell_Timer -= diff;
+        } 
+    };
+};
+
+class npc_sanity_well : public CreatureScript
+{
+public:
+    npc_sanity_well() : CreatureScript("npc_sanity_well") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_sanity_wellAI (pCreature);
+    }
+
+    struct npc_sanity_wellAI : public Scripted_NoMovementAI
+    {
+        npc_sanity_wellAI(Creature *c) : Scripted_NoMovementAI(c)
+        {
+            m_pInstance = c->GetInstanceScript();
+        }
+
+        InstanceScript* m_pInstance;
+
+        uint32 uiSanityTick_Timer;
+
+        void Reset()
+        {
+            DoCast(SPELL_SANITY_WELL_OPTIC);
+            uiSanityTick_Timer = 2000;
+        }
+
+        void AttackStart(Unit *who) {}
+
+        void MoveInLineOfSight(Unit *mover)
+        {
+            if(mover && mover->ToPlayer() )
+                if(me->IsWithinDist2d(mover,6))
+                {
+                    if(!mover->HasAura(SPELL_SANITY_WELL_DEBUFF))
+                        me->AddAura(SPELL_SANITY_WELL_DEBUFF,mover);
+                }else
+                {
+                    if(mover->HasAura(SPELL_SANITY_WELL_DEBUFF))
+                        mover->RemoveAurasDueToSpell(SPELL_SANITY_WELL_DEBUFF);
+                }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_YOGGSARON) != IN_PROGRESS)
+            {
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
             }
+
+            if(uiSanityTick_Timer <= diff)
+            {
+                std::list<Player*> plrList = me->GetNearestPlayersList(10);
+                for (std::list<Player*>::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+                {
+                    if((*itr))
+                    {
+                        if((*itr)->HasAura(SPELL_SANITY_WELL_DEBUFF))
+                        {
+                            if(Creature* sara = Creature::GetCreature((*me),m_pInstance->GetData64(TYPE_SARA)))
+                                CAST_AI(boss_sara::boss_saraAI,sara->AI())->ModifySanity((*itr),10);
+                        }
+                    }
+                }
+                uiSanityTick_Timer = 2000;
+            }else uiSanityTick_Timer -= diff;
         }
     };
 };
@@ -1864,6 +2092,124 @@ class spell_lunatic_gaze_targeting : public SpellScriptLoader
         }
 };
 
+class spell_brain_link_periodic_dummy : public SpellScriptLoader
+{
+    public:
+        spell_brain_link_periodic_dummy() : SpellScriptLoader("spell_brain_link_periodic_dummy") { }
+
+    class spell_brain_link_periodic_dummy_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_brain_link_periodic_dummy_AuraScript)
+
+        void HandlePeriodicDummy(AuraEffect const* aurEff)
+        {
+            PreventDefaultAction();
+            if (Unit* trigger = GetTarget())
+            {
+                if (trigger->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if(!trigger->GetMap()->IsDungeon())
+                        return;
+
+                    Map::PlayerList const &players = trigger->GetMap()->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        if (Player* player = itr->getSource())
+                            if(player->HasAura(SPELL_BRAIN_LINK) && player->GetGUID() != trigger->GetGUID() )
+                            {
+                                
+                                trigger->CastSpell(player, SPELL_BRAIN_LINK_DUMMY, true);
+                                if(Unit* caster = GetCaster())
+                                if (!player->IsWithinDist(trigger, float(aurEff->GetMiscValue())))
+                                {
+                                    caster->CastSpell(trigger, SPELL_BRAIN_LINK_DAMAGE, true);
+                                    if(InstanceScript* pInstance = caster->GetInstanceScript())
+                                        if(caster->ToCreature() && caster->GetGUID() == pInstance->GetData64(TYPE_SARA))
+                                            CAST_AI(boss_sara::boss_saraAI,caster->ToCreature()->AI())->ModifySanity(player,-2);
+                                }
+                            }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_brain_link_periodic_dummy_AuraScript::HandlePeriodicDummy, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            //OnEffectApply += AuraEffectApplyFn(spell_keeper_support_aura_targeting_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_brain_link_periodic_dummy_AuraScript();
+    }
+};
+
+class NotIsWeakenedImmortalCheck
+{
+    public:
+        NotIsWeakenedImmortalCheck() { }
+
+        bool operator() (Unit* unit)
+        {
+            return !(unit->HasAura(SPELL_WEAKENED));
+        }
+};
+
+class spell_titanic_storm_targeting : public SpellScriptLoader
+{
+    public:
+        spell_titanic_storm_targeting() : SpellScriptLoader("spell_titanic_storm_targeting") { }
+
+        class spell_titanic_storm_targeting_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_titanic_storm_targeting_SpellScript)
+
+            void FilterTargets(std::list<Unit*>& unitList)
+            {
+                unitList.remove_if(NotIsWeakenedImmortalCheck());
+            }
+
+            void Register()
+            {
+                OnUnitTargetSelect += SpellUnitTargetFn(spell_titanic_storm_targeting_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_AREA_ENTRY_SRC);
+            }
+        };
+
+        // function which creates SpellScript
+        SpellScript *GetSpellScript() const
+        {
+            return new spell_titanic_storm_targeting_SpellScript();
+        }
+};
+
+class spell_insane_death_effekt : public SpellScriptLoader
+{
+    public:
+        spell_insane_death_effekt() : SpellScriptLoader("spell_insane_death_effekt") { }
+
+        class spell_insane_death_effekt_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_insane_death_effekt_AuraScript)
+
+            void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit * target = GetTarget())
+                    if(target->ToPlayer() && target->isAlive())
+                        target->DealDamage(target,target->GetHealth());
+            }
+
+            // function registering
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_insane_death_effekt_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_AOE_CHARM, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript *GetAuraScript() const
+        {
+            return new spell_insane_death_effekt_AuraScript();
+        }
+};
 /*
 UPDATE creature_template SET scriptname = 'boss_sara' WHERE entry = 33134;
 UPDATE script_texts SET npc_entry = 33134 WHERE npc_entry = 33288 AND entry IN (-1603330,-1603331,-1603332,-1603333);
@@ -1879,6 +2225,7 @@ UPDATE creature_template SET scriptname = 'boss_yogg_saron' WHERE entry = 33288;
 UPDATE creature_template SET scriptname = 'npc_influence_tentacle' WHERE entry in (33716,33720,33719,33717,33433,33567);
 UPDATE creature_template SET scriptname = 'npc_immortal_guardian' WHERE entry = 33988;
 UPDATE creature_template SET scriptname = 'npc_support_keeper' WHERE entry in (33410,33411,33412,33413);
+UPDATE creature_template SET scriptname = 'npc_sanity_well' WHERE entry = 33991;
 UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 194625;
 
 UPDATE creature_template SET RegenHealth = 0 WHERE entry IN (33134,34332,33890,33954);
@@ -1891,6 +2238,7 @@ VALUES
 (603002, 194625, 603, 3, 1, 1941.61, -25.88, 244.98, 0, 0, 0, 0, 0, 60, 100, 1),
 (603003, 194625, 603, 3, 1, 2001.18,  9.409, 245.24, 0, 0, 0, 0, 0, 60, 100, 1);
 
+-- Auren shouldnt hit other friendly NPCs
 DELETE FROM spell_script_names WHERE spell_id IN (62670,62671,62702,62650);
 INSERT INTO spell_script_names (spell_id,Scriptname)
 VALUES
@@ -1899,12 +2247,39 @@ VALUES
 (62702,'spell_keeper_support_aura_targeting'),
 (62650,'spell_keeper_support_aura_targeting');
 
+-- Script for Target Faces Caster
 DELETE FROM spell_script_names WHERE spell_id IN (64164);
 INSERT INTO spell_script_names (spell_id,Scriptname)
 VALUES
 (64164,'spell_lunatic_gaze_targeting');
 
+-- Trigger Effekt on Near Player with Brain Link 
+DELETE FROM spell_script_names WHERE spell_id IN (63802);
+INSERT INTO spell_script_names (spell_id,Scriptname)
+VALUES
+(63802,'spell_brain_link_periodic_dummy');
 
+-- Needed for Titanic Storm
+-- Script for Target have Weakened Aura
+DELETE FROM spell_script_names WHERE spell_id IN (64172);
+INSERT INTO spell_script_names (spell_id,Scriptname)
+VALUES
+(64172,'spell_titanic_storm_targeting');
+
+-- Condition because NPCs need this else no hit
+DELETE FROM conditions WHERE SourceEntry = 64172;
+INSERT INTO conditions
+(SourceTypeOrReferenceId,SourceGroup,SourceEntry,ElseGroup,
+ ConditionTypeOrReference,ConditionValue1,ConditionValue2,ConditionValue3,
+ ErrorTextId,ScriptName,COMMENT)
+VALUES
+(13,0,64172,0,18,1,33988,0,0,'','Effekt only for Immortal Guardians');
+
+-- Insane Death trigger on Remove
+DELETE FROM spell_script_names WHERE spell_id IN (63120);
+INSERT INTO spell_script_names (spell_id,Scriptname)
+VALUES
+(63120,'spell_insane_death_effekt');
 */
 
 void AddSC_boss_yoggsaron()
@@ -1919,8 +2294,12 @@ void AddSC_boss_yoggsaron()
     new boss_yogg_saron();
     new npc_immortal_guardian();
     new npc_support_keeper();
+    new npc_sanity_well();
     new go_flee_to_surface();
 
     new spell_keeper_support_aura_targeting();
     new spell_lunatic_gaze_targeting();
+    new spell_brain_link_periodic_dummy();
+    new spell_titanic_storm_targeting();
+    new spell_insane_death_effekt();
 }
