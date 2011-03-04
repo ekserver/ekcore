@@ -22,20 +22,19 @@
 LandofLegends - Entwicklungsnotizen:
 
 Allgemein:
-Abbrüfen ob Keeper benutzt werden
+Keeper Hilfe zu/abschalten
 Keeper Hodir secoundary spell prüfen/fixen
 Loot
 Legendaere Waffen Quest fixen
 Archievments - teilweise schon erledigt
 
-Script ist zu 87% fertig.
+Script ist zu 89% fertig.
 
 Phase 1 ist komplett
 Phase 2 ist fast fertig
   Allgemein:
     Die kleinen Geschichten muessen noch gescriptet werden
     Yells raussuchen
-    Skulls spawnen
   Sara:
     Death Ray muss getestet werden bzw. gefixt
   YoggSauron:
@@ -84,7 +83,20 @@ enum Events
 enum Achievments
 {
     ACHIEVMENT_KISS_AND_MAKE_UP_10              = 3009,
-    ACHIEVMENT_KILL_AND_MAKE_UP_25              = 3011,
+    ACHIEVMENT_KISS_AND_MAKE_UP_25              = 3011,
+
+    // Heroic Mode
+    ACHIEVMENT_THREE_LIGHTS_IN_THE_DARKNESS_10  = 3157,
+    ACHIEVMENT_TWO_LIGHTS_IN_THE_DARKNESS_10    = 3141,
+    ACHIEVMENT_ONE_LIGHTS_IN_THE_DARKNESS_10    = 3158,
+    ACHIEVMENT_ALONE_IN_THE_DARKNESS_10         = 3159,
+    ACHIEVMENT_THREE_LIGHTS_IN_THE_DARKNESS_25  = 3161,
+    ACHIEVMENT_TWO_LIGHTS_IN_THE_DARKNESS_25    = 3162,
+    ACHIEVMENT_ONE_LIGHTS_IN_THE_DARKNESS_25    = 3163,
+    ACHIEVMENT_ALONE_IN_THE_DARKNESS_25         = 3164,
+
+    // Realm First - 0 Keeper - 25 
+    ACHIEVMENT_REALM_FIRST_DEATHS_DEMISE        = 3117,
 };
 
 enum Entrys
@@ -149,6 +161,7 @@ enum Actions
     ACTION_PORTAL_TO_MADNESS_DRAGON = 4,
     ACTION_PORTAL_TO_MADNESS_LICHKING = 5,
     ACTION_BRAIN_UNDER_30_PERCENT = 6,
+    ACTION_YOGGSARON_KILLED = 7,
 };
 
 enum Spells
@@ -351,16 +364,36 @@ const Position KeeperSpawnLocation[4] =
     {1939.94f, -90.49f, 338.46f, 0.3f*M_PI} // Hodir
 };
 
-const Position FreyaSanityWellLocation[6] = 
+const Position FreyaSanityWellLocation[5] = 
 {
     {1901.21f, -48.69f, 332.00f, 0}, 
     {1901.90f,  -2.78f, 332.00f, 0},
     {1993.58f,  45.56f, 332.00f, 0},
     {1985.87f, -91.10f, 330.20f, 0},
     {2040.12f, -39.16f, 329.00f, 0},
-    {2040.50f, -11.13f, 330.50f, 0}
 };
 
+const Position KingLlianeSkullLocation[3] = 
+{
+    {1929.41f,  45.27f, 239.70f, 0},
+    {1902.31f,  72.53f, 239.70f, 0},
+    {1925.10f,  91.52f, 239.70f, 0}
+};
+
+const Position LichkingSkullLocation[3] = 
+{
+    {1955.12f, -111.96f,  240.00f, 0},
+    {1919.55f, -131.94f,  240.00f, 0},
+    {1921.03f,  -93.46f,  240.00f, 0}
+};
+
+const Position DragonSoulSkullLocation[4] = 
+{
+    {2115.89f,   4.63f,  239.80f, 0},
+    {2080.65f,  37.47f,  244.3f, 0},
+    {2170.20f, -33.31f,  244.3f, 0},
+    {2090.49f, -57.40f,  239.8f, 0}
+};
 class boss_sara : public CreatureScript
 {
 public:
@@ -384,11 +417,12 @@ public:
         SummonList Summons;
 
         BossPhase m_Phase;
-        uint32 amountKeeper;
+        uint32 uiAmountKeeperActive;
 
         uint64 guidYogg;
         uint64 guidYoggBrain;
         std::list<uint64> guidEventTentacles;
+        std::list<uint64> guidEventSkulls;
 
         // Phase 1
         uint32 uiSarasHelp_Timer;
@@ -435,6 +469,7 @@ public:
         {
             Summons.DespawnAll();
             guidEventTentacles = std::list<uint64>();
+            guidEventSkulls = std::list<uint64>();
 
             me->InterruptNonMeleeSpells(false);
             // Zurueck an Home ... muss nicht sein ist aber besser so
@@ -521,8 +556,7 @@ public:
             if(m_pInstance)
                 m_pInstance->SetBossState(TYPE_YOGGSARON,IN_PROGRESS);
 
-            // TO DO: Only Debug 
-            amountKeeper = 3;
+            uiAmountKeeperActive = CountKeepersActive();
         }
 
         void ReceiveEmote(Player* pPlayer, uint32 emote)
@@ -531,12 +565,12 @@ public:
             {
                 if(emote == TEXTEMOTE_KISS)
                 {
-                    if(pPlayer->HasAchieved(RAID_MODE(ACHIEVMENT_KISS_AND_MAKE_UP_10,ACHIEVMENT_KILL_AND_MAKE_UP_25)))
+                    if(pPlayer->HasAchieved(RAID_MODE(ACHIEVMENT_KISS_AND_MAKE_UP_10,ACHIEVMENT_KISS_AND_MAKE_UP_25)))
                         return;
 
                     if (me->IsWithinLOS(pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ()) && me->IsWithinDistInMap(pPlayer,30.0f))
                     {
-                        if(AchievementEntry const *achievKissAndMakeUp = GetAchievementStore()->LookupEntry(RAID_MODE(ACHIEVMENT_KISS_AND_MAKE_UP_10,ACHIEVMENT_KILL_AND_MAKE_UP_25)))
+                        if(AchievementEntry const *achievKissAndMakeUp = GetAchievementStore()->LookupEntry(RAID_MODE(ACHIEVMENT_KISS_AND_MAKE_UP_10,ACHIEVMENT_KISS_AND_MAKE_UP_25)))
                             pPlayer->CompletedAchievement(achievKissAndMakeUp);
                     }
                 }
@@ -566,7 +600,24 @@ public:
         //    }
         //}
 
-        //FindNearestCreature
+        uint32 CountKeepersActive()
+        {
+            uint32 count = 0;
+            if(m_pInstance)
+            {
+                uint32 supportFlag = m_pInstance->GetData(DATA_KEEPER_SUPPORT_YOGG);
+
+                if(supportFlag & MIMIRON_SUPPORT)
+                    count++;
+                if(supportFlag & FREYA_SUPPORT)
+                    count++;
+                if(supportFlag & THORIM_SUPPORT)
+                    count++;
+                if(supportFlag & HODIR_SUPPORT)
+                    count++;
+            }
+            return count;
+        }
 
         void ModifySanity(Player* target, int8 amount)
         {
@@ -637,6 +688,12 @@ public:
                 break;
             case ACTION_BRAIN_UNDER_30_PERCENT:
                 SetPhase(PHASE_YOGG);
+                break;
+            case ACTION_YOGGSARON_KILLED:
+                if(Creature* yogg = me->GetCreature(*me,guidYogg))
+                    yogg->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+
+                me->Kill(me);
                 break;
             }
         }
@@ -758,6 +815,11 @@ public:
             case ENTRY_KEEPER_THORIM:
                 pSummoned->setActive(true);
                 break;
+            case ENTRY_LAUGHING_SKULL:
+                pSummoned->setFaction(14);
+                pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                break;
             }
 
             Summons.Summon(pSummoned);
@@ -849,6 +911,18 @@ public:
             return true;
         }
 
+        void DoKillAndDespawnGUIDs(std::list<uint64> GuidListe)
+        {
+            for(std::list<uint64>::iterator itr = GuidListe.begin(); itr != GuidListe.end(); ++itr)
+            {
+                Creature* temp = me->GetCreature(*me,*itr);
+                if(temp && temp->isAlive())
+                {
+                    temp->DealDamage(temp,temp->GetHealth());
+                    temp->RemoveCorpse();
+                }
+            }
+        }
         void DoMadness()
         {
             if(m_pInstance)
@@ -873,6 +947,7 @@ public:
             case ACTION_PORTAL_TO_MADNESS_DRAGON:
                 currentBrainEventPhase = PORTAL_PHASE_DRAGON_SOUL;
                 guidEventTentacles.clear();
+                guidEventSkulls.clear();
                 uint32 entry;
                 for(int i = 0; i < CONSTANT_MAX_DRAGONSOUL_TENTACLE_SPAWNS; ++i)
                 {
@@ -890,23 +965,40 @@ public:
                     if(Creature* summon = DoSummon(entry,DragonSoulTentacleLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
                         guidEventTentacles.push_back(summon->GetGUID());
                 }
+                for(int i = 0; i < 4; ++i)
+                {
+                    if(Creature* summon = DoSummon(ENTRY_LAUGHING_SKULL,DragonSoulSkullLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
+                        guidEventSkulls.push_back(summon->GetGUID());
+                }
                 break;
             case ACTION_PORTAL_TO_MADNESS_LICHKING:
                 currentBrainEventPhase = PORTAL_PHASE_LICH_KING;
                 guidEventTentacles.clear();
+                guidEventSkulls.clear();
                 for(int i = 0; i < CONSTANT_MAX_LICHKING_TENTACLE_SPAWNS; ++i)
                 {
                     if(Creature* summon = DoSummon(ENTRY_DEATHSWORN_ZEALOT,LichKingTentacleLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
                         guidEventTentacles.push_back(summon->GetGUID());
                 }
+                for(int i = 0; i < 3; ++i)
+                {
+                    if(Creature* summon = DoSummon(ENTRY_LAUGHING_SKULL,LichkingSkullLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
+                        guidEventSkulls.push_back(summon->GetGUID());
+                }
                 break;
             case ACTION_PORTAL_TO_MADNESS_STORMWIND:
                 currentBrainEventPhase = PORTAL_PHASE_KING_LLIANE;
                 guidEventTentacles.clear();
+                guidEventSkulls.clear();
                 for(int i = 0; i < CONSTANT_MAX_LLIANE_TENTACLE_SPAWNS; ++i)
                 {
                     if(Creature* summon = DoSummon(ENTRY_SUIT_OF_ARMOR,KingLlianeTentacleLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
                         guidEventTentacles.push_back(summon->GetGUID());
+                }
+                for(int i = 0; i < 3; ++i)
+                {
+                    if(Creature* summon = DoSummon(ENTRY_LAUGHING_SKULL,KingLlianeSkullLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
+                        guidEventSkulls.push_back(summon->GetGUID());
                 }
                 break;
             }
@@ -1092,6 +1184,8 @@ public:
                                     if(Creature* yogg = me->GetCreature(*me,guidYogg))
                                         me->AddAura(SPELL_SHATTERED_ILLUSIONS,yogg);
                                     me->AddAura(SPELL_SHATTERED_ILLUSIONS,me);
+
+                                    DoKillAndDespawnGUIDs(guidEventSkulls);
                                 }
                             }
                         }
@@ -1119,7 +1213,7 @@ public:
                         }
                     }else uiLunaticGaze_Timer -= diff;
 
-                    if(getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL && amountKeeper < 4)
+                    if(getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL && uiAmountKeeperActive < 4)
                         if(uiDeafeningRoar_Timer <= diff)
                         {
                             if(Creature* yogg = me->GetCreature(*me,guidYogg))
@@ -1597,6 +1691,12 @@ public:
             uiSanityCheck_Timer = 1000;
         }
 
+        void JustDied(Unit *killer)
+        {
+            if(Creature* cSara = me->GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
+                cSara->AI()->DoAction(ACTION_YOGGSARON_KILLED);
+        }
+
         void SpellHitTarget(Unit* target, const SpellEntry* spell)
         {
             if(!m_pInstance) return;
@@ -1869,7 +1969,7 @@ public:
 
         void DoSummonSanityWells()
         {
-            for(uint8 i = 0; i < 6 ; i++)
+            for(uint8 i = 0; i < 5 ; i++)
                 DoSummon(ENTRY_SANITY_WELL,FreyaSanityWellLocation[i],0,TEMPSUMMON_MANUAL_DESPAWN);
         }
 
@@ -2005,6 +2105,54 @@ public:
     };
 };
 
+class npc_laughting_skull : public CreatureScript
+{
+public:
+    npc_laughting_skull() : CreatureScript("npc_laughting_skull") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_laughting_skullAI (pCreature);
+    }
+
+    struct npc_laughting_skullAI : public Scripted_NoMovementAI
+    {
+        npc_laughting_skullAI(Creature *c) : Scripted_NoMovementAI(c)
+        {
+            m_pInstance = c->GetInstanceScript();
+        }
+
+        InstanceScript* m_pInstance;
+
+        void Reset()
+        {
+            DoCast(SPELL_LS_LUNATIC_GAZE);
+        }
+        
+        void SpellHitTarget(Unit* target, const SpellEntry* spell)
+        {
+            if(!m_pInstance) return;
+
+            if(target && target->ToPlayer())
+            {
+                switch(spell->Id)
+                {
+                case SPELL_LS_LUNATIC_GAZE_EFFECT:
+                    if(Creature* cSara = me->GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
+                        CAST_AI(boss_sara::boss_saraAI,cSara->AI())->ModifySanity(target->ToPlayer(),-2);
+                    break;
+                }
+            }
+        }
+
+        void AttackStart(Unit *who) {}
+
+        void UpdateAI(const uint32 diff)
+        {
+        }
+    };
+};
+
 class go_flee_to_surface : public GameObjectScript
 {
 public:
@@ -2013,7 +2161,7 @@ public:
     bool OnGossipHello(Player *pPlayer, GameObject * /*pGO*/)
     {
         pPlayer->NearTeleportTo(SaraLocation.GetPositionX(),SaraLocation.GetPositionY(),SaraLocation.GetPositionZ(),M_PI,false);
-        pPlayer->JumpTo(30.0f,5.0f,true);
+        pPlayer->JumpTo(40.0f,10.0f,true);
         return false;
     }
 };
@@ -2226,6 +2374,7 @@ UPDATE creature_template SET scriptname = 'npc_influence_tentacle' WHERE entry i
 UPDATE creature_template SET scriptname = 'npc_immortal_guardian' WHERE entry = 33988;
 UPDATE creature_template SET scriptname = 'npc_support_keeper' WHERE entry in (33410,33411,33412,33413);
 UPDATE creature_template SET scriptname = 'npc_sanity_well' WHERE entry = 33991;
+UPDATE creature_template SET minlevel = 80, maxlevel = 80, scriptname = 'npc_laughting_skull' WHERE entry = 33990;
 UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 194625;
 
 UPDATE creature_template SET RegenHealth = 0 WHERE entry IN (33134,34332,33890,33954);
@@ -2248,10 +2397,11 @@ VALUES
 (62650,'spell_keeper_support_aura_targeting');
 
 -- Script for Target Faces Caster
-DELETE FROM spell_script_names WHERE spell_id IN (64164);
+DELETE FROM spell_script_names WHERE spell_id IN (64164,64168);
 INSERT INTO spell_script_names (spell_id,Scriptname)
 VALUES
-(64164,'spell_lunatic_gaze_targeting');
+(64164,'spell_lunatic_gaze_targeting'),
+(64168,'spell_lunatic_gaze_targeting');
 
 -- Trigger Effekt on Near Player with Brain Link 
 DELETE FROM spell_script_names WHERE spell_id IN (63802);
@@ -2295,6 +2445,7 @@ void AddSC_boss_yoggsaron()
     new npc_immortal_guardian();
     new npc_support_keeper();
     new npc_sanity_well();
+    new npc_laughting_skull();
     new go_flee_to_surface();
 
     new spell_keeper_support_aura_targeting();
