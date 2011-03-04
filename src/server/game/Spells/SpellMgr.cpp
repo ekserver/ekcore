@@ -4049,6 +4049,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 65210: // Keeper Mimiron Destabilization Matrix
             // Ignore LoS (because Mimiron stands in a Tube and is out of LoS)
             mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_LOS;
+            count++;
+            break;
         case 63024: // XT-002 Gravity Bomb
         case 64234: // XT-002 Gravity Bomb
         case 63018: // XT-002 Searing Light
