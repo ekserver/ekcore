@@ -6556,13 +6556,10 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 }
                 // Misdirection
                 case 34477:
-                {   //if (!HasAura(35079, GetGUID()))
+                {
                     RemoveAura(dummySpell->Id, GetGUID(), 0, AURA_REMOVE_BY_DEFAULT);
-                    {
-                        CastSpell(this, 35079, true);
-                        return true;
-                    }
-                    //return false;
+                    CastSpell(this, 35079, true);
+                    return true;
                 }
             }
             break;
