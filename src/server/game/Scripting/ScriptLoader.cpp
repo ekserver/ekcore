@@ -407,6 +407,8 @@ void AddSC_boss_varos();
 void AddSC_boss_eregos();
 void AddSC_instance_oculus();
 void AddSC_oculus();
+void AddSC_boss_malygos();                //The Nexus The Eye of Eternity
+void AddSC_instance_eye_of_eternity();
 void AddSC_boss_sartharion();            //Obsidian Sanctum
 void AddSC_instance_obsidian_sanctum();
 void AddSC_mob_obsidian_sanctum();
@@ -1110,6 +1112,8 @@ void AddNorthrendScripts()
     AddSC_boss_eregos();
     AddSC_instance_oculus();
     AddSC_oculus();
+    AddSC_boss_malygos();                //The Nexus The Eye of Eternity
+    AddSC_instance_eye_of_eternity();
     AddSC_boss_sartharion();            //Obsidian Sanctum
     AddSC_instance_obsidian_sanctum();
     AddSC_mob_obsidian_sanctum();
