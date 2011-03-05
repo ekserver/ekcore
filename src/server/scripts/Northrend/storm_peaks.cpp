@@ -629,7 +629,7 @@ public:
                     {
                         pWho->RemoveAurasDueToSpell(45472);  //remove parachute
                         //pWho->CastSpell(pFreed, SPELL_RIDE_FREED_DRAKE, true);
-                        pWho->EnterVehicle(pFreed->GetVehicleKit());
+                        pWho->EnterVehicle(pFreed);
                         pFreed->SetFlying(true);  //should not be here
                         pFreed->SetSpeed(MOVE_FLIGHT, 3.0f);
                         me->SetVisible(false);
@@ -771,7 +771,7 @@ public:
 
                 if (pCaster->IsVehicle())
                 {
-                    me->EnterVehicle(pCaster->GetVehicleKit());
+                    me->EnterVehicle(pCaster);
                     me->RemoveAurasDueToSpell(SPELL_ICE_BLOCK);
                 }
             }
