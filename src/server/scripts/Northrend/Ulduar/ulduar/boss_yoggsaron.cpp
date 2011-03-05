@@ -515,6 +515,16 @@ public:
             uiRandomYell_Timer = urand(10000,20000);
         }
 
+        
+        void JustDied(Unit *killer)
+        {
+            if(m_pInstance)
+                m_pInstance->SetBossState(TYPE_YOGGSARON,DONE);
+
+            SetSanityAura(true);
+            Summons.DespawnAll();
+        }
+
         void DoSpawnKeeperForSupport() // Despawn on Sara Reset
         {
             if(m_pInstance)
