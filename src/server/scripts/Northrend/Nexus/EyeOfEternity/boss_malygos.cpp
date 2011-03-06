@@ -369,6 +369,7 @@ public:
                     {
                         pSpark->SetFlying(true);
                         pSpark->SetReactState(REACT_PASSIVE);
+                        pSpark->SetInCombatWithZone();
                         pSpark->GetMotionMaster()->MoveFollow(me, 0.0f, 0.0f);
                     }
                     break;
@@ -637,9 +638,9 @@ public:
                     {
                         SparkMovement(false);
                         // fly up
+                        me->SetFlying(true);
                         me->SetReactState(REACT_PASSIVE);
                         me->GetMotionMaster()->MovePoint(POINT_VORTEX, Locations[1]);
-                        me->SetFlying(true);
                         // set idle phase
                         uiPhase = PHASE_IDLE;
                         uiVortexTimer = 12*IN_MILLISECONDS;
