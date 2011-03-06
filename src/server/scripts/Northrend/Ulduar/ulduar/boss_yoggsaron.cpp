@@ -2358,7 +2358,7 @@ public:
     bool OnGossipHello(Player *pPlayer, GameObject * /*pGO*/)
     {
         pPlayer->NearTeleportTo(SaraLocation.GetPositionX(),SaraLocation.GetPositionY(),SaraLocation.GetPositionZ(),M_PI,false);
-        pPlayer->JumpTo(50.0f,20.0f,true);
+        pPlayer->JumpTo(40.0f,15.0f,true);
         return false;
     }
 };
