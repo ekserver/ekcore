@@ -4092,6 +4092,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 63018: // XT-002 Searing Light
         case 65121: // XT-002 Searing Light
         case 65301: // Sara Psychosis
+        case 63830: // Sara Malady of the Mind
         case 64465: // Yogg Saron Shadow Beacon
         case 63342: // Focused Eyebeam Summon Trigger
             spellInfo->MaxAffectedTargets = 1;

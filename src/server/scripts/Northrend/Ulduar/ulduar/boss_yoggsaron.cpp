@@ -28,15 +28,13 @@ Loot
 Legendaere Waffen Quest fixen
 Archievments - teilweise schon erledigt
 
-Script ist zu 89% fertig.
+Script ist zu 90% fertig.
 
 Phase 1 ist komplett
 Phase 2 ist fast fertig
   Allgemein:
     Die kleinen Geschichten muessen noch gescriptet werden
     Yells raussuchen
-  Sara:
-    Death Ray muss getestet werden bzw. gefixt
   YoggSauron:
     Tentakle Spawns Timer fixen
     Tentakle brauch vehicleID
@@ -119,6 +117,9 @@ enum Entrys
     ENTRY_IMMORTAL_GUARDIAN                     = 33988,
     ENTRY_LAUGHING_SKULL                        = 33990,
 
+    ENTRY_DEATH_RAY                             = 33881,
+    ENTRY_DEATH_ORB                             = 33882,
+
     ENTRY_KEEPER_FREYA                          = 33410,
     ENTRY_KEEPER_HODIR                          = 33411,
     ENTRY_KEEPER_MIMIRON                        = 33412,
@@ -162,6 +163,7 @@ enum Actions
     ACTION_PORTAL_TO_MADNESS_LICHKING = 5,
     ACTION_BRAIN_UNDER_30_PERCENT = 6,
     ACTION_YOGGSARON_KILLED = 7,
+    ACTION_DEATH_RAY_MOVE = 8,
 };
 
 enum Spells
@@ -201,16 +203,22 @@ enum Spells
     SPELL_DARK_VOLLEY                           = 63038, // Needs Sanity Scripting
     SPELL_SHADOW_NOVA                           = 65209, // On Death
     //Phase 2:
+    SPELL_SARA_TRANSFORMATION                   = 65157,
     //  Sara - She spams Psychosis without pause on random raid members unless she casts something else. The other three abilities each have a 30 second cooldown, and are used randomly when available.
     SPELL_PSYCHOSIS                             = 65301, // Needs Sanity Scripting
     SPELL_BRAIN_LINK                            = 63802, // Only Apply Aura
     SPELL_BRAIN_LINK_DAMAGE                     = 63803, // Needs Sanity Scripting
     SPELL_BRAIN_LINK_DUMMY                      = 63804, // Dummy Effekt
     SPELL_MALADY_OF_MIND                        = 63830, // Needs Sanity Scripting, Trigger 63881 on remove
+    SPELL_DEATH_RAY_SUMMON                      = 63891, // Summond 1 33882 (controll deathray)
+    SPELL_DEATH_RAY_DAMAGE_VISUAL               = 63886, // Damage visual Effekt of 33881 (triggered with periodic)
     SPELL_DEATH_RAY_PERIODIC                    = 63883, // Trigger 63884
+    SPELL_DEATH_RAY_ORIGIN_VISUAL               = 63893, // Visual Effekt of 33882
+    SPELL_DEATH_RAY_WARNING_VISUAL              = 63882,
     SPELL_SARA_SHADOWY_BARRIER                  = 64775,
     // Tentacle
     SPELL_ERUPT                                 = 64144,
+    SPELL_TENTACLE_VOID_ZONE                    = 64017,
     //  Crusher Tentacle
     SPELL_DIMISH_POWER                          = 64145, // Aura around Caster
     SPELL_FOCUS_ANGER                           = 57688, // Trigger 57689
@@ -235,12 +243,14 @@ enum Spells
     //  Brain of Yogg-Sauron
     SPELL_INDUCE_MADNESS                        = 64059,
     SPELL_SHATTERED_ILLUSIONS                   = 64173,
+    SPELL_BRAIN_HURT_VISUAL                     = 64361,
     //  Mind Portal 
     SPELL_TELEPORT                              = 64027, // Not Used
     //  Lauthing Skull
     SPELL_LS_LUNATIC_GAZE                       = 64167,
     SPELL_LS_LUNATIC_GAZE_EFFECT                = 64168,
     //Phase 3:
+    SPELL_YOGG_SARON_TRANSFORMATION             = 63895,
     //  Yogg-Saron
     SPELL_DEAFENING_ROAR                        = 64189, // Cast only on 25plr Mode and only with 0-3 Keepers active
     SPELL_SUMMON_IMMORTAL_GUARDIAN              = 64158,
@@ -485,7 +495,8 @@ public:
             // Reset Display
             me->setFaction(35);
             me->SetVisible(true);
-            me->SetDisplayId(me->GetNativeDisplayId());
+            //me->SetDisplayId(me->GetNativeDisplayId());
+            me->RemoveAurasDueToSpell(SPELL_SARA_TRANSFORMATION);
             // Reset Health
             me->SetHealth(me->GetMaxHealth());
             // Remove Not Attackable Flags
@@ -544,7 +555,6 @@ public:
 
         void EnterCombat(Unit* /*who*/)
         {
-
             uiSarasHelp_Timer = urand(5000,6000);
             uiGuardianSummon_Timer = 10000;
             uilastGuardianSummon_Timer = 35000;
@@ -737,21 +747,22 @@ public:
                     yogg->RemoveAurasDueToSpell(SPELL_SHADOWY_BARRIER);
                     yogg->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
                     DoScriptText(SAY_PHASE3,yogg);
+                    me->AddAura(SPELL_YOGG_SARON_TRANSFORMATION,yogg);
                 }
-
                 // Alle Spieler aus BrainRoom rauswerfen
-                if(me->GetMap() && me->GetMap()->IsDungeon())
-                {
-                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
-                    if (!players.isEmpty())
-                        for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                            if (Player* plr = itr->getSource())
-                                if(plr->isAlive() && IsPlayerInBrainRoom(plr))
-                                {
-                                    plr->NearTeleportTo(SaraLocation.GetPositionX(),SaraLocation.GetPositionY(),SaraLocation.GetPositionZ(),M_PI,false);
-                                    plr->JumpTo(30.0f,5.0f,true);
-                                }
-                }
+                // Not blizzlike
+                //if(me->GetMap() && me->GetMap()->IsDungeon())
+                //{
+                //    Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                //    if (!players.isEmpty())
+                //        for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                //            if (Player* plr = itr->getSource())
+                //                if(plr->isAlive() && IsPlayerInBrainRoom(plr))
+                //                {
+                //                    plr->NearTeleportTo(SaraLocation.GetPositionX(),SaraLocation.GetPositionY(),SaraLocation.GetPositionZ(),M_PI,false);
+                //                    plr->JumpTo(30.0f,5.0f,true);
+                //                }
+                //}
 
                 Summons.DespawnEntry(ENTRY_BRAIN_PORTAL);
 
@@ -1080,14 +1091,15 @@ public:
                                 break;
                             case 2:
                                 DoScriptText(SAY_PHASE2_3,me);
-                                uiSpeaking_Timer = 5000;
+                                uiSpeaking_Timer = 4000;
                                 break;
                             case 3:
                                 DoScriptText(SAY_PHASE2_4,me);
-                                uiSpeaking_Timer = 5000;
+                                uiSpeaking_Timer = 4000;
                                 break;
                             case 4:
-                                me->SetDisplayId(SARA_TRANSFORM);
+                                //me->SetDisplayId(SARA_TRANSFORM);
+                                me->AddAura(SPELL_SARA_TRANSFORMATION,me);
                                 DoCast(me,SPELL_SARA_SHADOWY_BARRIER,false);
                                 me->GetMotionMaster()->MovePoint(1,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()+20);
                                 if(Creature* yogg = me->GetCreature(*me,guidYogg))
@@ -1098,6 +1110,9 @@ public:
                                     yogg->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                                     yogg->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                                     DoScriptText(SAY_PHASE2_5,yogg);
+
+                                    yogg->CastSpell(yogg,SPELL_SUMMON_CRUSHER_TENTACLE,true);
+                                    yogg->CastSpell(yogg,SPELL_SUMMON_CURRUPTOR_TENTACLE,true);
                                 }
                                 me->setFaction(14);
                                 //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -1127,14 +1142,15 @@ public:
                                     switch(urand(0,2))
                                     {
                                     case 0:
-                                        if(Player* target = SelectPlayerTargetInRange(500.0f))
-                                            if(!IsPlayerInBrainRoom(target))
-                                                DoCast(target,SPELL_MALADY_OF_MIND,false);
+                                        //if(Player* target = SelectPlayerTargetInRange(500.0f))
+                                        //    if(!IsPlayerInBrainRoom(target))
+                                        DoCast(SPELL_MALADY_OF_MIND);
                                         break;
                                     case 1:
                                         DoCast(SPELL_BRAIN_LINK);
                                         break;
                                     case 2:
+                                        DoCast(SPELL_DEATH_RAY_SUMMON);
                                         break;
                                     }
                                     uiMindSpell_Timer = 30000;
@@ -1478,10 +1494,17 @@ public:
             return target;
         }
 
+        void JustDied(Unit* /*killer*/)
+        {
+            me->RemoveAurasDueToSpell(SPELL_TENTACLE_VOID_ZONE);
+        }
+
         void Reset()
         {
             if(Unit* target = SelectPlayerTargetInRange(500.0f))
                 AttackStartNoMove(target);
+
+            DoCast(me,SPELL_TENTACLE_VOID_ZONE,true);
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -1668,9 +1691,16 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            if(HealthBelowPct(30))
+            if(HealthBelowPct(31))
+            {
                 if(Creature* cSara = me->GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
                         cSara->AI()->DoAction(ACTION_BRAIN_UNDER_30_PERCENT);
+
+                if(!me->HasAura(SPELL_BRAIN_HURT_VISUAL))
+                    DoCast(me,SPELL_BRAIN_HURT_VISUAL,true);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            }
         }
     };
 };
@@ -1705,6 +1735,8 @@ public:
         {
             if(Creature* cSara = me->GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
                 cSara->AI()->DoAction(ACTION_YOGGSARON_KILLED);
+
+            DoScriptText(SAY_DEATH,me);
         }
 
         void SpellHitTarget(Unit* target, const SpellEntry* spell)
@@ -1775,11 +1807,18 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
         }
 
+        void JustDied(Unit* /*killer*/)
+        {
+            me->RemoveAurasDueToSpell(SPELL_TENTACLE_VOID_ZONE);
+        }
+
         void EnterCombat(Unit* attacker)
         {
             me->UpdateEntry(ENTRY_INFULENCE_TENTACLE);
             me->setFaction(14);
             DoCast(SPELL_GRIM_REPRISAL);
+
+            DoCast(me,SPELL_TENTACLE_VOID_ZONE,true);
         }
     };
 };
@@ -2163,6 +2202,154 @@ public:
     };
 };
 
+class npc_death_orb : public CreatureScript
+{
+public:
+    npc_death_orb() : CreatureScript("npc_death_orb") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_death_orbAI (pCreature);
+    }
+
+    struct npc_death_orbAI : public Scripted_NoMovementAI
+    {
+        npc_death_orbAI(Creature *c) : Scripted_NoMovementAI(c) , Summons(me)
+        {
+            m_pInstance = c->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        SummonList Summons;
+        InstanceScript* m_pInstance;
+        bool prepaired;
+        uint32 uiReathRayEffekt_Timer;
+
+        void Reset()
+        {
+            me->SetFlying(true);
+            me->setFaction(14);
+            prepaired = false;
+            Summons.DespawnAll();
+            SummonDeathRays();
+            uiReathRayEffekt_Timer = 5000;
+            DoCast(me,SPELL_DEATH_RAY_ORIGIN_VISUAL,true);
+        }
+
+        void SummonDeathRays()
+        {
+            for(uint8 i = 0; i < 4; i++)
+            {
+                Position pos;
+                me->GetNearPoint2D(pos.m_positionX,pos.m_positionY,float(rand_norm()*10 + 30),float(2*M_PI*rand_norm()));
+                pos.m_positionZ = me->GetPositionZ();
+                pos.m_positionZ = me->GetMap()->GetHeight(pos.GetPositionX(),pos.GetPositionY(),pos.GetPositionZ(),true,500.0f);
+
+                DoSummon(ENTRY_DEATH_RAY,pos,20000,TEMPSUMMON_TIMED_DESPAWN);
+            }
+        }
+
+        void JustSummoned(Creature* pSummoned)
+        {
+            switch(pSummoned->GetEntry())
+            {
+            case ENTRY_DEATH_RAY:
+                pSummoned->setFaction(14);
+                pSummoned->CastSpell(pSummoned,SPELL_DEATH_RAY_WARNING_VISUAL,true,0,0,me->GetGUID());
+                pSummoned->SetReactState(REACT_PASSIVE);
+                pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                break;
+            }
+
+            Summons.Summon(pSummoned);
+        }
+
+        void AttackStart(Unit *who) {}
+
+        void UpdateAI(const uint32 diff)
+        {
+            if(uiReathRayEffekt_Timer <= diff)
+            {
+                for(std::list<uint64>::iterator itr = Summons.begin(); itr != Summons.end(); ++itr)
+                {
+                    if(Creature* temp = me->GetCreature(*me,*itr))
+                    {
+                        temp->CastSpell(temp,SPELL_DEATH_RAY_PERIODIC,true);
+                        temp->CastSpell(temp,SPELL_DEATH_RAY_DAMAGE_VISUAL,true,0,0,me->GetGUID());
+
+                        temp->AI()->DoAction(ACTION_DEATH_RAY_MOVE);
+                    }
+                }
+                uiReathRayEffekt_Timer = 30000;
+            }else uiReathRayEffekt_Timer -= diff;
+        }
+    };
+};
+
+class npc_death_ray : public CreatureScript
+{
+public:
+    npc_death_ray() : CreatureScript("npc_death_ray") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_death_rayAI (pCreature);
+    }
+
+    struct npc_death_rayAI : public ScriptedAI
+    {
+        npc_death_rayAI(Creature *c) : ScriptedAI(c)
+        {
+        }
+
+        bool moving;
+
+        void Reset()
+        {
+            moving = true;
+        }
+
+        void DoAction(const int32 action)
+        {
+            if(action == ACTION_DEATH_RAY_MOVE)
+                moving = false;
+        }
+
+        void DoRandomMove()
+        {
+            Position pos;
+            me->GetNearPoint2D(pos.m_positionX,pos.m_positionY,10,float(2*M_PI*rand_norm()));
+            pos.m_positionZ = me->GetPositionZ();
+            pos.m_positionZ = me->GetMap()->GetHeight(pos.GetPositionX(),pos.GetPositionY(),pos.GetPositionZ(),true,500.0f);
+            me->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);
+            me->GetMotionMaster()->MovePoint(1,pos);
+        }
+
+        void MovementInform(uint32 type, uint32 id)
+        {
+            if (type != POINT_MOTION_TYPE)
+                return;
+
+            if(id != 1)
+                return;
+
+            moving = false;
+        }
+
+        void AttackStart(Unit *who) {}
+
+        void UpdateAI(const uint32 diff)
+        {
+            if(!moving)
+            {
+                DoRandomMove();
+                moving = true;
+            }
+        }
+    };
+};
+
 class go_flee_to_surface : public GameObjectScript
 {
 public:
@@ -2171,7 +2358,7 @@ public:
     bool OnGossipHello(Player *pPlayer, GameObject * /*pGO*/)
     {
         pPlayer->NearTeleportTo(SaraLocation.GetPositionX(),SaraLocation.GetPositionY(),SaraLocation.GetPositionZ(),M_PI,false);
-        pPlayer->JumpTo(40.0f,10.0f,true);
+        pPlayer->JumpTo(50.0f,20.0f,true);
         return false;
     }
 };
@@ -2292,7 +2479,6 @@ class spell_brain_link_periodic_dummy : public SpellScriptLoader
         void Register()
         {
             OnEffectPeriodic += AuraEffectPeriodicFn(spell_brain_link_periodic_dummy_AuraScript::HandlePeriodicDummy, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-            //OnEffectApply += AuraEffectApplyFn(spell_keeper_support_aura_targeting_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
@@ -2368,6 +2554,75 @@ class spell_insane_death_effekt : public SpellScriptLoader
             return new spell_insane_death_effekt_AuraScript();
         }
 };
+
+class spell_summon_tentacle_position : public SpellScriptLoader
+{
+    public:
+        spell_summon_tentacle_position() : SpellScriptLoader("spell_summon_tentacle_position") { }
+
+        class spell_summon_tentacle_position_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_summon_tentacle_position_SpellScript);
+
+            void ChangeSummonPos(SpellEffIndex /*effIndex*/)
+            {
+                WorldLocation* summonPos = GetTargetDest();
+                Position offset = {0.0f, 0.0f, 3.0f, 0.0f};
+                summonPos->RelocateOffset(offset);  // +20 in height
+            }
+
+            void Register()
+            {
+                OnEffect += SpellEffectFn(spell_summon_tentacle_position_SpellScript::ChangeSummonPos, EFFECT_0, SPELL_EFFECT_SUMMON);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_summon_tentacle_position_SpellScript();
+        }
+};
+
+class spell_empowering_shadows : public SpellScriptLoader
+{
+    public:
+        spell_empowering_shadows() : SpellScriptLoader("spell_empowering_shadows") { }
+
+        class spell_empowering_shadows_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_empowering_shadows_SpellScript)
+
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit * target = GetHitUnit())
+                {
+                    uint32 spell = 0;
+                    switch(target->GetMap()->GetDifficulty())
+                    {
+                    case RAID_DIFFICULTY_10MAN_NORMAL:
+                        spell = SPELL_EMPOWERING_SHADOWS_HEAL_10;
+                        break;
+                    case RAID_DIFFICULTY_25MAN_NORMAL:
+                        spell = SPELL_EMPOWERING_SHADOWS_HEAL_25;
+                        break;
+                    }
+                    if(spell)
+                        GetCaster()->CastSpell(target, spell, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffect += SpellEffectFn(spell_empowering_shadows_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        // function which creates SpellScript
+        SpellScript *GetSpellScript() const
+        {
+            return new spell_empowering_shadows_SpellScript();
+        }
+};
 /*
 UPDATE creature_template SET scriptname = 'boss_sara' WHERE entry = 33134;
 UPDATE script_texts SET npc_entry = 33134 WHERE npc_entry = 33288 AND entry IN (-1603330,-1603331,-1603332,-1603333);
@@ -2384,7 +2639,13 @@ UPDATE creature_template SET scriptname = 'npc_influence_tentacle' WHERE entry i
 UPDATE creature_template SET scriptname = 'npc_immortal_guardian' WHERE entry = 33988;
 UPDATE creature_template SET scriptname = 'npc_support_keeper' WHERE entry in (33410,33411,33412,33413);
 UPDATE creature_template SET scriptname = 'npc_sanity_well' WHERE entry = 33991;
+UPDATE creature_template SET modelid1 = 11686, modelid2 = 11686 WHERE entry = 33991;
+UPDATE creature_template SET scriptname = 'npc_death_orb' WHERE entry = 33882;
+UPDATE creature_template SET modelid1 = 16946, modelid2 = 16946 WHERE entry = 33882;
+UPDATE creature_template SET scriptname = 'npc_death_ray' WHERE entry = 33881;
+UPDATE creature_template SET modelid1 = 17612, modelid2 = 17612 WHERE entry = 33881;
 UPDATE creature_template SET minlevel = 80, maxlevel = 80, scriptname = 'npc_laughting_skull' WHERE entry = 33990;
+UPDATE creature_template SET modelid1 = 15880, modelid2 = 15880 WHERE entry = 33990;
 UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 194625;
 
 UPDATE creature_template SET RegenHealth = 0 WHERE entry IN (33134,34332,33890,33954);
@@ -2440,6 +2701,31 @@ DELETE FROM spell_script_names WHERE spell_id IN (63120);
 INSERT INTO spell_script_names (spell_id,Scriptname)
 VALUES
 (63120,'spell_insane_death_effekt');
+
+-- Deathray Effekt on Death Orb
+DELETE FROM conditions WHERE SourceEntry IN (63882,63886);
+INSERT INTO conditions
+(SourceTypeOrReferenceId,SourceGroup,SourceEntry,ElseGroup,
+ ConditionTypeOrReference,ConditionValue1,ConditionValue2,ConditionValue3,
+ ErrorTextId,ScriptName,COMMENT)
+VALUES
+(13,0,63882,0,18,1,33882,0,0,'','Effekt on Death Orb'),
+(13,0,63886,0,18,1,33882,0,0,'','Effekt on Death Orb');
+
+-- Correct Summon Position of Tentacle
+DELETE FROM spell_script_names WHERE spell_id IN (64139,64143,64133);
+INSERT INTO spell_script_names (spell_id,Scriptname)
+VALUES
+(64139,'spell_summon_tentacle_position'),
+(64143,'spell_summon_tentacle_position'),
+(64133,'spell_summon_tentacle_position');
+
+-- Heal Trigger for Empowering Shadows
+DELETE FROM spell_script_names WHERE spell_id IN (64466);
+INSERT INTO spell_script_names (spell_id,Scriptname)
+VALUES
+(64466,'spell_empowering_shadows');
+
 */
 
 void AddSC_boss_yoggsaron()
@@ -2456,6 +2742,8 @@ void AddSC_boss_yoggsaron()
     new npc_support_keeper();
     new npc_sanity_well();
     new npc_laughting_skull();
+    new npc_death_orb();
+    new npc_death_ray();
     new go_flee_to_surface();
 
     new spell_keeper_support_aura_targeting();
@@ -2463,4 +2751,6 @@ void AddSC_boss_yoggsaron()
     new spell_brain_link_periodic_dummy();
     new spell_titanic_storm_targeting();
     new spell_insane_death_effekt();
+    new spell_summon_tentacle_position();
+    new spell_empowering_shadows();
 }
