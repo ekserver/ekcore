@@ -1142,8 +1142,6 @@ public:
                                     switch(urand(0,2))
                                     {
                                     case 0:
-                                        //if(Player* target = SelectPlayerTargetInRange(500.0f))
-                                        //    if(!IsPlayerInBrainRoom(target))
                                         DoCast(SPELL_MALADY_OF_MIND);
                                         break;
                                     case 1:
@@ -1179,6 +1177,21 @@ public:
                                     if(Creature* yogg = me->GetCreature(*me,guidYogg))
                                         yogg->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
                                     me->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
+
+                                    for(std::list<uint64>::iterator itr = Summons.begin(); itr != Summons.end(); ++itr)
+                                    {
+                                        if(Creature* temp = Creature::GetCreature(*me,*itr))
+                                        {
+                                            switch(temp->GetEntry())
+                                            {
+                                            case ENTRY_CONSTRICTOR_TENTACLE:
+                                            case ENTRY_CORRUPTOR_TENTACLE:
+                                            case ENTRY_CRUSHER_TENTACLE:
+                                                    temp->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
                         }
 
@@ -1211,6 +1224,20 @@ public:
                                         me->AddAura(SPELL_SHATTERED_ILLUSIONS,yogg);
                                     me->AddAura(SPELL_SHATTERED_ILLUSIONS,me);
 
+                                    for(std::list<uint64>::iterator itr = Summons.begin(); itr != Summons.end(); ++itr)
+                                    {
+                                        if(Creature* temp = Creature::GetCreature(*me,*itr))
+                                        {
+                                            switch(temp->GetEntry())
+                                            {
+                                            case ENTRY_CONSTRICTOR_TENTACLE:
+                                            case ENTRY_CORRUPTOR_TENTACLE:
+                                            case ENTRY_CRUSHER_TENTACLE:
+                                                    me->AddAura(SPELL_SHATTERED_ILLUSIONS,temp);
+                                                break;
+                                            }
+                                        }
+                                    }
                                     DoKillAndDespawnGUIDs(guidEventSkulls);
                                 }
                             }
@@ -1271,7 +1298,7 @@ public:
                     break;
             }
 
-            if(m_Phase == PHASE_YOGG || m_Phase == PHASE_BRAIN)
+            if(m_Phase != PHASE_NONE)
             {
                 if(uiEnrage_Timer <= diff)
                 {
