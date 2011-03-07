@@ -53,7 +53,6 @@ public:
         boss_amanitarAI(Creature *c) : ScriptedAI(c)
         {
             pInstance = c->GetInstanceScript();
-            bFirstTime = true;
         }
 
         InstanceScript* pInstance;
@@ -63,8 +62,6 @@ public:
         uint32 uiBoltTimer;
         uint32 uiSpawnTimer;
         uint32 uiMiniTimer;
-
-        bool bFirstTime;
 
         void Reset()
         {
@@ -80,11 +77,7 @@ public:
             if (pInstance)
             {
                 DoRemoveAurasDueToSpellOnPlayersAndPets(SPELL_MINI);
-
-                if (!bFirstTime)
-                    pInstance->SetData(DATA_AMANITAR_EVENT, FAIL);
-                else
-                    bFirstTime = false;
+                pInstance->SetData(DATA_AMANITAR_EVENT, NOT_STARTED);
             }
         }
 
@@ -130,10 +123,12 @@ public:
                 Position pos;
                 me->GetPosition(&pos);
                 me->GetRandomNearPosition(pos, 45.0f);
-                if (Creature* pHelp = me->SummonCreature(NPC_HELPER, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 1*IN_MILLISECONDS))
+                pos.m_positionZ = me->GetMap()->GetHeight(pos.GetPositionX(), pos.GetPositionY(), MAX_HEIGHT) + 2.0f;
+
+                if (Creature* pHelp = me->SummonCreature(NPC_HELPER, pos))
                 {
-                    Creature* temp1 = pHelp->FindNearestCreature(NPC_HEALTHY_MUSHROOM, 5.0f, true);
-                    Creature* temp2 = pHelp->FindNearestCreature(NPC_POISONOUS_MUSHROOM, 5.0f, true);
+                    Creature* temp1 = pHelp->FindNearestCreature(NPC_HEALTHY_MUSHROOM, 6.0f, true);
+                    Creature* temp2 = pHelp->FindNearestCreature(NPC_POISONOUS_MUSHROOM, 6.0f, true);
                     if (temp1 || temp2)
                     {
                         pHelp->DisappearAndDie();
@@ -142,7 +137,7 @@ public:
                     {
                         u = 1 - u;
                         pHelp->DisappearAndDie();
-                        me->SummonCreature(u > 0 ? NPC_POISONOUS_MUSHROOM : NPC_HEALTHY_MUSHROOM, pos, TEMPSUMMON_CORPSE_DESPAWN, 3*IN_MILLISECONDS);
+                        me->SummonCreature(u > 0 ? NPC_POISONOUS_MUSHROOM : NPC_HEALTHY_MUSHROOM, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60*IN_MILLISECONDS);
                     }
                 }
             }
@@ -159,7 +154,6 @@ public:
                 SpawnAdds();
                 uiSpawnTimer = 20*IN_MILLISECONDS;
             } else uiSpawnTimer -= diff;
-
 
             if (uiMiniTimer <= diff)
             {
@@ -219,12 +213,11 @@ public:
         mob_amanitar_mushroomsAI(Creature* c) : Scripted_NoMovementAI(c) {}
 
         uint32 uiAuraTimer;
-        uint32 uiDeathTimer;
 
         void Reset()
         {
             me->SetDisplayId(26981);
-            DoCast(SPELL_PUTRID_MUSHROOM); // Hack, to make the mushrooms visible, can't find orig. spell...
+            DoCast(SPELL_PUTRID_MUSHROOM);
 
             if (me->GetEntry() == NPC_POISONOUS_MUSHROOM)
                 DoCast(SPELL_POISONOUS_MUSHROOM_VISUAL_AURA);
@@ -232,7 +225,6 @@ public:
                 DoCast(SPELL_POWER_MUSHROOM_VISUAL_AURA);
 
             uiAuraTimer = 1*IN_MILLISECONDS;
-            uiDeathTimer = 30*IN_MILLISECONDS;
         }
 
         void JustDied(Unit *killer)
@@ -250,14 +242,10 @@ public:
             {
                 if (uiAuraTimer <= diff)
                 {
-                    DoCast(me, SPELL_POISONOUS_MUSHROOM_POISON_CLOUD, false);
+                    DoCast(me, SPELL_POISONOUS_MUSHROOM_POISON_CLOUD);
                     uiAuraTimer = 7*IN_MILLISECONDS;
                 } else uiAuraTimer -= diff;
             }
-
-            if (uiDeathTimer <= diff)
-                me->DisappearAndDie();
-            else uiDeathTimer -= diff;
         }
     };
 
@@ -269,6 +257,6 @@ public:
 
 void AddSC_boss_amanitar()
 {
-    new boss_amanitar;
-    new mob_amanitar_mushrooms;
+    new boss_amanitar();
+    new mob_amanitar_mushrooms();
 }
