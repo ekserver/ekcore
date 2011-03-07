@@ -92,6 +92,16 @@ public:
         void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
+            Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                if (!players.isEmpty())
+                {
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                    {
+                        Player* pPlayer = itr->getSource();
+                        if (pPlayer)
+                            pPlayer->ExitVehicle();
+                    }
+                }
 
             Talk(SAY_AGGRO);
         }
