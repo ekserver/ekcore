@@ -100,7 +100,7 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket &recv_data)
             {
                 if (Vehicle *vehicle = vehUnit->GetVehicleKit())
                     if (vehicle->HasEmptySeat(seatId))
-                        GetPlayer()->EnterVehicle(vehicle, seatId);
+                        GetPlayer()->_EnterVehicle(vehicle, seatId);
             }
             break;
         }
@@ -117,7 +117,7 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket &recv_data)
             else if (Unit *vehUnit = Unit::GetUnit(*GetPlayer(), guid))
                 if (Vehicle *vehicle = vehUnit->GetVehicleKit())
                     if (vehicle->HasEmptySeat(seatId))
-                        GetPlayer()->EnterVehicle(vehicle, seatId);
+                        GetPlayer()->_EnterVehicle(vehicle, seatId);
             break;
         }
         default:
@@ -201,7 +201,6 @@ void WorldSession::HandleEjectPassenger(WorldPacket &data)
         {
             ASSERT(GetPlayer() == vehicle->GetBase());
             unit->ExitVehicle();
-            unit->AddObjectToRemoveList();
         }
         else
             sLog->outError("Player %u attempted to eject creature GUID %u from non-ejectable seat.", GetPlayer()->GetGUIDLow(), GUID_LOPART(guid));

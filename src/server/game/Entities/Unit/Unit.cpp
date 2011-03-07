@@ -2619,10 +2619,6 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 //   Resist
 SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool CanReflect)
 {
-    // Return evade for units in evade mode
-    if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsInEvadeMode() && this != pVictim)
-        return SPELL_MISS_EVADE;
-
     // Check for immune
     if (pVictim->IsImmunedToSpell(spell))
         return SPELL_MISS_IMMUNE;
@@ -2638,9 +2634,15 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
 
     if (this == pVictim)
         return SPELL_MISS_NONE;
+
     // Magic melee spells cannot be reflected
     if (spell->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && (spell->AttributesEx & SPELL_ATTR1_UNK9))
         CanReflect = false;
+
+    // Return evade for units in evade mode
+    if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsInEvadeMode())
+        return SPELL_MISS_EVADE;
+
     // Try victim reflect spell
     if (CanReflect)
     {
@@ -5585,6 +5587,50 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 {
                     target = getVictim();
                     triggered_spell_id = 66765;
+                    break;
+                }
+                // Item - Icecrown 25 Normal Dagger Proc
+                case 71880:
+                {
+                    switch (getPowerType())
+                    {
+                        case POWER_MANA:
+                            triggered_spell_id = 71881;
+                            break;
+                        case POWER_RAGE:
+                            triggered_spell_id = 71883;
+                            break;
+                        case POWER_ENERGY:
+                            triggered_spell_id = 71882;
+                            break;
+                        case POWER_RUNIC_POWER:
+                            triggered_spell_id = 71884;
+                            break;
+                        default:
+                            return false;
+                    }
+                    break;
+                }
+                // Item - Icecrown 25 Heroic Dagger Proc
+                case 71892:
+                {
+                    switch (getPowerType())
+                    {
+                        case POWER_MANA:
+                            triggered_spell_id = 71888;
+                            break;
+                        case POWER_RAGE:
+                            triggered_spell_id = 71886;
+                            break;
+                        case POWER_ENERGY:
+                            triggered_spell_id = 71887;
+                            break;
+                        case POWER_RUNIC_POWER:
+                            triggered_spell_id = 71885;
+                            break;
+                        default:
+                            return false;
+                    }
                     break;
                 }
             }
@@ -12509,7 +12555,6 @@ void Unit::setDeathState(DeathState s)
         UnsummonAllTotems();
         RemoveAllControlled();
         RemoveAllAurasOnDeath();
-        ExitVehicle();
     }
 
     if (s == JUST_DIED)
@@ -12521,8 +12566,6 @@ void Unit::setDeathState(DeathState s)
         ClearDiminishings();
         GetMotionMaster()->Clear(false);
         GetMotionMaster()->MoveIdle();
-        if (m_vehicleKit)
-            m_vehicleKit->Die();
         SendMonsterStop(true);
         //without this when removing IncreaseMaxHealth aura player may stuck with 1 hp
         //do not why since in IncreaseMaxHealth currenthealth is checked
@@ -15516,7 +15559,7 @@ void Unit::SetRooted(bool apply)
         if (m_rootTimes > 0) //blizzard internal check?
             m_rootTimes++;
 
-        //AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
+//        AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
 
         if (Player* thisPlr = this->ToPlayer())
         {
@@ -15551,7 +15594,7 @@ void Unit::SetRooted(bool apply)
                 SendMessageToSet(&data,true);
             }
 
-            //RemoveUnitMovementFlag(MOVEMENTFLAG_ROOT);
+//            RemoveUnitMovementFlag(MOVEMENTFLAG_ROOT);
         }
     }
 }
@@ -15821,10 +15864,12 @@ void Unit::RemoveCharmedBy(Unit *charmer)
             case CHARM_TYPE_VEHICLE:
                 charmer->ToPlayer()->SetClientControl(charmer, 1);
                 charmer->ToPlayer()->SetViewpoint(this, false);
+                charmer->ToPlayer()->SetClientControl(this, 0);
                 break;
             case CHARM_TYPE_POSSESS:
                 charmer->ToPlayer()->SetClientControl(charmer, 1);
                 charmer->ToPlayer()->SetViewpoint(this, false);
+                charmer->ToPlayer()->SetClientControl(this, 0);
                 charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 break;
             case CHARM_TYPE_CHARM:
@@ -16709,14 +16754,20 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
         }
     }
 
-    if (this->ToCreature())
+    if (this->ToCreature() && this->ToCreature()->IsAIEnabled)
         this->ToCreature()->AI()->DoAction(EVENT_SPELLCLICK);
 
     return success;
 }
 
-void Unit::EnterVehicle(Vehicle *vehicle, int8 seatId, AuraApplication const * aurApp)
+void Unit::EnterVehicle(Unit *base, int8 seatId)
 {
+    CastCustomSpell(VEHICLE_SPELL_RIDE_HARDCODED, SPELLVALUE_BASE_POINT0, seatId+1, base, false);
+}
+
+void Unit::_EnterVehicle(Vehicle* vehicle, int8 seatId, AuraApplication const* aurApp)
+{
+    // Must be called only from aura handler
     if (!isAlive() || GetVehicleKit() == vehicle || vehicle->GetBase()->IsOnVehicle(this))
         return;
 
@@ -16738,6 +16789,9 @@ void Unit::EnterVehicle(Vehicle *vehicle, int8 seatId, AuraApplication const * a
         }
     }
 
+    if (aurApp && aurApp->GetRemoveMode())
+        return;
+
     if (Player* plr = ToPlayer())
     {
         if (vehicle->GetBase()->GetTypeId() == TYPEID_PLAYER && plr->isInCombat())
@@ -16753,11 +16807,6 @@ void Unit::EnterVehicle(Vehicle *vehicle, int8 seatId, AuraApplication const * a
         if (Battleground *bg = plr->GetBattleground())
             bg->EventPlayerDroppedFlag(plr);
     }
-
-    // vehicle is applied by aura, and aura effect remove handler was called during apply handler execution
-    // prevent undefined behaviour
-    if (aurApp && aurApp->GetRemoveMode())
-        return;
 
     if (Player* thisPlr = this->ToPlayer())
     {
@@ -16795,6 +16844,7 @@ void Unit::ChangeSeat(int8 seatId, bool next)
 
 void Unit::ExitVehicle(Position const* exitPosition)
 {
+    // This function can be called at upper level code to initialize an exit from the passenger's side.
     if (!m_vehicle)
         return;
 
@@ -16809,6 +16859,11 @@ void Unit::ExitVehicle(Position const* exitPosition)
         }
     }
 
+   _ExitVehicle(exitPosition);
+}
+
+void Unit::_ExitVehicle(Position const* exitPosition)
+{
     if (!m_vehicle)
         return;
 
@@ -16847,6 +16902,16 @@ void Unit::ExitVehicle(Position const* exitPosition)
     if (vehicle->GetBase()->HasUnitTypeMask(UNIT_MASK_MINION))
         if (((Minion*)vehicle->GetBase())->GetOwner() == this)
             vehicle->Dismiss();
+
+    if (HasUnitTypeMask(UNIT_MASK_ACCESSORY))
+    {
+        // Vehicle just died, we die too
+        if (vehicle->GetBase()->getDeathState() == JUST_DIED)
+            setDeathState(JUST_DIED);
+        // If for other reason we as minion are exiting the vehicle (ejected, master unmounted) - unsummon
+        else
+            ToTempSummon()->UnSummon(2000); // Approximation
+    }
 }
 
 void Unit::BuildMovementPacket(ByteBuffer *data) const

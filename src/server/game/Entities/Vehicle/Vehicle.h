@@ -73,6 +73,7 @@ enum VehicleSeatFlagsB
 
 enum VehicleSpells
 {
+    VEHICLE_SPELL_RIDE_HARDCODED                 = 46598,
     VEHICLE_SPELL_PARACHUTE                      = 45472
 };
 
@@ -119,11 +120,11 @@ class Vehicle
         void Install();
         void Uninstall();
         void Reset();
-        void Die();
         void InstallAllAccessories();
 
         Unit *GetBase() const { return me; }
         VehicleEntry const *GetVehicleInfo() const { return m_vehicleInfo; }
+        uint32 const& GetCreatureEntry() const { return m_creatureEntry; }
 
         bool HasEmptySeat(int8 seatId) const;
         Unit *GetPassenger(int8 seatId) const;
