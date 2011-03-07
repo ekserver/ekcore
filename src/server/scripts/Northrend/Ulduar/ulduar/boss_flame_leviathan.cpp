@@ -344,7 +344,7 @@ public:
                 for (uint8 i = RAID_MODE(2,0); i < 4; ++i)
                 {
                     if (vehicle->GetPassenger(i))
-                        if (Vehicle *pSeat = vehicle->GetPassenger(i)->GetVehicleKit())
+                        if (Unit *pSeat = vehicle->GetPassenger(i))
                         {
                             if (Creature* pTurret = (me->SummonCreature(NPC_TURRET, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN)))
                                 pTurret->EnterVehicle(pSeat, SEAT_TURRET);
