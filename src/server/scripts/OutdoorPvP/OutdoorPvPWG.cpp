@@ -1462,9 +1462,8 @@ bool OutdoorPvPWG::Update(uint32 diff)
                                         Old->GetVehicleKit()->Uninstall();
                                         Old->SetVisible(true);
                                         Old->ForcedDespawn();
-                                        Vehicle *vehicle = New->GetVehicleKit();
                                         Driver->NearTeleportTo(5141.191406f, 2841.045410f, 408.703217f, 3.163321f, true); // Out of the Fortress Gate
-                                        Driver->EnterVehicle(vehicle, 0);
+                                        Driver->EnterVehicle(New, 0);
                                         if (Passenger1 && Passenger1->isAlive())
                                             Passenger1->NearTeleportTo(5141.191406f, 2841.045410f, 408.703217f, 3.163321f, true); // Out of the Fortress Gate
                                         if (Passenger2 && Passenger2->isAlive())
@@ -1502,9 +1501,8 @@ bool OutdoorPvPWG::Update(uint32 diff)
                                         Old->GetVehicleKit()->Uninstall();
                                         Old->SetVisible(true);
                                         Old->ForcedDespawn();
-                                        Vehicle *vehicle = New->GetVehicleKit();
                                         Driver->NearTeleportTo(5141.191406f, 2841.045410f, 408.703217f, 3.163321f, true); // Out of the Fortress Gate
-                                        Driver->EnterVehicle(vehicle, 0);
+                                        Driver->EnterVehicle(New, 0);
                                         if (Passenger1 && Passenger1->isAlive())
                                             Passenger1->NearTeleportTo(5141.191406f, 2841.045410f, 408.703217f, 3.163321f, true); // Out of the Fortress Gate
                                         if (Passenger2 && Passenger2->isAlive())
@@ -1548,9 +1546,8 @@ bool OutdoorPvPWG::Update(uint32 diff)
                                         Old->GetVehicleKit()->Uninstall();
                                         Old->SetVisible(true);
                                         Old->ForcedDespawn();
-                                        Vehicle *vehicle = New->GetVehicleKit();
                                         Driver->NearTeleportTo(5141.191406f, 2841.045410f, 408.703217f, 3.163321f, true); // Out of the Fortress Gate
-                                        Driver->EnterVehicle(vehicle, 0);
+                                        Driver->EnterVehicle(New, 0);
                                         if (Passenger1 && Passenger1->isAlive())
                                             Passenger1->NearTeleportTo(5141.191406f, 2841.045410f, 408.703217f, 3.163321f, true); // Out of the Fortress Gate
                                         if (Passenger2 && Passenger2->isAlive())
@@ -1588,9 +1585,8 @@ bool OutdoorPvPWG::Update(uint32 diff)
                                         Old->GetVehicleKit()->Uninstall();
                                         Old->SetVisible(true);
                                         Old->ForcedDespawn();
-                                        Vehicle *vehicle = New->GetVehicleKit();
                                         Driver->NearTeleportTo(5141.191406f, 2841.045410f, 408.703217f, 3.163321f, true); // Out of the Fortress Gate
-                                        Driver->EnterVehicle(vehicle, 0);
+                                        Driver->EnterVehicle(New, 0);
                                         if (Passenger1 && Passenger1->isAlive())
                                             Passenger1->NearTeleportTo(5141.191406f, 2841.045410f, 408.703217f, 3.163321f, true); // Out of the Fortress Gate
                                         if (Passenger2 && Passenger2->isAlive())
