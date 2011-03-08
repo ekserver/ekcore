@@ -20,41 +20,46 @@
 
 enum eYells
 {
-    // Other
-    SAY_ANTI_MAGIC_SHELL                     =  -1616000,
-    SAY_BREATH_ATTACK                        =  -1616001,
-    SAY_HIGH_DAMAGE_MODE                     =  -1616002,
-    SAY_MAGIC_BLAST                          =  -1616003,
-    // Generic Spells
-    SAY_GENERIC_SPELL_1                      =  -1616004,
-    SAY_GENERIC_SPELL_2                      =  -1616005,
-    SAY_GENERIC_SPELL_3                      =  -1616006,
-    SAY_DEATH                                =  -1616007,
-    // Prefight
-    SAY_PREFIGHT_1                           =  -1616008,
-    SAY_PREFIGHT_2                           =  -1616009,
-    SAY_PREFIGHT_3                           =  -1616010,
-    SAY_PREFIGHT_4                           =  -1616011,
-    SAY_PREFIGHT_5                           =  -1616012,
-    // Phase1
-    SAY_PHASE1_AGGRO                         =  -1616013,
-    SAY_PHASE1_END                           =  -1616014,
-    SAY_PHASE1_SLAY_1                        =  -1616015,
-    SAY_PHASE1_SLAY_2                        =  -1616016,
-    SAY_PHASE1_SLAY_3                        =  -1616017,
-    // Phase 2
-    SAY_PHASE2_AGGRO                         =  -1616018,
-    SAY_PHASE2_END                           =  -1616019,
+    // intro
+    SAY_INTRO_1                              =  -1616000,
+    SAY_INTRO_2                              =  -1616001,
+    SAY_INTRO_3                              =  -1616002,
+    SAY_INTRO_4                              =  -1616003,
+    SAY_INTRO_5                              =  -1616004,
+    // phase 1
+    SAY_PHASE1_AGGRO                         =  -1616005,
+    SAY_MAGIC_BLAST                          =  -1616006, //?
+    SAY_SPARK_SUMMON                         =  -1616035,
+    SAY_SPARK_BUFFED                         =  -1616007,
+    SAY_PHASE1_SLAY_1                        =  -1616008,
+    SAY_PHASE1_SLAY_2                        =  -1616009,
+    SAY_PHASE1_SLAY_3                        =  -1616010,
+    SAY_PHASE1_END                           =  -1616012,
+    // phase 2
+    SAY_PHASE2_AGGRO                         =  -1616013,
+    SAY_BREATH_ATTACK                        =  -1616014,
+    SAY_BREATH_ANNOUNCE                      =  -1616015,
+    SAY_ANTI_MAGIC_SHELL                     =  -1616016,
     SAY_PHASE2_SLAY_1                        =  -1616020,
     SAY_PHASE2_SLAY_2                        =  -1616021,
     SAY_PHASE2_SLAY_3                        =  -1616022,
-    // Phase3
-    SAY_PHASE3_INTRO                         =  -1616023,
-    SAY_PHASE3_AGGRO                         =  -1616024,
-    SAY_PHASE3_SLAY_1                        =  -1616025,
-    SAY_PHASE3_SLAY_2                        =  -1616026,
-    SAY_PHASE3_SLAY_3                        =  -1616027,
-    SAY_PHASE3_BIG_ATTACK                    =  -1616028
+    SAY_PHASE2_END                           =  -1616017,
+    // phase 3
+    SAY_PHASE3_INTRO                         =  -1616018,
+    SAY_PHASE3_AGGRO                         =  -1616019,
+    SAY_PHASE3_SLAY_1                        =  -1616023,
+    SAY_PHASE3_SLAY_2                        =  -1616024,
+    SAY_PHASE3_SLAY_3                        =  -1616025,
+    SAY_SURGE_OF_POWER                       =  -1616026,
+    SAY_PHASE3_CAST_1                        =  -1616027,
+    SAY_PHASE3_CAST_2                        =  -1616028,
+    SAY_PHASE3_CAST_3                        =  -1616029,
+    SAY_DEATH                                =  -1616030,
+    SAY_OUTRO_1                              =  -1616031,
+    SAY_OUTRO_2                              =  -1616032,
+    SAY_OUTRO_3                              =  -1616033,
+    SAY_OUTRO_4                              =  -1616034,
+    SAY_OUTRO_5                              =  -1616035
 };
 
 enum eSpells
@@ -274,7 +279,6 @@ public:
             Summons.Despawn(summon);
         }
 
-        /*
         void KilledUnit(Unit *pVictim)
         {
             if (pVictim == me)
@@ -282,30 +286,29 @@ public:
 
             switch (uiPhase)
             {
-                case 1:
+                case PHASE_GROUND:
+                case PHASE_VORTEX:
                     DoScriptText(RAND(SAY_PHASE1_SLAY_1, SAY_PHASE1_SLAY_2, SAY_PHASE1_SLAY_3), me);
                     break;
-                case 2:
+                case PHASE_ADDS:
                     DoScriptText(RAND(SAY_PHASE2_SLAY_1, SAY_PHASE2_SLAY_2, SAY_PHASE2_SLAY_3), me);
                     break;
-                case 3:
+                case PHASE_DRAGONS:
                     DoScriptText(RAND(SAY_PHASE3_SLAY_1, SAY_PHASE3_SLAY_2, SAY_PHASE3_SLAY_3), me);
                     break;
                 default:
                     break;
             }
-        } */
+        }
 
-        /*
-        void JustDied(Unit* /*killer/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
+            Summons.DespawnAll(); // only static fields left
 
-            if (m_pInstance)
-                m_pInstance->SetData(TYPE_MALYGOS, DONE);
-
-            Summons.DespawnAll();
-        } */
+            //if (m_pInstance)
+            //    m_pInstance->SetData(TYPE_MALYGOS, DONE);
+        }
 
         void MoveInLineOfSight(Unit* pWho)
         {
@@ -315,7 +318,8 @@ public:
             if (pWho->GetEntry() == NPC_POWER_SPARK && me->GetDistance(pWho) < 5.0f && !pWho->HasAura(SPELL_POWER_SPARK_PLAYERS))
             {
                 DoCast(SPELL_POWER_SPARK);
-                pWho->ToCreature()->ForcedDespawn(100);
+                DoScriptText(SAY_SPARK_BUFFED, me);
+                pWho->ToCreature()->ForcedDespawn(500);
             }
         }
 
@@ -325,12 +329,6 @@ public:
             {
                 case ACTION_START:
                 {
-                    /*/ DEBUG 
-                    me->GetMotionMaster()->MovePoint(POINT_PHASE_2, Locations[3]);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_UNK_9);
-                    // DEBUG */
-
                     me->SetInCombatWithZone();
                     me->GetMotionMaster()->MovePoint(POINT_START, Locations[0]);
                     break;
@@ -367,6 +365,7 @@ public:
                 {
                     if (Creature* pSpark = me->SummonCreature(NPC_POWER_SPARK, SparkLocations[urand(0, 3)], TEMPSUMMON_TIMED_DESPAWN, 90*IN_MILLISECONDS))
                     {
+                        DoScriptText(SAY_SPARK_SUMMON, me);
                         pSpark->SetFlying(true);
                         pSpark->SetReactState(REACT_PASSIVE);
                         pSpark->SetInCombatWithZone();
@@ -377,12 +376,14 @@ public:
                 case ACTION_OVERLOAD:
                 {
                     float x, y, angle;
-                    angle = urand(0, 100) * 2 * M_PI / 100;
+                    angle = float(2 * M_PI * rand_norm());
                     x = Locations[1].GetPositionX() + float(urand(10, 28)) * cos(angle);
                     y = Locations[1].GetPositionY() + float(urand(10, 28)) * sin(angle);
 
                     if (Creature* pOverload = me->SummonCreature(NPC_ARCANE_OVERLOAD, x, y, FLOOR_Z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 45*IN_MILLISECONDS))
                     {
+                        if (!urand(0, 2))
+                            DoScriptText(SAY_ANTI_MAGIC_SHELL, me);
                         pOverload->SetReactState(REACT_PASSIVE);
                         pOverload->SetInCombatWithZone();
                         DoCast(pOverload, SPELL_ARCANE_BOMB, true);
@@ -391,9 +392,10 @@ public:
                 }
                 case ACTION_DEEP_BREATH:
                 {
-                    // TODO: DoEmote() -- takes a deep breath.
                     if (Creature* pSurge = me->SummonCreature(NPC_SURGE_OF_POWER, Locations[3], TEMPSUMMON_TIMED_DESPAWN, 10*IN_MILLISECONDS))
                     {
+                        DoScriptText(SAY_BREATH_ANNOUNCE, me);
+                        DoScriptText(SAY_BREATH_ATTACK, me);
                         pSurge->SetDisplayId(11686);
                         pSurge->SetReactState(REACT_PASSIVE);
                         pSurge->SetInCombatWithZone();
@@ -409,7 +411,7 @@ public:
                         if (Creature* pLord = me->SummonCreature(NPC_NEXUS_LORD, Locations[1], TEMPSUMMON_CORPSE_DESPAWN))
                         {
                             pLord->SetReactState(REACT_PASSIVE);
-                            if (Creature *pTemp = me->SummonCreature(NPC_DISC_NPC, Locations[1], TEMPSUMMON_CORPSE_DESPAWN))
+                            if (Creature* pTemp = me->SummonCreature(NPC_DISC_NPC, Locations[1], TEMPSUMMON_CORPSE_DESPAWN))
                             {
                                 pLord->EnterVehicle(pTemp, 0);
                                 pTemp->SetReactState(REACT_PASSIVE);
@@ -423,7 +425,7 @@ public:
                         if (Creature* pScion = me->SummonCreature(NPC_SCION_OF_ETERNITY, Locations[1], TEMPSUMMON_CORPSE_DESPAWN))
                         {
                             pScion->SetInCombatWithZone();
-                            if (Creature *pTemp = me->SummonCreature(NPC_DISC_NPC, Locations[1], TEMPSUMMON_CORPSE_DESPAWN))
+                            if (Creature* pTemp = me->SummonCreature(NPC_DISC_NPC, Locations[1], TEMPSUMMON_CORPSE_DESPAWN))
                             {
                                 pScion->EnterVehicle(pTemp, 0);
                                 pTemp->SetReactState(REACT_PASSIVE);
@@ -535,6 +537,7 @@ public:
                 // ready to begin phase 2
                 case POINT_PHASE_2:
                 {
+                    DoScriptText(SAY_PHASE2_AGGRO, me);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     DoAction(ACTION_SPAWN_ADDS);
                     uiPhase = PHASE_ADDS;
@@ -543,6 +546,7 @@ public:
                 }
                 case POINT_DESTROY_FLOOR:
                 {
+                    DoScriptText(SAY_PHASE3_INTRO, me);
                     DoCast(SPELL_DESTROY_PLATFORM_CHANNEL);
                     uiWaitTimer = 6*IN_MILLISECONDS;
                     uiStep = 1;
@@ -552,6 +556,7 @@ public:
                 // start phase 3
                 case POINT_PHASE_3:
                 {
+                    DoScriptText(SAY_PHASE3_AGGRO, me);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoCast(me, 18373, true); // root self, TODO: replace
@@ -649,6 +654,7 @@ public:
                     // fly up for p2
                     if (HealthBelowPct(50))
                     {
+                        DoScriptText(SAY_PHASE1_END, me);
                         me->SetFlying(true);
                         me->SetReactState(REACT_PASSIVE);
                         me->GetMotionMaster()->MovePoint(POINT_PHASE_2, Locations[3]);
@@ -699,6 +705,7 @@ public:
 
                     if (uiAddsCount == RAID_MODE(6, 12))
                     {
+                        DoScriptText(SAY_PHASE2_END, me);
                         me->GetMotionMaster()->MovePoint(POINT_DESTROY_FLOOR, Locations[1]);
                         Summons.DespawnAll(); // remove remaining anti-magic shells and discs
                         uiPhase = PHASE_IDLE;
@@ -707,12 +714,14 @@ public:
                 }
                 case PHASE_DRAGONS:
                 {
-                    //if (me->HasUnitState(UNIT_STAT_CASTING))
-                    //    return;
+                    if (me->HasUnitState(UNIT_STAT_CASTING))
+                        return;
 
                     if (uiStormTimer <= uiDiff)
                     {
-                        DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_N, SPELL_ARCANE_STORM_H), true);
+                        if (!urand(0, 2))
+                            DoScriptText(RAND(SAY_PHASE3_CAST_1, SAY_PHASE3_CAST_2, SAY_PHASE3_CAST_3), me);
+                        DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_N, SPELL_ARCANE_STORM_H));
                         uiStormTimer = urand(8*IN_MILLISECONDS, 12*IN_MILLISECONDS);
                     } else uiStormTimer -= uiDiff;
 
@@ -720,7 +729,11 @@ public:
                     if (uiSurgeOfPowerTimer <= uiDiff)
                     {
                         if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
+                        {
+                            if (!urand(0, 3))
+                                DoScriptText(SAY_SURGE_OF_POWER, me);
                             DoCast(pTarget, RAID_MODE(SPELL_SURGE_OF_POWER_N, SPELL_SURGE_OF_POWER_H));
+                        }
                         uiSurgeOfPowerTimer = urand(11*IN_MILLISECONDS, 16*IN_MILLISECONDS);
                     } else uiSurgeOfPowerTimer -= uiDiff;
 
@@ -733,7 +746,11 @@ public:
                     if (uiStaticFieldTimer <= uiDiff)
                     {
                         if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
-                            DoCast(pTarget, SPELL_STATIC_FIELD_MISSLE, true);
+                        {
+                            if (!urand(0, 2))
+                                DoScriptText(RAND(SAY_PHASE3_CAST_1, SAY_PHASE3_CAST_2, SAY_PHASE3_CAST_3), me);
+                            DoCast(pTarget, SPELL_STATIC_FIELD_MISSLE);
+                        }
                         uiStaticFieldTimer = 25*IN_MILLISECONDS;
                     } else uiStaticFieldTimer -= uiDiff;
                     break;
@@ -915,7 +932,7 @@ public:
                 me->SetReactState(REACT_PASSIVE);
 
                 me->GetMotionMaster()->Clear();
-                me->GetMotionMaster()->MoveFall(FLOOR_Z); // TODO: really remove fly state instead
+                me->GetMotionMaster()->MoveFall(FLOOR_Z); // TODO: really remove fly state
                 me->ForcedDespawn(60*IN_MILLISECONDS);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             }
@@ -923,7 +940,6 @@ public:
     };
 };
 
-// TODO: find different way
 class npc_vortex_vehicle : public CreatureScript
 {
 public:
@@ -946,7 +962,7 @@ public:
             uiTurnTimer = 100;
             me->setFaction(35);
 
-            angle = urand(0, 100) * 2 * M_PI / 100;
+            angle = float(2 * M_PI * rand_norm());
             me->SetOrientation(angle);
         }
 
@@ -956,12 +972,12 @@ public:
             if (uiTurnTimer <= uiDiff)
             {
                 angle += M_PI * 2 / 7;
-
                 if (angle >= M_PI * 2)
                     angle -= M_PI * 2;
 
                 me->SetOrientation(angle);
                 me->SendMovementFlagUpdate();
+
                 uiTurnTimer = 100;
             } else uiTurnTimer -= uiDiff;
         }
@@ -977,25 +993,26 @@ public:
     {
         npc_hover_discAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
+        bool move;
+
         uint32 count;
         uint32 uiCheckTimer;
 
         void Reset()
         {
-            count = 1;
+            move = false;
             uiCheckTimer = 1*IN_MILLISECONDS;
         }
 
         void PassengerBoarded(Unit* pWho, int8 /*seatId*/, bool apply)
         {
             if (!apply)
-                me->ForcedDespawn(1*IN_MILLISECONDS); // TODO: remove the disc to lord aggro "copy"
+                me->ForcedDespawn(1*IN_MILLISECONDS);
         }
 
         void SetData(uint32 /*type*/, uint32 data)
         {
-            if (data > 0 && data <= 16)
-                count = data;
+            count = data;
         }
 
         void MovementInform(uint32 type, uint32 id)
@@ -1014,29 +1031,33 @@ public:
                     pUnit->ToCreature()->SetInCombatWithZone();
                     me->SetReactState(REACT_AGGRESSIVE);
                 }
-                // else scion of eternity, move clockwise
                 else
                 {
-                    float x, y, angle;
-                    angle = float(count) * 2 * M_PI / 16;
-                    x = Locations[1].GetPositionX() + float(urand(20, 24)) * cos(angle);
-                    y = Locations[1].GetPositionY() + float(urand(20, 24)) * sin(angle);
-
-                    me->GetMotionMaster()->MovePoint(count, x, y, FLOOR_Z + 15.0f);
-
-                    count--;
-
-                    if (count == 0)
-                        count = 16;
+                    move = true;
                 }
             }
         }
 
         void UpdateAI(const uint32 uiDiff)
         {
+            if (move)
+            {
+                move = false;
+                float x, y, angle;
+                angle = float(count) * 2 * M_PI / 16;
+                x = Locations[1].GetPositionX() + float(urand(20, 28)) * cos(angle);
+                y = Locations[1].GetPositionY() + float(urand(20, 28)) * sin(angle);
+                me->GetMotionMaster()->MovePoint(1, x, y, FLOOR_Z + 15.0f);
+
+                count--;
+                if (count == 0)
+                    count = 16;
+            }
+
             if (!UpdateVictim())
                 return;
 
+            // TODO: find some better way
             if (me->GetReactState() == REACT_AGGRESSIVE)
             {
                 if (uiCheckTimer <= uiDiff)
@@ -1078,8 +1099,7 @@ public:
             pGO->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
             pMalygos->AI()->DoAction(ACTION_START);
 
-            // summon dummy for visual cast
-            if (Creature* pTrigger = pGO->SummonCreature(NPC_SURGE_OF_POWER, pGO->GetPositionX(), pGO->GetPositionY(), 280.0f, 0.0f,
+            if (Creature* pTrigger = pGO->SummonCreature(NPC_SURGE_OF_POWER, pGO->GetPositionX(), pGO->GetPositionY(), 277.0f, 0.0f,
                 TEMPSUMMON_TIMED_DESPAWN, 6*IN_MILLISECONDS))
             {
                 pTrigger->SetDisplayId(11686);

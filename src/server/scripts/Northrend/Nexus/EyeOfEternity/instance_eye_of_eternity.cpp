@@ -144,7 +144,6 @@ public:
             {
                 case TYPE_MALYGOS: return m_auiEncounter[0];
             }
-
             return 0;
         }
 
@@ -155,8 +154,39 @@ public:
                 case DATA_MALYGOS: return uiMalygosGUID;
                 case DATA_PLATFORM: return uiPlatformGUID;
             }
-
             return 0;
+        }
+
+        std::string GetSaveData()
+        {
+            std::ostringstream saveStream;
+            saveStream << "E E ";
+            for (int i = 0; i < MAX_ENCOUNTER; ++i)
+                saveStream << m_auiEncounter[i] << " ";
+
+            return saveStream.str();
+        }
+
+        void Load(const char * data)
+        {
+            std::istringstream loadStream(data);
+            char dataHead1, dataHead2;
+            loadStream >> dataHead1 >> dataHead2;
+            std::string newdata = loadStream.str();
+
+            uint32 buff;
+            if (dataHead1 == 'E' && dataHead2 == 'E')
+            {
+                for (int i = 0; i < MAX_ENCOUNTER; ++i)
+                {
+                    loadStream >> buff;
+                    m_auiEncounter[i]= buff;
+                }
+            }
+
+            for (int i = 0; i < MAX_ENCOUNTER; ++i)
+                if (m_auiEncounter[i] != DONE)
+                    m_auiEncounter[i] = NOT_STARTED;
         }
 
         void OnPlayerEnter(Player* pPlayer)

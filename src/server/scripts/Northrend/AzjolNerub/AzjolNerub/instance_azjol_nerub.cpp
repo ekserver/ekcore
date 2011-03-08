@@ -331,16 +331,15 @@ public:
                     if (pKrikthir->isAlive() && pKrikthir->isInCombat())
                     {
                         if (pGashra->isAlive() && !pGashra->isInCombat())
-                            pGashra->AI()->DoZoneInCombat();
+                            pGashra->SetInCombatWithZone();
                         if (pSilthik->isAlive() && !pSilthik->isInCombat())
-                            pSilthik->AI()->DoZoneInCombat();
+                            pSilthik->SetInCombatWithZone();
                         if (pNarjil->isAlive() && !pNarjil->isInCombat())
-                            pNarjil->AI()->DoZoneInCombat();
+                            pNarjil->SetInCombatWithZone();
 
                         if (auiEncounter[0] == SPECIAL)
                             auiEncounter[0] = IN_PROGRESS;
                     }
-
                     uiEngageTimer = 45*IN_MILLISECONDS;
                 }
             }
@@ -359,13 +358,13 @@ public:
                     if (pGashra && pSilthik && pNarjil && pKrikthir)
                     {
                         if (pGashra->isAlive() && !pGashra->isInCombat())
-                            pGashra->AI()->DoZoneInCombat();
+                            pGashra->SetInCombatWithZone();
                         else if (pSilthik->isAlive() && !pSilthik->isInCombat())
-                            pSilthik->AI()->DoZoneInCombat();
+                            pSilthik->SetInCombatWithZone();
                         else if (pNarjil->isAlive() && !pNarjil->isInCombat())
-                            pNarjil->AI()->DoZoneInCombat();
+                            pNarjil->SetInCombatWithZone();
                         else if (pKrikthir->isAlive() && !pKrikthir->isInCombat())
-                            pKrikthir->AI()->DoZoneInCombat();
+                            pKrikthir->SetInCombatWithZone();
 
                         uiEngageTimer = 45*IN_MILLISECONDS;
                     }
