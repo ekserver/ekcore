@@ -28,19 +28,16 @@ Loot
 Legendaere Waffen Quest fixen
 Archievments - teilweise schon erledigt
 
-Script ist zu 90% fertig.
+Script ist zu 94% fertig.
 
 Phase 1 ist komplett
 Phase 2 ist fast fertig
   Allgemein:
-    Die kleinen Geschichten muessen noch gescriptet werden
-    Yells raussuchen
+    Die kleinen Geschichten (visual spells finden)
   YoggSauron:
-    Tentakle Spawns Timer fixen
+    Tentakle Spawns (not spawn too many Crusher Tentakle)
     Tentakle brauch vehicleID
-Phase 3 fast fertig
-    Empower Shadows scripten
-    Yells raussuchen
+Phase 3 fertig
 */
 
 enum Sara_Yells
@@ -66,11 +63,37 @@ enum YoggSaron_Yells
     SAY_PHASE2_5                                = -1603334,
     SAY_PHASE3                                  = -1603335,
     SAY_VISION                                  = -1603336,
-    SAY_SLAY_1                                  = -1603337,
-    SAY_SLAY_2                                  = -1603338,
+    SAY_LUNCATIC_GLAZE                          = -1603337,
+    SAY_DEAFENING_ROAR                          = -1603338,
     WHISP_INSANITY_1                            = -1603339,
     WHISP_INSANITY_2                            = -1603340,
     SAY_DEATH                                   = -1603341,
+};
+
+enum Vision_Says
+{
+    // King Llane
+    SAY_GARONA_1_VISION_1                       = -1603342,
+    SAY_GARONA_2_VISION_1                       = -1603343,
+    SAY_GARONA_3_VISION_1                       = -1603344,
+    SAY_YOGGSARON_4_VISION_1                    = -1603345,
+    SAY_YOGGSARON_5_VISION_1                    = -1603346,
+    SAY_LLANE_6_VISION_1                        = -1603347,
+    SAY_GARONA_7_VISION_1                       = -1603348,
+    SAY_YOGGSARON_8_VISION_1                    = -1603349,
+    // Lichking
+    SAY_LICHKING_1_VISION_2                     = -1603350,
+    SAY_CHAMP_2_VISION_2                        = -1603351,
+    SAY_CHAMP_3_VISION_2                        = -1603352,
+    SAY_LICHKING_4_VISION_2                     = -1603353,
+    SAY_YOGGSARON_5_VISION_2                    = -1603354,
+    SAY_YOGGSARON_6_VISION_2                    = -1603355,
+    // Dragon Soul
+    SAY_NELTHARION_1_VISION_3                   = -1603356,
+    SAY_YSERA_2_VISION_3                        = -1603357,
+    SAY_NELTHARION_3_VISION_3                   = -1603358,
+    SAY_MALYGOS_4_VISION_3                      = -1603359,
+    SAY_YOGGSARON_5_VISION_3                    = -1603360
 };
 
 enum Events
@@ -99,44 +122,61 @@ enum Achievments
 
 enum Entrys
 {
-    ENTRY_OMINOUS_CLOUD                         = 33292,
-    ENTRY_GUARDIAN_OF_YOGG_SARON                = 33136,
-    ENTRY_YOGG_SARON                            = 33288,
-    ENTRY_BRAIN_OF_YOGG_SARON                   = 33890,
-    ENTRY_CRUSHER_TENTACLE                      = 33966,
-    ENTRY_CORRUPTOR_TENTACLE                    = 33985,
-    ENTRY_CONSTRICTOR_TENTACLE                  = 33983,
-    ENTRY_BRAIN_PORTAL                          = 34072,
-    ENTRY_INFULENCE_TENTACLE                    = 33943,
-    ENTRY_RUBY_CONSORT                          = 33716, // 2 on Roomexit (l & r)
-    ENTRY_OBSIDIAN_CONSORT                      = 33720, // 2 on End of the Room (l & r)
-    ENTRY_EMERAL_CONSORT                        = 33719, // 2 on North West of the room
-    ENTRY_AZURE_CONSORT                         = 33717, // 2 on North East of the room
-    ENTRY_SUIT_OF_ARMOR                         = 33433, // around the Room
-    ENTRY_DEATHSWORN_ZEALOT                     = 33567, // 3 Groups of 3 ... left middle right
-    ENTRY_IMMORTAL_GUARDIAN                     = 33988,
-    ENTRY_LAUGHING_SKULL                        = 33990,
-
-    ENTRY_DEATH_RAY                             = 33881,
-    ENTRY_DEATH_ORB                             = 33882,
-
+    // All Phases
     ENTRY_KEEPER_FREYA                          = 33410,
     ENTRY_KEEPER_HODIR                          = 33411,
     ENTRY_KEEPER_MIMIRON                        = 33412,
     ENTRY_KEEPER_THORIM                         = 33413,
-
     ENTRY_SANITY_WELL                           = 33991,
+    // Phase 1
+    ENTRY_SARA                                  = 33134,
+    ENTRY_OMINOUS_CLOUD                         = 33292,
+    ENTRY_GUARDIAN_OF_YOGG_SARON                = 33136,
+    // Phase 2
+    ENTRY_YOGG_SARON                            = 33288,
+    ENTRY_BRAIN_OF_YOGG_SARON                   = 33890,
+    ENTRY_DEATH_RAY                             = 33881,
+    ENTRY_DEATH_ORB                             = 33882,
+    //  Tentakles
+    ENTRY_CRUSHER_TENTACLE                      = 33966,
+    ENTRY_CORRUPTOR_TENTACLE                    = 33985,
+    ENTRY_CONSTRICTOR_TENTACLE                  = 33983,
+    //  Brain
+    //  All Vision
+    ENTRY_BRAIN_PORTAL                          = 34072,
+    ENTRY_INFULENCE_TENTACLE                    = 33943,
+    ENTRY_LAUGHING_SKULL                        = 33990,
+    //  Vision Dragon Soul
+    ENTRY_RUBY_CONSORT                          = 33716, // 2 on Roomexit (l & r)
+    ENTRY_OBSIDIAN_CONSORT                      = 33720, // 2 on End of the Room (l & r)
+    ENTRY_EMERAL_CONSORT                        = 33719, // 2 on North West of the room
+    ENTRY_AZURE_CONSORT                         = 33717, // 2 on North East of the room
+    ENTRY_NELTHARION_VISION                     = 33523,
+    ENTRY_YSERA_VISION                          = 33495,
+    ENTRY_MALYGOS_VISION                        = 33535,
+    //  Vision Llane
+    ENTRY_SUIT_OF_ARMOR                         = 33433, // around the Room
+    ENTRY_GARONA_VISION                         = 33436,
+    ENTRY_KING_LLANE                            = 33437,
+    //  Vision Lich King
+    ENTRY_DEATHSWORN_ZEALOT                     = 33567, // 3 Groups of 3 ... left middle right
+    ENTRY_LICHKING_VISION                       = 33441,
+    ENTRY_IMMOLATED_CHAMPION_VISION             = 33442,
+    ENTRY_TURNED_CHAMPION_VISION                = 33962,
+    // Phase 3
+    ENTRY_IMMORTAL_GUARDIAN                     = 33988,
 
+    OBJECT_THE_DRAGON_SOUL                      = 194462,
     OBJECT_FLEE_TO_SURFACE                      = 194625,
 };
 
-enum ModelIds
-{
-    SARA_NORMAL                                 = 29117,
-    SARA_TRANSFORM                              = 29182,
-    //YOGGSARON_NORMAL                            = 28817,
-    //YOGGSARON_TRANSFORM                         = 28945
-};
+//enum ModelIds
+//{
+//    SARA_NORMAL                                 = 29117,
+//    SARA_TRANSFORM                              = 29182,
+//    YOGGSARON_NORMAL                            = 28817,
+//    YOGGSARON_TRANSFORM                         = 28945
+//};
 
 enum MindlessSpell
 {
@@ -313,7 +353,7 @@ const Position BrainPortalLocation[4] =
     */
 };
 
-const Position KingLlianeTentacleLocation[CONSTANT_MAX_LLIANE_TENTACLE_SPAWNS] = 
+const Position KingLlaneTentacleLocation[CONSTANT_MAX_LLIANE_TENTACLE_SPAWNS] = 
 {
     {1949.82f,   50.77f, 239.70f, (0.8f*M_PI)},
     {1955.24f,   72.08f, 239.70f, (1.04f*M_PI)},
@@ -383,7 +423,7 @@ const Position FreyaSanityWellLocation[5] =
     {2040.12f, -39.16f, 329.00f, 0},
 };
 
-const Position KingLlianeSkullLocation[3] = 
+const Position KingLlaneSkullLocation[3] = 
 {
     {1929.41f,  45.27f, 239.70f, 0},
     {1902.31f,  72.53f, 239.70f, 0},
@@ -404,6 +444,73 @@ const Position DragonSoulSkullLocation[4] =
     {2170.20f, -33.31f,  244.3f, 0},
     {2090.49f, -57.40f,  239.8f, 0}
 };
+
+const Position EventNpcLocation[9] =
+{
+    { 1928.23f, 66.81f, 242.40f, 5.207f }, // King Llane
+    { 1929.78f, 63.60f, 242.40f, 2.124f }, // Garona - kneeling
+    { 2103.87f, -13.13f, 242.65f, 4.692f }, // Ysera
+    { 2118.68f, -25.56f, 242.65f, M_PI}, // Neltharion
+    { 2095.87f, -34.47f, 242.65f, 0.836f }, // Malygos
+    { 2104.61f, -25.36f, 242.65f, 0.0f }, // The Dragon Soul
+    { 1903.41f, -160.21f, 239.99f, 1.114f }, // Immolated Champion
+    { 1909.31f, -155.88f, 239.99f, 4.222f }, // Turned Champion
+    { 1907.02f, -153.92f, 239.99f, 4.187f }, // The Lich King
+
+};
+
+struct EventNPC
+{
+    uint32 entry;
+    uint64 guid;
+};
+
+struct EventSpeech
+{
+    uint32 npc_entry;
+    int32 speech_entry;
+    uint32 next_speech;
+    bool isSpeaking;
+};
+
+const uint32  EventNpcEntrys[9] =
+{
+    ENTRY_KING_LLANE,
+    ENTRY_GARONA_VISION,
+    ENTRY_YSERA_VISION,
+    ENTRY_NELTHARION_VISION,
+    ENTRY_MALYGOS_VISION,
+    OBJECT_THE_DRAGON_SOUL,
+    ENTRY_IMMOLATED_CHAMPION_VISION,
+    ENTRY_TURNED_CHAMPION_VISION,
+    ENTRY_LICHKING_VISION,
+};
+
+const EventSpeech EventNpcSpeaching[19] =
+{
+    {ENTRY_GARONA_VISION,SAY_YOGGSARON_4_VISION_1,3000,true},
+    {ENTRY_GARONA_VISION,SAY_GARONA_2_VISION_1,5000,true},
+    {ENTRY_GARONA_VISION,SAY_GARONA_3_VISION_1,5000,true},
+    {ENTRY_YOGG_SARON,SAY_YOGGSARON_4_VISION_1,3000,true},
+    {ENTRY_YOGG_SARON,SAY_YOGGSARON_5_VISION_1,3000,true},
+    {ENTRY_KING_LLANE,SAY_LLANE_6_VISION_1,5000,true},
+    {ENTRY_GARONA_VISION,SAY_GARONA_7_VISION_1,5000,true},
+    {ENTRY_YOGG_SARON,SAY_YOGGSARON_8_VISION_1,5000,false},
+
+    {ENTRY_LICHKING_VISION,SAY_LICHKING_1_VISION_2,5000,true},/*8*/
+    {ENTRY_IMMOLATED_CHAMPION_VISION,SAY_CHAMP_2_VISION_2,5000,true},
+    {ENTRY_IMMOLATED_CHAMPION_VISION,SAY_CHAMP_3_VISION_2,5000,true},
+    {ENTRY_LICHKING_VISION,SAY_LICHKING_4_VISION_2,5000,true},
+    {ENTRY_YOGG_SARON,SAY_YOGGSARON_5_VISION_2,5000,true},
+    {ENTRY_YOGG_SARON,SAY_YOGGSARON_6_VISION_2,5000,false},
+
+    {ENTRY_NELTHARION_VISION,SAY_NELTHARION_1_VISION_3,5000,true},/*14*/
+    {ENTRY_YSERA_VISION,SAY_YSERA_2_VISION_3,5000,true},
+    {ENTRY_NELTHARION_VISION,SAY_NELTHARION_3_VISION_3,5000,true},
+    {ENTRY_MALYGOS_VISION,SAY_MALYGOS_4_VISION_3,5000,true},
+    {ENTRY_YOGG_SARON,SAY_YOGGSARON_5_VISION_3,5000,false},
+};
+
 class boss_sara : public CreatureScript
 {
 public:
@@ -433,6 +540,7 @@ public:
         uint64 guidYoggBrain;
         std::list<uint64> guidEventTentacles;
         std::list<uint64> guidEventSkulls;
+        std::list<EventNPC> listEventNPCs;
 
         // Phase 1
         uint32 uiSarasHelp_Timer;
@@ -454,7 +562,11 @@ public:
         uint32 uiEnrage_Timer;
         uint32 uiMadness_Timer;
 
+        uint32 uiBrainEvents_Count;
         BrainEventPhase currentBrainEventPhase;
+
+        bool IsEventSpeaking;
+        uint32 EventSpeakingPhase;
 
         // Phase 3
         uint32 uiDeafeningRoar_Timer;
@@ -480,6 +592,7 @@ public:
             Summons.DespawnAll();
             guidEventTentacles = std::list<uint64>();
             guidEventSkulls = std::list<uint64>();
+            listEventNPCs = std::list<EventNPC>();
 
             me->InterruptNonMeleeSpells(false);
             // Zurueck an Home ... muss nicht sein ist aber besser so
@@ -526,7 +639,6 @@ public:
             uiRandomYell_Timer = urand(10000,20000);
         }
 
-        
         void JustDied(Unit *killer)
         {
             if(m_pInstance)
@@ -602,23 +714,6 @@ public:
             if(damage > me->GetHealth())
                 damage = me->GetHealth()-1;
         }
-
-        //void SpellHit(Unit* caster, const SpellEntry* spell)
-        //{
-        //    switch(spell->Id)
-        //    {
-        //    case SPELL_SHADOW_NOVA:
-        //        if(m_Phase != PHASE_SARA)
-        //            return;
-
-        //        NovaHitCounter--;
-
-        //        if(NovaHitCounter <= 0)
-        //            SetPhase(PHASE_BRAIN);
-
-        //        break;
-        //    }
-        //}
 
         uint32 CountKeepersActive()
         {
@@ -735,9 +830,12 @@ public:
                 IsSpeaking = true;
                 SpeakingPhase = 0;
                 uiSpeaking_Timer = 1000;
+                IsEventSpeaking = false;
+                EventSpeakingPhase = 0;
                 //me->SetDisplayId(SARA_TRANSFORM);
                 CloudHandling(true);
                 uiRandomYell_Timer = 35000;
+                uiBrainEvents_Count = 0;
                 break;
             case PHASE_YOGG:
                 me->SetVisible(false);
@@ -749,7 +847,7 @@ public:
                     DoScriptText(SAY_PHASE3,yogg);
                     me->AddAura(SPELL_YOGG_SARON_TRANSFORMATION,yogg);
                 }
-                // Alle Spieler aus BrainRoom rauswerfen
+
                 // Not blizzlike
                 //if(me->GetMap() && me->GetMap()->IsDungeon())
                 //{
@@ -815,11 +913,14 @@ public:
                 pSummoned->SetStandState(UNIT_STAND_STATE_SUBMERGED);
                 pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                //pSummoned->SetDisplayId(YOGGSARON_TRANSFORM);
+                pSummoned->SetFloatValue(UNIT_FIELD_COMBATREACH, 7.0f);
+                pSummoned->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 7.0f);
                 break;
             case ENTRY_BRAIN_OF_YOGG_SARON:
                 guidYoggBrain = pSummoned->GetGUID();
                 pSummoned->setActive(true);
+                pSummoned->SetFloatValue(UNIT_FIELD_COMBATREACH, 7.0f);
+                pSummoned->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 7.0f);
                 break;
             case ENTRY_RUBY_CONSORT:
             case ENTRY_OBSIDIAN_CONSORT:
@@ -944,6 +1045,70 @@ public:
                 }
             }
         }
+
+        void SummonMadnessEventNPCs()
+        {
+            listEventNPCs.clear();
+            uint32 npcIndex = 0;
+            uint32 npcAmount = 0;
+
+            switch(currentBrainEventPhase)
+            {
+            case PORTAL_PHASE_KING_LLIANE:
+                npcIndex = 0;
+                npcAmount = 2;
+                break;
+            case PORTAL_PHASE_DRAGON_SOUL:
+                npcIndex = 2;
+                npcAmount = 4;
+                break;
+            case PORTAL_PHASE_LICH_KING:
+                npcIndex = 6;
+                npcAmount = 3;
+                break;
+            }
+
+            Creature* temp;
+
+            for(uint8 i = 0; i < npcAmount; i++)
+            {
+                if(EventNpcEntrys[npcIndex+i] == OBJECT_THE_DRAGON_SOUL)
+                {
+                    if(GameObject* obj = me->SummonGameObject(EventNpcEntrys[npcIndex+i],EventNpcLocation[npcIndex+i].GetPositionX(),EventNpcLocation[npcIndex+i].GetPositionY(),EventNpcLocation[npcIndex+i].GetPositionZ(),0,0,0,0,0,40000))
+                    {
+                        obj->setActive(true);
+                        EventNPC *info = new EventNPC();
+                        info->entry = obj->GetEntry();
+                        info->guid = obj->GetGUID();
+
+                        listEventNPCs.push_back(*info);
+                    }
+                }
+                else
+                {
+                    if(temp = DoSummon(EventNpcEntrys[npcIndex+i],EventNpcLocation[npcIndex+i],40000,TEMPSUMMON_TIMED_DESPAWN))
+                    {
+                        temp->setActive(true);
+                        EventNPC *info = new EventNPC();
+                        info->entry = temp->GetEntry();
+                        info->guid = temp->GetGUID();
+                                
+                        listEventNPCs.push_back(*info);
+                    }
+                }
+            }
+        }
+
+        uint64 GetEventNPCGuid(uint32 entry)
+        {
+            for(std::list<EventNPC>::iterator itr = listEventNPCs.begin(); itr != listEventNPCs.end(); ++itr)
+            {
+                if(itr->entry == entry)
+                    return itr->guid;
+            }
+            return 0;
+        }
+
         void DoMadness()
         {
             if(m_pInstance)
@@ -1013,12 +1178,12 @@ public:
                 guidEventSkulls.clear();
                 for(int i = 0; i < CONSTANT_MAX_LLIANE_TENTACLE_SPAWNS; ++i)
                 {
-                    if(Creature* summon = DoSummon(ENTRY_SUIT_OF_ARMOR,KingLlianeTentacleLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
+                    if(Creature* summon = DoSummon(ENTRY_SUIT_OF_ARMOR,KingLlaneTentacleLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
                         guidEventTentacles.push_back(summon->GetGUID());
                 }
                 for(int i = 0; i < 3; ++i)
                 {
-                    if(Creature* summon = DoSummon(ENTRY_LAUGHING_SKULL,KingLlianeSkullLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
+                    if(Creature* summon = DoSummon(ENTRY_LAUGHING_SKULL,KingLlaneSkullLocation[i],60000,TEMPSUMMON_TIMED_DESPAWN))
                         guidEventSkulls.push_back(summon->GetGUID());
                 }
                 break;
@@ -1026,6 +1191,43 @@ public:
 
             if(Creature* yoggbrain = me->GetCreature(*me,guidYoggBrain))
                 yoggbrain->CastSpell(yoggbrain,SPELL_INDUCE_MADNESS,false);
+
+            SummonMadnessEventNPCs();
+            IsEventSpeaking = true;
+            EventSpeakingPhase = 0;
+            uiSpeaking_Timer = 5000;
+
+            uiBrainEvents_Count++;
+        }
+
+        uint32 DoEventSpeaking(BrainEventPhase phase, uint32 part)
+        {
+            uint64 npcguid = 0;
+            uint32 speachindex = 0;
+            switch(phase)
+            {
+            case PORTAL_PHASE_KING_LLIANE:
+                speachindex = 0;
+                break;
+            case PORTAL_PHASE_LICH_KING:
+                speachindex = 8;
+                break;
+            case PORTAL_PHASE_DRAGON_SOUL:
+                speachindex = 14;
+            }
+
+            if(phase+speachindex > 18)
+                return 5000;
+
+            if(EventNpcSpeaching[speachindex+part].npc_entry != ENTRY_YOGG_SARON)
+                npcguid = GetEventNPCGuid(EventNpcSpeaching[speachindex+part].npc_entry);
+            else
+                npcguid = guidYogg;
+
+            if(Creature* speaker = Creature::GetCreature(*me,npcguid))
+                DoScriptText(EventNpcSpeaching[speachindex+part].speech_entry,speaker);
+            IsEventSpeaking = EventNpcSpeaching[speachindex+part].isSpeaking;
+            return EventNpcSpeaching[speachindex+part].next_speech;
         }
 
         void UpdateAI(const uint32 diff)
@@ -1125,6 +1327,15 @@ public:
                         }else uiSpeaking_Timer -= diff;
                     }else
                     {
+                        if(IsEventSpeaking)
+                        {
+                            if(uiSpeaking_Timer <= diff)
+                            {
+                                uiSpeaking_Timer = DoEventSpeaking(currentBrainEventPhase,EventSpeakingPhase);
+                                EventSpeakingPhase++;
+                            }else uiSpeaking_Timer -= diff;
+                        }
+
                         if(!me->HasAura(SPELL_SHATTERED_ILLUSIONS))
                         {
                             if(uiPsychosis_Timer <= diff)
@@ -1167,7 +1378,7 @@ public:
                                     if(Creature* yogg = me->GetCreature(*me,guidYogg))
                                         yogg->CastSpell(yogg,RAND(SPELL_SUMMON_CRUSHER_TENTACLE,SPELL_SUMMON_CURRUPTOR_TENTACLE),true);
                                 }
-                                uiTentacle_Timer = urand(15000,30000);
+                                uiTentacle_Timer =  uiBrainEvents_Count < 4 ? urand(15000,30000) : urand(5000,10000);
                             }else uiTentacle_Timer -= diff;
                         }else
                         {
@@ -1260,6 +1471,7 @@ public:
                         {
                             if(!yogg->IsNonMeleeSpellCasted(false))
                             {
+                                DoScriptText(SAY_LUNCATIC_GLAZE,yogg,0);
                                 yogg->CastSpell(yogg,SPELL_LUNATIC_GAZE,false);
                                 uiLunaticGaze_Timer = 12000;
                             }
@@ -1273,6 +1485,7 @@ public:
                             {
                                 if(yogg->IsNonMeleeSpellCasted(false))
                                 {
+                                    DoScriptText(SAY_DEAFENING_ROAR,yogg,0);
                                     yogg->CastSpell(yogg,SPELL_DEAFENING_ROAR,false);
                                     uiDeafeningRoar_Timer = 60000;
                                 }
@@ -2753,6 +2966,32 @@ INSERT INTO spell_script_names (spell_id,Scriptname)
 VALUES
 (64466,'spell_empowering_shadows');
 
+
+-- Missing Says Vision
+DELETE FROM script_texts WHERE entry BETWEEN -1603360 AND -1603342;
+INSERT INTO script_texts (`npc_entry`,`entry`,`content_default`,`sound`,`type`,`language`,`emote`,`comment`)
+VALUES
+(33436,-1603342,'Bad news sire.',15538,0,0,0,'Garona KingLlaneVision_Say1'),
+(33436,-1603343,'The clans are united under Blackhand in this assault. They will stand together until Stormwind has fallen.',15539,0,0,0,'Garona KingLlaneVision_Say2'),
+(33436,-1603344,'Gul\'dan is bringing up his warlocks by nightfall. Until then, the Blackrock clan will be trying to take the Eastern Wall.',15540,0,0,0,'Garona KingLlaneVision_Say3'),
+(33288,-1603345,'A thousand deaths... or one murder.',15762,0,0,0,'YoggSaron KingLlaneVision_Say1'),
+(33288,-1603346,'',15763,0,0,0,'YoggSaron KingLlianeVision_Say2'),
+(33437,-1603347,'We will hold until the reinforcements come. As long as men with stout hearts are manning the walls and throne Stormwind will hold.',15585,0,0,0,'KingLlane KingLlaneVision_Say'),
+(33436,-1603348,'The orc leaders agree with your assessment.',15541,0,0,0,'Garona KingLlaneVision_Say4'),
+(33288,-1603349,'Your petty quarrels only make me stronger!',15764,0,0,0,'YoggSaron KingLlaneVision_Say3'),
+
+(33441,-1603350,'Your resilience is admirable.',15598,0,0,0,'TheLichKing LichKingVision_Say1'),
+(33442,-1603351,'Arrrrrrgh!',15470,1,0,0,'ImmolatedChampion LichKingVision_Say1'),
+(33442,-1603352,'I\'m not afraid of you!',15471,0,0,0,'ImmolatedChampion LichKingVision_Say2'),
+(33441,-1603353,'I will break you as I broke him.',15599,0,0,0,'TheLichKing LichKingVision_Say2'),
+(33288,-1603354,'Yrr n\'lyeth... shuul anagg!',15766,0,0,0,'YoggSaron LichKingVision_Say1'),
+(33288,-1603355,'He will learn... no king rules forever, only death is eternal!',15767,0,0,0,'YoggSaron LichKingVision_Say2'),
+
+(33523,-1603356,'It is done... All have been given that which must be given. I now seal the Dragon Soul forever...',15631,0,0,0,'Neltharion DragonSoulVision_Say1'),
+(33495,-1603357,'That terrible glow... should that be?',15702,0,0,0,'Ysera DragonSoulVision_Say'),
+(33523,-1603358,'For it to be as it must, yes.',15632,0,0,0,'Neltharion DragonSoulVision_Say2'),
+(33535,-1603359,'It is a weapon like no other. It must be like no other.',15610,0,0,0,'Malygos DragonSoulVision_Say'),
+(33288,-1603360,'His brood learned their lesson before too long, you shall soon learn yours!',15765,0,0,0,'YoggSaron DragonSoulVision_Say1');
 */
 
 void AddSC_boss_yoggsaron()
