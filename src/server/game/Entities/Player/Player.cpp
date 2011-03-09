@@ -18042,14 +18042,17 @@ void Player::SaveToDB()
     CharacterDatabase.escape_string(sql_name);
     
     /** World of Warcraft Armory **/
-    std::ostringstream ps;
-    ps << "REPLACE INTO armory_character_stats (guid,data) VALUES ('" << GetGUIDLow() << "', '";
-    for(uint16 i = 0; i < m_valuesCount; ++i )
+    if (sWorld->getBoolConfig(CONFIG_ARMORY_ENABLE))
     {
-        ps << GetUInt32Value(i) << " ";
+        std::ostringstream ps;
+        ps << "REPLACE INTO armory_character_stats (guid,data) VALUES ('" << GetGUIDLow() << "', '";
+        for(uint16 i = 0; i < m_valuesCount; ++i )
+        {
+            ps << GetUInt32Value(i) << " ";
+        }
+        ps << "')";
+        CharacterDatabase.Execute( ps.str().c_str() );
     }
-    ps << "')";
-    CharacterDatabase.Execute( ps.str().c_str() );
     /** World of Warcraft Armory **/
 
     std::ostringstream ss;
