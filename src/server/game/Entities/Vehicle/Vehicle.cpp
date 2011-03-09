@@ -115,8 +115,6 @@ void Vehicle::Install()
         }
     }
 
-    Reset();
-
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
         sScriptMgr->OnInstall(this);
 }
@@ -125,7 +123,7 @@ void Vehicle::InstallAllAccessories()
 {
     RemoveAllPassengers();   // We might have aura's saved in the DB with now invalid casters - remove
 
-    VehicleAccessoryList const* mVehicleList = sObjectMgr->GetVehicleAccessoryList(m_creatureEntry);
+    VehicleAccessoryList const* mVehicleList = sObjectMgr->GetVehicleAccessoryList(this);
     if (!mVehicleList)
         return;
 
@@ -140,15 +138,6 @@ void Vehicle::Uninstall()
 
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
         sScriptMgr->OnUninstall(this);
-}
-
-void Vehicle::Die()
-{
-    sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle::Die Entry: %u, GuidLow: %u", m_creatureEntry, me->GetGUIDLow());
-    RemoveAllPassengers();
-
-    if (GetBase()->GetTypeId() == TYPEID_UNIT)
-        sScriptMgr->OnDie(this);
 }
 
 void Vehicle::Reset()
@@ -233,6 +222,7 @@ int8 Vehicle::GetNextEmptySeat(int8 seatId, bool next) const
 
 void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 type, uint32 summonTime)
 {
+    sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle: Installing accessory entry %u on vehicle entry %u (seat:%i)", entry, GetCreatureEntry(), seatId);
     if (Unit *passenger = GetPassenger(seatId))
     {
         // already installed
@@ -258,8 +248,6 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
 
         if (!me->HandleSpellClick(accessory, seatId))
         {
-            sLog->outErrorDb("Vehicle entry %u in vehicle_accessory does not have a valid record in npc_spellclick_spells! Cannot join vehicle.",
-                m_creatureEntry);
             accessory->AddObjectToRemoveList();
             return;
         }

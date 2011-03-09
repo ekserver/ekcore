@@ -309,13 +309,13 @@ public:
             }
         }
 
-        void ProcessEvent(GameObject* /*go*/, uint32 uiEventId)
+        void ProcessEvent(GameObject* /*go*/, uint32 eventId)
         {
             // Flame Leviathan's Tower Event triggers
            Creature* pFlameLeviathan = instance->GetCreature(uiLeviathanGUID);
 
             if (pFlameLeviathan && pFlameLeviathan->isAlive()) //No leviathan, no event triggering ;)
-                switch(uiEventId)
+                switch(eventId)
                 {
                     case EVENT_TOWER_OF_STORM_DESTROYED:
                         pFlameLeviathan->AI()->DoAction(1);
@@ -330,6 +330,10 @@ public:
                         pFlameLeviathan->AI()->DoAction(4);
                         break;
                 }
+        }
+
+        void ProcessEvent(Unit* /*unit*/, uint32 /*eventId*/)
+        {
         }
 
         bool SetBossState(uint32 type, EncounterState state)
