@@ -54,6 +54,11 @@ enum eTypes
     // Kologarn:
     DATA_LEFT_ARM,
     DATA_RIGHT_ARM,
+
+    //Freya Elders
+    TYPE_ELDER_BRIGHTLEAF,
+    TYPE_ELDER_IRONBRANCH,
+    TYPE_ELDER_STONEBARK,
 };
 
 enum eNPCs
@@ -78,6 +83,9 @@ enum eNPCs
     NPC_HODIR                   = 32845,
     NPC_THORIM                  = 32865,
     NPC_FREYA                   = 32906,
+    NPC_ELDER_IRONBRANCH        = 32913,
+    NPC_ELDER_STONEBARK         = 32914,
+    NPC_ELDER_BRIGHTLEAF        = 32915,
     NPC_VEZAX                   = 33271,
     NPC_YOGGSARON               = 33288,
     NPC_SARA                    = 33134,

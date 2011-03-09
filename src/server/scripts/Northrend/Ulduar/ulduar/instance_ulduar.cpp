@@ -71,6 +71,9 @@ public:
         uint64 uiHodirGUID;
         uint64 uiThorimGUID;
         uint64 uiFreyaGUID;
+        uint64 uiElderBrightleafGUID;
+        uint64 uiElderIronbranchGUID;
+        uint64 uiElderStonebarkGUID;
         uint64 uiVezaxGUID;
         uint64 uiYoggSaronGUID;
         uint64 uiSaraGUID;
@@ -208,20 +211,38 @@ public:
                 case NPC_THORIM:
                     uiThorimGUID = creature->GetGUID();
                     break;
+
+                // Freya
                 case NPC_FREYA:
                     uiFreyaGUID = creature->GetGUID();
                     break;
+                case NPC_ELDER_BRIGHTLEAF:
+                    uiElderBrightleafGUID = creature->GetGUID();
+                    creature->setActive(true);
+                    break;
+                case NPC_ELDER_IRONBRANCH:
+                    uiElderIronbranchGUID = creature->GetGUID();
+                    creature->setActive(true);
+                    break;
+                case NPC_ELDER_STONEBARK:
+                    uiElderStonebarkGUID = creature->GetGUID();
+                    creature->setActive(true);
+                    break;
+
                 case NPC_VEZAX:
                     uiVezaxGUID = creature->GetGUID();
                     break;
+
+                // Yogg-Saron
                 case NPC_YOGGSARON:
                     uiYoggSaronGUID = creature->GetGUID();
                     break;
-                case NPC_ALGALON:
-                    uiAlgalonGUID = creature->GetGUID();
-                    break;
                 case NPC_SARA:
                     uiSaraGUID = creature->GetGUID();
+                    break;
+
+                case NPC_ALGALON:
+                    uiAlgalonGUID = creature->GetGUID();
                     break;
             }
 
@@ -427,12 +448,20 @@ public:
                 case TYPE_MIMIRON:              return uiMimironGUID;
                 case TYPE_HODIR:                return uiHodirGUID;
                 case TYPE_THORIM:               return uiThorimGUID;
+
+                // Freya
                 case TYPE_FREYA:                return uiFreyaGUID;
+                case TYPE_ELDER_BRIGHTLEAF:     return uiElderBrightleafGUID;
+                case TYPE_ELDER_IRONBRANCH:     return uiElderIronbranchGUID;
+                case TYPE_ELDER_STONEBARK:      return uiElderStonebarkGUID;
+
                 case TYPE_VEZAX:                return uiVezaxGUID;
+
+                // Yogg-Saron
                 case TYPE_YOGGSARON:            return uiYoggSaronGUID;
-                case TYPE_ALGALON:              return uiAlgalonGUID;
                 case TYPE_SARA:                 return uiSaraGUID;
 
+                case TYPE_ALGALON:              return uiAlgalonGUID;
                 // razorscale expedition commander
                 case DATA_EXP_COMMANDER:        return uiExpCommanderGUID;
                 // Assembly of Iron

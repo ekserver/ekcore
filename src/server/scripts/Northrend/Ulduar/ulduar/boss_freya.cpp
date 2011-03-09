@@ -24,20 +24,10 @@ LandofLegends - Entwicklungsnotizen:
 Spells wurden bereits viele getestet und entsprechend gefixt .. Spellfixes findet man am Ende des Scripts
 
 Notizen:
-Bis jetzt ist der Anfang fertig ...
-Freya fuegt sich ihr Heilspell zu
-anschließend werden die NPCs gespawnt
-Aufladungen des Spells werden noch nicht runtergenommen wenn ein NPCs stirbt:
-Dazu einfach ein DoEvent Funktion benutzen ... Trigger bestimmen (enum) diesen vom NPC script triggern lassen
-Um Aufladungen zu entferen (oder hinzuzufuegen) kann man sich auch YoggSaron script anschauen
-
-Pilze un Baeume muessen gescriptet werden. Spells suchen (testen) und gegebenfalls fixen. Spawnspells fuer Freya funktionieren bereits.
-
 Spell natural bomb bereits gefixt
 
 TO DO:
 Prio 1:
-Aufladungen Spell entferen wenn Add stirbt
 Freyas Spells testen und fixen 
 
 Prio 2:
@@ -46,6 +36,16 @@ Spawnen der richtigen Kiste am ende des Kampfes
 Scripten der NPCs
 Archievments Scripten
 
+
+
+Elders:
+Elder Brightleaf:
+    Fix Unstable Sunbeam
+    Fix Solar Flare Targets
+    Fix Random Flux Buff
+Elder Ironbranch
+    Fix Iron Roots
+Elder Stonebark - fertig (?)
 */
 
 enum Yells
@@ -123,9 +123,6 @@ enum Spells
     SPELL_SUNBEAM                                       = 62623,
     SPELL_SUNBEAM_H                                     = 62872,
 
-    SPELL_FREYA_GROUND_TREMOR_10                        = 62437,
-    SPELL_FREYA_GROUND_TREMOR_25                        = 62859,
-
     SPELL_NATURE_BOMB_VISUAL                            = 64648, // Projectile Visual ... Dummy
     SPELL_NATURE_BOMB_SUMMON                            = 64606, // castet from player ... 
 
@@ -139,6 +136,18 @@ enum Spells
     SPELL_LIFEBINDERS_GIFT_TRIGGER_MISSILE_2            = 62870, // works
     SPELL_LIFEBINDERS_GIFT_SUMMON_2                     = 62869,
     SPELL_LIFEBINDERS_GIFT_VISUAL                       = 62579,
+
+    // Hardmode
+    SPELL_BRIGHTLEAFS_ESSENCE                           = 62385,
+    SPELL_IRONBRANCHS_ESSENCE                           = 62387,
+    SPELL_STONEBARKS_ESSENCE                            = 62386,
+
+    SPELL_FREYA_UNSTABLE_ENERGY_10                      = 62451,
+    SPELL_FREYA_UNSTABLE_ENERGY_25                      = 62865,
+    SPELL_FREYA_IRON_ROOTS_10                           = 62283,
+    SPELL_FREYA_IRON_ROOTS_25                           = 62930,
+    SPELL_FREYA_GROUND_TREMOR_10                        = 62437,
+    SPELL_FREYA_GROUND_TREMOR_25                        = 62859,
 
     //Nature Bomb
     SPELL_NATURE_BOMB_VISUAL_OBJECT                     = 64600, // Gameobjectspawn 194902
@@ -154,9 +163,7 @@ enum Spells
     SPELL_LIFEBINDERS_GIFT_25                           = 64185,
 
     // Test
-
     SPELL_PHEROMONES                                    = 62619,
-
 
     // ???
     SUMMON_FREYA_CHEST                                  = 62950, // 62952-62958
@@ -196,26 +203,35 @@ enum Spells
     SPELL_POTENT_PHEROMONES                             = 62541,
     SPELL_GROW                                          = 31698, //grow visual
 
-    //elder brightleaf
-    SPELL_SOLAR_FLARE_10                                = 62240,
-    SPELL_SOLAR_FLARE_25                                = 62920,
-    SPELL_UNSTABLE_ENERGY_10                            = 62217,
+    // Elder
+    SPELL_DRAINED_OF_POWER                              = 62467, //while freya encounter in progress
+    //  Elder Brightleaf 
+    //  all spells are triggered
+    SPELL_SOLAR_FLARE_10                                = 62240, // Target Amount is affected by stackamount of Brightleaf flux
+    SPELL_SOLAR_FLARE_25                                = 62920, // Target Amount is affected by stackamount of Brightleaf flux
+    SPELL_UNSTABLE_ENERGY_10                            = 62217, // Remove Unstable Sun Beam Buff
     SPELL_UNSTABLE_ENERGY_25                            = 62922,
-    SPELL_PHOTOSYNTHESIS                                = 62209,
-    SPELL_FLUX_PLUS                                     = 62251,
-    SPELL_FLUX_MINUS                                    = 62252,
-    AURA_UNSTABLE_SUNBEAM                               = 62243,
-    VISUAL_UNSTABLE_SUNBEAM                             = 62216,
+    SPELL_PHOTOSYNTHESIS                                = 62209, // While standing in Beam
+    SPELL_BRIGHTLEAF_FLUX                               = 62262, // script effect needs to trigger 62239
+    SPELL_BRIGHTLEAF_FLUX_BUFF                          = 62239, // randomstack 1-8
+    SPELL_FLUX_PLUS                                     = 62251, // randomspell with flux
+    SPELL_FLUX_MINUS                                    = 62252, // randomspell with flux
+    SPELL_UNSTABLE_SUN_BEAM_SUMMON                      = 62207, // 62921, 62221, 64088
+    SPELL_UNSTABLE_SUN_BEAM_PERIODIC                    = 62211, // Triggers the Beam, triggers 62243
+    SPELL_UNSTABLE_SUN_BEAM_TRIGGERD                    = 62243,
+    SPELL_UNSTABLE_SUN_BEAM_VISUAL                      = 62216,
 
-    //elder ironbranch
+    //Elder Ironbranch
+    //only impale is not triggered
     SPELL_IMPALE_10                                     = 62310,
     SPELL_IMPALE_25                                     = 62928,
-    SPELL_THORN_SWARM_10                                = 62285, 
-    SPELL_THORN_SWARM_25                                = 62931, 
-    SPELL_IRON_ROOTS_AURA_10                            = 62861, 
-    SPELL_IRON_ROOTS_AURA_25                            = 62438,
+    SPELL_THORN_SWARM_10                                = 62285, // Need Target fix ?
+    SPELL_THORN_SWARM_25                                = 62931,
+    SPELL_IRON_ROOTS_AURA_10                            = 62438,
+    SPELL_IRON_ROOTS_AURA_25                            = 62930,
 
-    //elder stonebark
+    //Elder Stonebark
+    //every spell is not triggered
     SPELL_FISTS_OF_STONE                                = 62344,
     SPELL_GROUND_TREMOR_10                              = 62325,
     SPELL_GROUND_TREMOR_25                              = 62932,
@@ -225,17 +241,19 @@ enum Spells
 
 enum Entrys
 {
+    ENTRY_CREATURE_FREYA                                = 32906,
+
     ENTRY_GAMEOBJECT_NATURE_BOMB                        = 194902,
 
-    CREATURE_SNAPLASHER                                 = 32916,
-    CREATURE_STORM_LASHER                               = 32919,
-    CREATURE_DETONATING_LASHER                          = 32918, 
-    CREATURE_ANCIENT_WATER_SPIRIT                       = 33202,
-    CREATURE_FREYA                                      = 32906,
-    CREATURE_HEALTHY_SPORE_VISUAL                       = 62538,
-    CREATURE_IRON_ROOTS                                 = 33168,
-    CREATURE_UNSTABLE_SUBEAM                            = 33050,
-    CREATURE_EONARS_GIFT                                = 33228,
+    ENTRY_CREATURE_SNAPLASHER                                 = 32916,
+    ENTRY_CREATURE_STORM_LASHER                               = 32919,
+    ENTRY_CREATURE_DETONATING_LASHER                          = 32918, 
+    ENTRY_CREATURE_ANCIENT_WATER_SPIRIT                       = 33202,
+
+    ENTRY_CREATURE_HEALTHY_SPORE_VISUAL                       = 62538,
+    ENTRY_CREATURE_IRON_ROOTS                                 = 33168,
+    ENTRY_CREATURE_UNSTABLE_SUN_BEAM                          = 33050,
+    ENTRY_CREATURE_EONARS_GIFT                                = 33228,
 };
 
 enum Models
@@ -270,12 +288,12 @@ public:
     {
         boss_freyaAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            instance = pCreature->GetInstanceScript();
-            if(instance)
-                EncounterFinished = (instance->GetData(TYPE_FREYA) == DONE);
+            pInstance = pCreature->GetInstanceScript();
+            if(pInstance)
+                EncounterFinished = (pInstance->GetData(TYPE_FREYA) == DONE);
         }
 
-        InstanceScript* instance;
+        InstanceScript* pInstance;
         bool EncounterFinished;
 
         uint32 SpawnWaves[3];
@@ -284,6 +302,10 @@ public:
         uint32 uiWave_Timer;
         uint32 Berserk_Timer;
         uint32 Lifebinders_Gift_Timer;
+
+        bool bIsElderBrightleafAlive;
+        bool bIsElderIronbranchAlive;
+        bool bIsElderStonebarkAlive;
 
         // Dont know yet if needet
         //Phase m_Phase;
@@ -297,7 +319,7 @@ public:
             {
                 //m_Phase = PHASE_SPAWNING;
 
-                instance->SetData(TYPE_FREYA,NOT_STARTED);
+                pInstance->SetData(TYPE_FREYA,NOT_STARTED);
                 InitSpawnWaves();
 
                 WaveCount = 0;
@@ -305,6 +327,8 @@ public:
 
                 Berserk_Timer = 600000;
                 Lifebinders_Gift_Timer = 30000;
+
+                bIsElderBrightleafAlive = bIsElderIronbranchAlive = bIsElderStonebarkAlive = false;
             }
         }
 
@@ -374,11 +398,36 @@ public:
             WaveCount++;
         }
 
+        uint32 GetElderCount()
+        {
+            uint32 i = 0;
+            if(bIsElderBrightleafAlive) i++;
+            if(bIsElderIronbranchAlive) i++;
+            if(bIsElderStonebarkAlive) i++;
+            return i;
+        }
+
         void EncounterIsDone()
         {
             EncounterFinished = true;
             DoScriptText(SAY_DEATH, me);
-            instance->SetData(TYPE_FREYA,DONE);
+            if(pInstance)
+                pInstance->SetData(TYPE_FREYA,DONE);
+
+            switch(GetElderCount())
+            {
+            case 3:
+                pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_KNOCK_KNOCK_KNOCK_ON_THE_WOOD_10, ACHIEVMENT_KNOCK_KNOCK_KNOCK_ON_THE_WOOD_25));
+            case 2:
+                pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_KNOCK_KNOCK_ON_THE_WOOD_10, ACHIEVMENT_KNOCK_KNOCK_ON_THE_WOOD_25));
+            case 1:
+                pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_KNOCK_ON_THE_WOOD_10, ACHIEVMENT_KNOCK_ON_THE_WOOD_25));
+                break;
+            }
+
+            if(me->GetAuraCount(SPELL_ATTUNED_TO_NATURE) >= 25)
+                pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_GETTING_BACK_TO_NATURE_10, ACHIEVMENT_GETTING_BACK_TO_NATURE_25));
+
             me->AI()->EnterEvadeMode();
             // cast is not rewarding the achievement.
             // DoCast(SPELL_ACHIEVEMENT_CHECK);
@@ -397,19 +446,29 @@ public:
             DoScriptText(SAY_AGGRO, me);
 
             SetAttunedToNatureAura();
+
+            if(pInstance)
+            {
+                if(Creature* elder = Creature::GetCreature(*me,pInstance->GetData64(TYPE_ELDER_BRIGHTLEAF)))
+                    bIsElderBrightleafAlive = elder->isAlive();
+                if(Creature* elder = Creature::GetCreature(*me,pInstance->GetData64(TYPE_ELDER_IRONBRANCH)))
+                    bIsElderIronbranchAlive = elder->isAlive();
+                if(Creature* elder = Creature::GetCreature(*me,pInstance->GetData64(TYPE_ELDER_STONEBARK)))
+                    bIsElderStonebarkAlive = elder->isAlive();
+            }
+
+            if(bIsElderBrightleafAlive)
+                me->AddAura(SPELL_BRIGHTLEAFS_ESSENCE,me);
+            if(bIsElderIronbranchAlive)
+                me->AddAura(SPELL_IRONBRANCHS_ESSENCE,me);
+            if(bIsElderStonebarkAlive)
+                me->AddAura(SPELL_STONEBARKS_ESSENCE,me);
         }
 
         void UpdateAI(const uint32 diff)
         {
             if (!UpdateVictim())
                 return;
-
-            // ???
-            //if(AuraCount > 0)
-            //{
-            //    me->SetAuraStack(SPELL_ATTUNED_TO_NATURE,me,me->GetAuraCount(SPELL_ATTUNED_TO_NATURE) - AuraCount);
-            //    AuraCount = 0;
-            //}
 
             if(WaveCount < 6)
                 if(uiWave_Timer < diff)
@@ -604,7 +663,7 @@ public:
         void JustDied(Unit* )
         {
             DoCast(me,RAID_MODE(SPELL_DETONATE_10, SPELL_DETONATE_25),true);
-            if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
+            if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 2; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_2,true);
@@ -652,7 +711,7 @@ public:
 
         void JustDied(Unit* )
         {
-            if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
+            if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 10; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
@@ -699,7 +758,7 @@ public:
 
         void JustDied(Unit* )
         {
-            if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
+            if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 10; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
@@ -752,7 +811,7 @@ public:
 
         void JustDied(Unit* )
         {
-            if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
+            if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 10; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
@@ -804,7 +863,7 @@ public:
 
         void JustDied(Unit* )
         {
-            if (Creature* freya = me->FindNearestCreature(CREATURE_FREYA, 10000))
+            if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
             {
                 //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 25; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_25,true);
@@ -864,7 +923,7 @@ public:
             Counter = 0;
             Grow_Timer = 1000+(rand()%4000);
             Shrink_Timer = 2000;
-            DoCast(me, CREATURE_HEALTHY_SPORE_VISUAL);
+            DoCast(me, ENTRY_CREATURE_HEALTHY_SPORE_VISUAL);
             me->AddAura(SPELL_POTENT_PHEROMONES, me);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -949,30 +1008,32 @@ public:
 
             if(Solar_Flare_Timer <= diff)
             {
-                DoCastAOE(RAID_MODE(SPELL_SOLAR_FLARE_10, SPELL_SOLAR_FLARE_25));
+                DoCastAOE(RAID_MODE(SPELL_SOLAR_FLARE_10, SPELL_SOLAR_FLARE_25),true);
                 Solar_Flare_Timer = 10000 + urand(1500, 6000);
             }
             else { Solar_Flare_Timer -= diff; }
 
             if (Unstable_Sunbeam_Timer <= 0)
             {
-               Position* pos[2] = {SelectUnit(SELECT_TARGET_RANDOM, 0), SelectUnit(SELECT_TARGET_RANDOM, 0)};
-               //me->SummonCreature(CREATURE_UNSTABLE_SUBEAM,*pos[0]);
-               me->SummonCreature(CREATURE_UNSTABLE_SUBEAM,*pos[1]);
-               Unstable_Sunbeam_Timer = 30000;
+                // Das gefaellt mir nicht
+                Unit* target[2] = {SelectUnit(SELECT_TARGET_RANDOM, 0), SelectUnit(SELECT_TARGET_RANDOM, 0)};
+
+                me->SummonCreature(ENTRY_CREATURE_UNSTABLE_SUN_BEAM, target[1]->GetPositionX(), target[1]->GetPositionY(), target[1]->GetPositionZ());
+                me->SummonCreature(ENTRY_CREATURE_UNSTABLE_SUN_BEAM, target[2]->GetPositionX(), target[2]->GetPositionY(), target[2]->GetPositionZ());
+                Unstable_Sunbeam_Timer = 30000;
             }
             else {Unstable_Sunbeam_Timer -= diff;}
 
-            if(Flux_Timer <= diff)
-            {
-                uint8 flux = rand() %2;
-                if(flux == 1)
-                    me->AddAura(SPELL_FLUX_PLUS, me);
-                else
-                    me->AddAura(SPELL_FLUX_MINUS, me);
-                Flux_Timer = 5000;
-            }
-            else {Flux_Timer -= diff;}
+            // Need Rework
+            //if(Flux_Timer <= diff)
+            //{
+            //    uint8 flux = rand() %2;
+            //    if(flux == 1)
+            //        me->AddAura(SPELL_FLUX_PLUS, me);
+            //    else
+            //        me->AddAura(SPELL_FLUX_MINUS, me);
+            //    Flux_Timer = 5000;
+            //}else Flux_Timer -= diff;
 
             DoMeleeAttackIfReady();
         }
@@ -980,6 +1041,7 @@ public:
     };
 };
 
+// Need more work
 class mob_unstable_sunbeam : public CreatureScript
 {
 public:
@@ -994,67 +1056,68 @@ public:
     {
         mob_unstable_sunbeamAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature) {}
 
-        uint32 Despawn_Timer;
-        uint16 Aura_Timer;
-        uint32 Range_Check_Timer;
-        Unit* sb_old;
-        Unit* sb_new;
+        //uint32 Despawn_Timer;
+        //uint16 Aura_Timer;
+        //uint32 Range_Check_Timer;
+        //Unit* sb_old;
+        //Unit* sb_new;
 
         void Reset()
         {
-            sb_old = NULL;
-            sb_new = NULL;
-            me->AddAura(VISUAL_UNSTABLE_SUNBEAM, me);
-            DoCast(SPELL_PHOTOSYNTHESIS);
-            Despawn_Timer = 20000;
-            Aura_Timer = 1000;
-            Range_Check_Timer = 500;
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE );
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-            me->SetDisplayId(MODEL_INVISIBLE);
+            //sb_old = NULL;
+            //sb_new = NULL;
+            //me->AddAura(VISUAL_UNSTABLE_SUNBEAM, me);
+            //DoCast(SPELL_PHOTOSYNTHESIS);
+            //Despawn_Timer = 20000;
+            //Aura_Timer = 1000;
+            //Range_Check_Timer = 500;
+            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE );
+            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            //me->SetDisplayId(MODEL_INVISIBLE);
         }
 
         void UpdateAI(const uint32 diff)
         {
 
-            if(Despawn_Timer <= diff)
-            {
-                Aura_Timer = 5000;
-                DoCast(RAID_MODE(SPELL_UNSTABLE_ENERGY_10, SPELL_UNSTABLE_ENERGY_25));
-                me->RemoveAura(VISUAL_UNSTABLE_SUNBEAM);
-                if(sb_new)
-                    sb_new->RemoveAura(AURA_UNSTABLE_SUNBEAM); 
-                me->ForcedDespawn();
-            }
-            else {Despawn_Timer -= diff;}
+            //if(Despawn_Timer <= diff)
+            //{
+            //    Aura_Timer = 5000;
+            //    DoCast(RAID_MODE(SPELL_UNSTABLE_ENERGY_10, SPELL_UNSTABLE_ENERGY_25));
+            //    me->RemoveAura(SPELL_UNSTABLE_SUN_BEAM_VISUAL);
+            //    if(sb_new)
+            //        sb_new->RemoveAura(AURA_UNSTABLE_SUNBEAM); 
+            //    me->ForcedDespawn();
+            //}
+            //else {Despawn_Timer -= diff;}
 
-            if(Aura_Timer <= diff)
-            {
-                if(sb_new = me->SelectNearestTarget(1))
-                {
-                    if(sb_old != NULL && sb_new != sb_old)
-                    { 
-                        sb_old->RemoveAura(AURA_UNSTABLE_SUNBEAM); 
-                    }
-                    sb_new->AddAura(AURA_UNSTABLE_SUNBEAM, sb_new);
-                    sb_old = sb_new;
-                }
-                Aura_Timer = 1000;
-            } else Aura_Timer -= diff;
+            //if(Aura_Timer <= diff)
+            //{
+            //    if(sb_new = me->SelectNearestTarget(1))
+            //    {
+            //        if(sb_old != NULL && sb_new != sb_old)
+            //        { 
+            //            sb_old->RemoveAura(AURA_UNSTABLE_SUNBEAM); 
+            //        }
+            //        sb_new->AddAura(AURA_UNSTABLE_SUNBEAM, sb_new);
+            //        sb_old = sb_new;
+            //    }
+            //    Aura_Timer = 1000;
+            //} else Aura_Timer -= diff;
 
-            if(Range_Check_Timer <= diff)
-            {
+            //if(Range_Check_Timer <= diff)
+            //{
 
-                if(sb_new && !sb_new->IsInRange(me, 0, 1))
-                {
-                    sb_new->RemoveAura(AURA_UNSTABLE_SUNBEAM);
-                }
-                Range_Check_Timer = 200;
-            } else Range_Check_Timer -= diff;
+            //    if(sb_new && !sb_new->IsInRange(me, 0, 1))
+            //    {
+            //        sb_new->RemoveAura(AURA_UNSTABLE_SUNBEAM);
+            //    }
+            //    Range_Check_Timer = 200;
+            //} else Range_Check_Timer -= diff;
         }
     };
 };
 
+// Needs rework for iron roots
 class mob_elder_ironbranch : public CreatureScript
 {
 public:
@@ -1073,9 +1136,9 @@ public:
         uint32 Iron_Roots_Timer;
         uint32 Thorn_Swarm_Timer;
 
-        Unit* pTarget;
-        Position* pos;
-        Creature* pCreature;
+        //Unit* pTarget;
+        //Position* pos;
+        //Creature* pCreature;
 
         void EnterCombat(Unit* )
         {
@@ -1097,16 +1160,16 @@ public:
         void JustDied(Unit* )
         {
             DoScriptText(SAY_IRONBRANCH_DEATH, me);
-            pTarget->RemoveAura(RAID_MODE(SPELL_IRON_ROOTS_AURA_10, SPELL_IRON_ROOTS_AURA_25));
+            //pTarget->RemoveAura(RAID_MODE(SPELL_IRON_ROOTS_AURA_10, SPELL_IRON_ROOTS_AURA_25));
         }
 
-        void JustSummoned(Creature* pSummoned)
-        {
-            if(pSummoned->GetEntry() == 33168)
-            {
-                pCreature = pSummoned;
-            }
-        }
+        //void JustSummoned(Creature* pSummoned)
+        //{
+        //    if(pSummoned->GetEntry() == 33168)
+        //    {
+        //        pCreature = pSummoned;
+        //    }
+        //}
 
         void UpdateAI(const uint32 diff)
         {
@@ -1121,25 +1184,25 @@ public:
             }
             else { Impale_Timer -= diff; }
 
-            if(Iron_Roots_Timer <= diff)
-            {
-                if(pCreature && pCreature->isAlive())
-                {
-                    pTarget->RemoveAura(RAID_MODE(SPELL_IRON_ROOTS_AURA_10, SPELL_IRON_ROOTS_AURA_25));
-                    pCreature->ForcedDespawn();
-                }
+            //if(Iron_Roots_Timer <= diff)
+            //{
+            //    if(pCreature && pCreature->isAlive())
+            //    {
+            //        pTarget->RemoveAura(RAID_MODE(SPELL_IRON_ROOTS_AURA_10, SPELL_IRON_ROOTS_AURA_25));
+            //        pCreature->ForcedDespawn();
+            //    }
 
-                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 45, true);
-                pTarget->AddAura(RAID_MODE(SPELL_IRON_ROOTS_AURA_10, SPELL_IRON_ROOTS_AURA_25), pTarget);
-                me->SummonCreature(CREATURE_IRON_ROOTS, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
-                Iron_Roots_Timer = 25000;
-            }
-            else {Iron_Roots_Timer -= diff; }
+            //    pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 45, true);
+            //    pTarget->AddAura(RAID_MODE(SPELL_IRON_ROOTS_AURA_10, SPELL_IRON_ROOTS_AURA_25), pTarget);
+            //    me->SummonCreature(CREATURE_IRON_ROOTS, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
+            //    Iron_Roots_Timer = 25000;
+            //}
+            //else {Iron_Roots_Timer -= diff; }
 
-            if(pCreature && pCreature->isDead())
-            {
-                pTarget->RemoveAura(RAID_MODE(SPELL_IRON_ROOTS_AURA_10, SPELL_IRON_ROOTS_AURA_25));
-            }
+            //if(pCreature && pCreature->isDead())
+            //{
+            //    pTarget->RemoveAura(RAID_MODE(SPELL_IRON_ROOTS_AURA_10, SPELL_IRON_ROOTS_AURA_25));
+            //}
 
             if(Thorn_Swarm_Timer <= diff)
             {
