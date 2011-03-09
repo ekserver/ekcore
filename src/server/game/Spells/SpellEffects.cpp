@@ -4203,7 +4203,19 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
              weapon_total_pct = m_caster->GetModifierValue(unitMod, TOTAL_PCT);
 
         if (fixed_bonus)
+        {
             fixed_bonus = int32(fixed_bonus * weapon_total_pct);
+            // Death Strike, Scourge Strike and Plague Strike fixed bonus take talents bonuses twice
+            if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_caster->ToPlayer())
+            {
+                if (m_spellInfo->SpellFamilyFlags[0] & 0x11 || m_spellInfo->SpellFamilyFlags[1] & 0x8000000)
+                {
+                    float coeff = 1.0f;
+                    m_caster->ToPlayer()->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DAMAGE, coeff);
+                    fixed_bonus *= coeff;
+                }
+            }
+        }
         if (spell_bonus)
             spell_bonus = int32(spell_bonus * weapon_total_pct);
     }
@@ -6325,7 +6337,7 @@ void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
     pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
     pet->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
     pet->setDeathState(ALIVE);
-    pet->ClearUnitState(UNIT_STAT_ALL_STATE);
+    pet->ClearUnitState(uint32(UNIT_STAT_ALL_STATE));
     pet->SetHealth(pet->CountPctFromMaxHealth(damage));
 
     //pet->AIM_Initialize();
