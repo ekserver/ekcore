@@ -4940,7 +4940,7 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 case 33735:
                 {
                     target = SelectNearbyTarget();
-                    if (!target || target == pVictim)
+                    if (!target)
                         return false;
                     basepoints0 = damage;
                     triggered_spell_id = 22482;
@@ -5884,7 +5884,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     return false;
 
                 target = SelectNearbyTarget();
-                if (!target || target == pVictim)
+                if (!target)
                     return false;
 
                 CastSpell(target, 58567, true);
@@ -14667,17 +14667,19 @@ Unit* Unit::SelectNearbyTarget(float dist) const
     if (getVictim())
         targets.remove(getVictim());
 
-    // remove not LoS targets
-    for (std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end();)
+    // remove not LoS targets, Totems and Critters
+    for (std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end(); ++tIter)
     {
         if (!IsWithinLOSInMap(*tIter))
         {
             std::list<Unit *>::iterator tIter2 = tIter;
-            ++tIter;
             targets.erase(tIter2);
         }
-        else
-            ++tIter;
+        else if ((*tIter)->isTotem() || (*tIter)->GetCreatureType() == CREATURE_TYPE_CRITTER)
+        {
+            std::list<Unit *>::iterator tIter2 = tIter;
+            targets.erase(tIter2);
+        }
     }
 
     // no appropriate targets
