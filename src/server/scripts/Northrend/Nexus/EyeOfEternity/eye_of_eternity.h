@@ -42,7 +42,9 @@ enum eCreatures
     NPC_DISC_PLAYER             = 30234,
     NPC_DISC_NPC                = 30248,
     NPC_STATIC_FIELD            = 30592,
-    NPC_WYRMREST_SKYTALON       = 30161
+    NPC_WYRMREST_SKYTALON       = 30161,
+    NPC_ALEXSTRASZA             = 32295,
+    NPC_ALEXSTRASZAS_GIFT       = 32448
 };
 
 enum eGameObjects
@@ -53,6 +55,8 @@ enum eGameObjects
     GO_FOCUSING_IRIS_H          = 193960,
     GO_ALEXSTRASZAS_GIFT        = 193905,
     GO_ALEXSTRASZAS_GIFT_H      = 193967,
+    GO_HEART_OF_MAGIC           = 194158,
+    GO_HEART_OF_MAGIC_H         = 194159
 };
 
 enum eAchievementData

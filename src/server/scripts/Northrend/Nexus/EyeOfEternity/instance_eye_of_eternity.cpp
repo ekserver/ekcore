@@ -36,8 +36,6 @@ public:
         uint64 uiPlatformGUID;
         uint64 uiExitPortalGUID;
         uint64 uiFocusingIrisGUID;
-        uint64 uiGiftGUID;
-        uint64 uiHeartGUID;
 
         uint8  m_auiEncounter[MAX_ENCOUNTER];
 
@@ -49,8 +47,6 @@ public:
             uiPlatformGUID = 0;
             uiExitPortalGUID = 0;
             uiFocusingIrisGUID = 0;
-            uiGiftGUID = 0;
-            uiHeartGUID = 0;
         }
 
         bool IsEncounterInProgress() const
@@ -78,6 +74,8 @@ public:
             {
                 case GO_PLATFORM:
                     uiPlatformGUID = go->GetGUID();
+                    //if (m_auiEncounter[0] == DONE)
+                    //    go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
                     break;
                 case GO_EXIT_PORTAL:
                     uiExitPortalGUID = go->GetGUID();
@@ -85,15 +83,9 @@ public:
                 case GO_FOCUSING_IRIS:
                 case GO_FOCUSING_IRIS_H:
                     uiFocusingIrisGUID = go->GetGUID();
+                    if (m_auiEncounter[0] == DONE)
+                        go->SetPhaseMask(2, true);
                     break;
-                case GO_ALEXSTRASZAS_GIFT:
-                case GO_ALEXSTRASZAS_GIFT_H:
-                    uiGiftGUID = go->GetGUID();
-                    break;
-                //case GO_HEART_OF_MAGIC:
-                //case GO_HEART_OF_MAGIC_H:
-                //    uiHeartGUID = pGo->GetGUID();
-                //    break;
             }
         }
 
@@ -191,11 +183,14 @@ public:
 
         void OnPlayerEnter(Player* pPlayer)
         {
-            if (m_auiEncounter[0] == DONE)
-            {
-                if (Creature* pMount = pPlayer->SummonCreature(NPC_WYRMREST_SKYTALON, pPlayer->GetPositionX(), pPlayer->GetPositionY(), 260.0f, 0.0f))
-                    pPlayer->EnterVehicle(pMount, 0);
-            }
+            //if (m_auiEncounter[0] == DONE)
+            //{
+            //   if (Creature* pMount = pPlayer->SummonCreature(NPC_WYRMREST_SKYTALON, pPlayer->GetPositionX(), pPlayer->GetPositionY(), 260.0f, 0.0f))
+            //    {
+            //        pMount->SetFlying(true);
+            //        pPlayer->EnterVehicle(pMount, 0);
+            //    }
+            //}
         }
     };
 };

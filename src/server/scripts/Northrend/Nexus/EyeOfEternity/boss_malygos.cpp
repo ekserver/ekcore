@@ -58,8 +58,7 @@ enum eYells
     SAY_OUTRO_1                              =  -1616031,
     SAY_OUTRO_2                              =  -1616032,
     SAY_OUTRO_3                              =  -1616033,
-    SAY_OUTRO_4                              =  -1616034,
-    SAY_OUTRO_5                              =  -1616035
+    SAY_OUTRO_4                              =  -1616034
 };
 
 enum eSpells
@@ -86,7 +85,6 @@ enum eSpells
     SPELL_ARCANE_SHOCK_N                     = 57058,
     SPELL_ARCANE_SHOCK_H                     = 60073,
     SPELL_HASTE                              = 57060,
-
     SPELL_ARCANE_BARRAGE                     = 56397,
     SPELL_ARCANE_BARRAGE_DMG                 = 63934,
 
@@ -102,6 +100,8 @@ enum eSpells
     SPELL_SURGE_OF_POWER_N                   = 57407,
     SPELL_SURGE_OF_POWER_H                   = 60936,
 
+    SPELL_ALEXSTRASZAS_GIFT_VISUAL           = 61023,
+    SPELL_ALEXSTRASZAS_GIFT_BEAM             = 61028,
     SPELL_ENRAGE                             = 47008
 };
 
@@ -144,6 +144,7 @@ static Position Locations[]=
     {1154.20f, 1301.68f, 285.5f, 2.3143f},  // p1 - vortex vehicle position
     {1154.20f, 1301.68f, 320.5f, 2.3143f},  // p2 - higher room center, should fly around
     {1154.20f, 1301.68f, 225.0f, 2.3143f},  // p3 - "inside" destroyed platform
+    {1154.35f, 1300.87f, 270.2f, 0.0f}      // alexstraszas gift
 };
 
 static Position SparkLocations[]=
@@ -305,9 +306,7 @@ public:
         {
             DoScriptText(SAY_DEATH, me);
             Summons.DespawnAll(); // only static fields left
-
-            //if (m_pInstance)
-            //    m_pInstance->SetData(TYPE_MALYGOS, DONE);
+            me->SummonCreature(NPC_ALEXSTRASZA, Locations[3], TEMPSUMMON_TIMED_DESPAWN, 9*MINUTE*IN_MILLISECONDS);
         }
 
         void MoveInLineOfSight(Unit* pWho)
@@ -570,8 +569,6 @@ public:
             }
         }
 
-        //void SpellHit(Unit * /*pCaster*/, const SpellEntry* pSpell) {}
-        
         void SpellHitTarget(Unit* target, const SpellEntry* spell)
         {
             if (spell->Id == SPELL_ARCANE_BOMB)
@@ -899,6 +896,115 @@ public:
     };
 };
 
+class npc_alexstrasza : public CreatureScript
+{
+public:
+    npc_alexstrasza() : CreatureScript("npc_alexstrasza") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_alexstraszaAI(pCreature);
+    }
+
+    struct npc_alexstraszaAI : public ScriptedAI
+    {
+        npc_alexstraszaAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* m_pInstance;
+        uint32 uiStepTimer;
+        uint8 uiStep;
+
+        void Reset()
+        {
+            uiStep = 1;
+            uiStepTimer = 5*IN_MILLISECONDS;
+            me->SetFlying(true);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (uiStepTimer <= uiDiff)
+            {
+                switch (uiStep)
+                {
+                    // workaround
+                    case 1:
+                    {
+                        if (m_pInstance)
+                        {
+                            if (GameObject* platform = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_PLATFORM)))
+                                platform->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
+                        }
+
+                        Map *map = me->GetMap();
+                        if (!map->IsDungeon())
+                            return;
+
+                        Map::PlayerList const &PlayerList = map->GetPlayers();
+                        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                        {
+                            Player* i_pl = i->getSource();
+                            if (i_pl && !i_pl->isGameMaster() && i_pl->isAlive())
+                            {
+                                if (Unit* pMount = i_pl->GetVehicleBase())
+                                {
+                                    i_pl->ExitVehicle();
+                                    i_pl->JumpTo(me, 10.0f);
+                                    pMount->ToCreature()->ForcedDespawn(1*IN_MILLISECONDS);
+                                    me->CastSpell(i_pl, VEHICLE_SPELL_PARACHUTE, true);
+                                }
+                            }
+                        }
+                        uiStepTimer = 7*IN_MILLISECONDS;
+                        break;
+                    }
+                    case 2:
+                    {
+                        DoScriptText(SAY_OUTRO_1, me);
+                        uiStepTimer = 9*IN_MILLISECONDS;
+                        break;
+                    }
+                    case 3:
+                    {
+                        DoScriptText(SAY_OUTRO_2, me);
+                        if (Creature* pGift = me->SummonCreature(NPC_ALEXSTRASZAS_GIFT, Locations[5], TEMPSUMMON_TIMED_DESPAWN, 90*IN_MILLISECONDS))
+                        {
+                            pGift->SetFlying(true);
+                            pGift->SetDisplayId(11686);
+                            pGift->CastSpell(pGift, SPELL_ALEXSTRASZAS_GIFT_VISUAL, true);
+                            DoCast(SPELL_ALEXSTRASZAS_GIFT_BEAM);
+                        }
+                        uiStepTimer = 5*IN_MILLISECONDS;
+                        break;
+                    }
+                    case 4:
+                    {
+                        DoScriptText(SAY_OUTRO_3, me);
+                        me->SummonGameObject(RAID_MODE(GO_ALEXSTRASZAS_GIFT, GO_ALEXSTRASZAS_GIFT_H), Locations[5].GetPositionX(),
+                            Locations[5].GetPositionY(), Locations[5].GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
+
+                        if (m_pInstance)
+                            m_pInstance->SetData(TYPE_MALYGOS, DONE);
+
+                        uiStepTimer = 23*IN_MILLISECONDS;
+                        break;
+                    }
+                    case 5:
+                    {
+                        DoScriptText(SAY_OUTRO_4, me);
+                        uiStepTimer = 10*MINUTE*IN_MILLISECONDS;
+                        break;
+                    }
+                }
+                uiStep++;
+            } else uiStepTimer -= uiDiff;
+        }
+    };
+};
+
 class npc_power_spark : public CreatureScript
 {
 public:
@@ -916,8 +1022,6 @@ public:
         void Reset()
         {
             DoCast(me, SPELL_POWER_SPARK_VISUAL, true);
-            //me->SetSpeed(MOVE_WALK, 1.0f);
-            //me->SetSpeed(MOVE_RUN, 1.0f);
         }
 
         void DamageTaken(Unit * /* DoneBy */, uint32 &uiDamage)
@@ -930,7 +1034,6 @@ public:
 
                 me->SetFlying(false);
                 me->SetReactState(REACT_PASSIVE);
-
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MoveFall(FLOOR_Z); // TODO: really remove fly state
                 me->ForcedDespawn(60*IN_MILLISECONDS);
@@ -1057,7 +1160,7 @@ public:
             if (!UpdateVictim())
                 return;
 
-            // TODO: find some better way
+            // TODO: find a better way
             if (me->GetReactState() == REACT_AGGRESSIVE)
             {
                 if (uiCheckTimer <= uiDiff)
@@ -1117,6 +1220,7 @@ void AddSC_boss_malygos()
     new boss_malygos();
     new npc_nexus_lord();
     new npc_scion_of_eternity();
+    new npc_alexstrasza();
     new npc_power_spark();
     new npc_vortex_vehicle();
     new npc_hover_disc();
