@@ -4417,8 +4417,6 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
         {
             switch(m_spellInfo->Id)
             {
-<<<<<<< HEAD
-<<<<<<< HEAD
                 //Ebon Blade Banner
                 case 23301:
                 {
@@ -4434,9 +4432,6 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
                     return;
                 }
-=======
-=======
->>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
                 //Teleport to Lake Wintergrasp
                 case 58622:
                    {
@@ -4455,10 +4450,6 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         }
                 return;
                    }
-<<<<<<< HEAD
->>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
-=======
->>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
                 // Glyph of Backstab
                 case 63975:
                 {
