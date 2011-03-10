@@ -53,7 +53,27 @@ enum eSpells
     SPELL_SHADOWS_PAST          = 66619,
     SPELL_SHADOWS_PAST_H        = 67678,
     SPELL_WAKING_NIGHTMARE      = 66552,
-    SPELL_WAKING_NIGHTMARE_H    = 67677
+    SPELL_WAKING_NIGHTMARE_H    = 67677, 
+
+    //Monk
+    SPELL_DIVINE_SHIELD         = 67251, 
+    SPELL_FINAL_MEDITATION      = 67255,
+    SPELL_FLURRY_OF_BLOWS       = 67233, 
+    SPELL_PUMMEL                = 67235,
+
+    //Priestess
+    SPELL_HOLY_SMITE_H          = 67289,
+    SPELL_MIND_CONTROLL         = 67229, //not supported yet
+    SPELL_DOT_PAIN_H            = 34942,
+    SPELL_HOLY_SMITE            = 36176,
+    SPELL_DOT_PAIN              = 34941,
+    SPELL_FOUNTIN_OF_LIGHT      = 67194, //partially not work
+
+    //Lightwielder
+    SPELL_BLAZING_LIGHT_H       = 67290,
+    SPELL_BLAZING_LIGHT         = 67247,
+    SPELL_UNBALANCING_STRIKE    = 67237,
+    SPELL_CLEAVE                = 15284
 };
 
 class boss_eadric : public CreatureScript
@@ -398,7 +418,7 @@ class npc_argent_soldier : public CreatureScript
 public:
     npc_argent_soldier() : CreatureScript("npc_argent_soldier") { }
 
-    // THIS AI NEEDS MORE IMPROVEMENTS
+    // THIS AI NEEDS SUPPORT FOR NORMAL MODE
     struct npc_argent_soldierAI : public npc_escortAI
     {
         npc_argent_soldierAI(Creature* pCreature) : npc_escortAI(pCreature)
@@ -412,6 +432,38 @@ public:
         InstanceScript* pInstance;
 
         uint8 uiWaypoint;
+        uint32 uiCleaveTimer;
+        uint32 uiStrikeTimer;
+        uint32 uiblazingLightTimer;
+        uint32 uiFlurryTimer;
+        uint32 uiPummelTimer;
+        uint32 uiHolySmiteTimer;
+        uint32 uiMindControllTimer;
+        uint32 uiPainDotTimer;
+        uint32 uiFountainTimer;
+        bool shielded;
+        
+        void Reset()
+        {
+            switch(me->GetEntry())
+            {
+                case NPC_ARGENT_LIGHWIELDER:
+                    uiCleaveTimer = 10000;
+                    uiStrikeTimer = 12000;
+                    uiblazingLightTimer = 9000;
+                    break;
+                case NPC_ARGENT_MONK:
+                    uiFlurryTimer = 8000;
+                    uiPummelTimer = 10000;
+                    shielded = false;
+                    break;
+                case NPC_PRIESTESS:
+                    uiHolySmiteTimer = 9000;
+                    uiPainDotTimer   = 8000;
+                    uiFountainTimer  = 10000;
+                    break;
+            }
+        }
 
         void WaypointReached(uint32 uiPoint)
         {
@@ -492,6 +544,79 @@ public:
 
             if (!UpdateVictim())
                 return;
+            
+            switch(me->GetEntry())
+            {
+                case NPC_ARGENT_LIGHWIELDER:
+                    if (uiCleaveTimer <= uiDiff)
+                    {
+                         DoCast(me->getVictim(), SPELL_CLEAVE);
+                         uiCleaveTimer = 10000;
+                    }else 
+                         uiCleaveTimer -= uiDiff;
+
+                    //should be only in heroic mode
+                    if (uiStrikeTimer <= uiDiff)
+                    {
+                         DoCast(me->getVictim(), SPELL_UNBALANCING_STRIKE);
+                         uiStrikeTimer = 12000;
+                    }else 
+                         uiStrikeTimer -= uiDiff;
+
+                    if (uiblazingLightTimer <= uiDiff)
+                    {
+                         DoCast(me, SPELL_BLAZING_LIGHT_H); //need normal version too
+                         uiblazingLightTimer = 12000;
+                    }else 
+                         uiblazingLightTimer -= uiDiff;
+                    break;
+                case NPC_ARGENT_MONK:
+                    if (uiFlurryTimer <= uiDiff)
+                    {
+                         DoCast(me, SPELL_FLURRY_OF_BLOWS);
+                         uiFlurryTimer = 15000;
+                    }else 
+                         uiFlurryTimer -= uiDiff;
+                    
+                    if (uiPummelTimer <= uiDiff)
+                    {
+                         DoCast(me->getVictim(), SPELL_PUMMEL);
+                         uiPummelTimer = 15000;
+                    }else
+                         uiPummelTimer -= uiDiff;
+
+                    // should be only in heroic
+                    if (me->GetHealth() == 1 && shielded == false)
+                    {
+                        DoCast(me, SPELL_DIVINE_SHIELD);
+                        DoCast(me, SPELL_FINAL_MEDITATION);
+                        shielded = true;
+                    }
+                    break;
+                case NPC_PRIESTESS:
+                    if (uiHolySmiteTimer <= uiDiff)
+                    {
+                         DoCast(me->getVictim(), SPELL_HOLY_SMITE_H); //need normal version too
+                         uiHolySmiteTimer = 9000;
+                    }else 
+                         uiHolySmiteTimer -= uiDiff;
+
+                    if (uiPainDotTimer <= uiDiff)
+                    {
+                         DoCast(me->getVictim(), SPELL_DOT_PAIN_H); //need normal version too
+                         uiPainDotTimer = 25000;
+                    }else 
+                         uiPainDotTimer -= uiDiff;
+
+                    if (uiFountainTimer <= uiDiff)
+                    {
+                         DoCast(me, SPELL_FOUNTIN_OF_LIGHT); 
+                         uiFountainTimer = 600000;
+                    }else 
+                         uiFountainTimer -= uiDiff;
+
+                    break;
+            }
 
             DoMeleeAttackIfReady();
         }
