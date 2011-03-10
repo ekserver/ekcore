@@ -785,6 +785,20 @@ class spell_gen_profession_research : public SpellScriptLoader
                 }
 
                 return SPELL_CAST_OK;
+            }
+
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_gen_profession_research_SpellScript::CheckRequirement);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_profession_research_SpellScript();
+        }
+};
 
 enum parachuteWG
 {
@@ -809,14 +823,9 @@ class spell_gen_parachute_wg : public SpellScriptLoader
 
                 if (target->ToPlayer()->m_movementInfo.fallTime > 2000)
                     target->CastSpell(target,SPELL_PARACHUTE_WG,true);
-
-                OnCheckCast += SpellCheckCastFn(spell_gen_profession_research_SpellScript::CheckRequirement);
             }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_gen_profession_research_SpellScript();
+            void Register()
+            {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_gen_parachute_wgAuraScript::HandleTriggerSpell, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
             }
         };
@@ -826,6 +835,9 @@ class spell_gen_parachute_wg : public SpellScriptLoader
             return new spell_gen_parachute_wgAuraScript();
         }
 };
+
+
+
 
 void AddSC_generic_spell_scripts()
 {
@@ -844,7 +856,7 @@ void AddSC_generic_spell_scripts()
     new spell_gen_shroud_of_death();
     new spell_gen_divine_storm_cd_reset();
     new spell_gen_parachute_ic();
-	new spell_gen_parachute_wg();
+    new spell_gen_parachute_wg();
     new spell_gen_gunship_portal();
     new spell_gen_dungeon_credit();
     new spell_gen_profession_research();
