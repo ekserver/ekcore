@@ -768,6 +768,7 @@ class spell_gen_dungeon_credit : public SpellScriptLoader
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 class spell_gen_profession_research : public SpellScriptLoader
 {
     public:
@@ -787,6 +788,8 @@ class spell_gen_profession_research : public SpellScriptLoader
 
                 return SPELL_CAST_OK;
 =======
+=======
+>>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
 enum parachuteWG
 {
     SPELL_PARACHUTE_WG = 61360
@@ -810,11 +813,15 @@ class spell_gen_parachute_wg : public SpellScriptLoader
 
                 if (target->ToPlayer()->m_movementInfo.fallTime > 2000)
                     target->CastSpell(target,SPELL_PARACHUTE_WG,true);
+<<<<<<< HEAD
+>>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
+=======
 >>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
             }
 
             void Register()
             {
+<<<<<<< HEAD
 <<<<<<< HEAD
                 OnCheckCast += SpellCheckCastFn(spell_gen_profession_research_SpellScript::CheckRequirement);
             }
@@ -824,6 +831,8 @@ class spell_gen_parachute_wg : public SpellScriptLoader
         {
             return new spell_gen_profession_research_SpellScript();
 =======
+=======
+>>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_gen_parachute_wgAuraScript::HandleTriggerSpell, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
             }
         };
@@ -831,6 +840,9 @@ class spell_gen_parachute_wg : public SpellScriptLoader
         AuraScript *GetAuraScript() const
         {
             return new spell_gen_parachute_wgAuraScript();
+<<<<<<< HEAD
+>>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
+=======
 >>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
         }
 };

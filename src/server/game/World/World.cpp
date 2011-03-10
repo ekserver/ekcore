@@ -1191,12 +1191,15 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_DB_PING_INTERVAL] = sConfig->GetIntDefault("MaxPingTime", 30);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     m_bool_configs[CONFIG_ANTICHEAT_ENABLE] = sConfig->GetBoolDefault("Anticheat.Enable", true);
     m_int_configs[CONFIG_ANTICHEAT_REPORTS_INGAME_NOTIFICATION] = sConfig->GetIntDefault("Anticheat.ReportsForIngameWarnings", 70);
     
     /** World of Warcraft Armory **/
     m_bool_configs[CONFIG_ARMORY_ENABLE] = sConfig->GetBoolDefault("Armory.Enable", false);
 =======
+=======
+>>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
     //Wintergrasp
     m_bool_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED]         = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.Enabled", true);
     m_int_configs[CONFIG_OUTDOORPVP_WINTERGRASP_SAVESTATE_PERIOD] = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.SaveState.Period", 10000);
@@ -1213,6 +1216,9 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ENABLE]  = sConfig->GetBoolDefault("OutdoorPvP.Wintergrasp.Antifarm.Enable", false);
     m_int_configs[CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_ATK]  = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Antifarm.Atk", 5);
     m_int_configs[CONFIG_CONFIG_OUTDOORPVP_WINTERGRASP_ANTIFARM_DEF]  = sConfig->GetIntDefault("OutdoorPvP.Wintergrasp.Antifarm.Def", 5);
+<<<<<<< HEAD
+>>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
+=======
 >>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
 
     sScriptMgr->OnConfigLoad(reload);
@@ -2871,4 +2877,8 @@ void World::SendWintergraspState()
                 itr->second->GetPlayer()->SendInitWorldStates(itr->second->GetPlayer()->GetZoneId(), itr->second->GetPlayer()->GetAreaId());
             }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> wintergrasp Signed-off-by: thedevnull <daniellage18@gmail.com>
