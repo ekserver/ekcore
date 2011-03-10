@@ -1952,7 +1952,8 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement, b
 
     SendAchievementEarned(achievement);
     /** World of Warcraft Armory **/
-    GetPlayer()->WriteWowArmoryDatabaseLog(1, achievement->ID);
+    if (sWorld->getBoolConfig(CONFIG_ARMORY_ENABLE))
+        GetPlayer()->WriteWowArmoryDatabaseLog(1, achievement->ID);
     /** World of Warcraft Armory **/
     CompletedAchievementData& ca =  m_completedAchievements[achievement->ID];
     ca.date = time(NULL);

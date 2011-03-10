@@ -41,6 +41,7 @@ enum Creatures
     CREATURE_DARTER                               = 29213,
     CREATURE_GUARDIAN                             = 29216,
     CREATURE_VENOMANCER                           = 29217,
+    CREATURE_CARRION_BEETLE                       = 29209,
     CREATURE_IMPALE_TARGET                        = 89,
     DISPLAY_INVISIBLE                             = 11686
 };
@@ -106,6 +107,7 @@ public:
         bool bVenomancerSummoned;
         uint8 uiPhase;
         uint8 uiAddsAlive;
+        uint8 uiBeetleCounter;
         uint32 uiUndergroundPhase;
         uint32 uiCarrionBeetlesTimer;
         uint32 uiLeechingSwarmTimer;
@@ -113,6 +115,7 @@ public:
         uint32 uiSubmergeTimer;
         uint32 uiUndergroundTimer;
         uint32 uiVenomancerTimer;
+        uint32 uiGuardianTimer;
         uint32 uiDarterTimer;
 
         uint32 uiImpaleTimer;
@@ -134,8 +137,9 @@ public:
             uiPhase = PHASE_MELEE;
             uiUndergroundPhase = 0;
             uiAddsAlive = 0;
-            bChanneling = false;
+            uiBeetleCounter = 0;
             uiImpalePhase = IMPALE_PHASE_TARGET;
+            bChanneling = false;
 
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
             me->RemoveAura(SPELL_SUBMERGE);
@@ -154,7 +158,7 @@ public:
             Position targetPos;
             pTarget->GetPosition(&targetPos);
 
-            if (TempSummon* pImpaleTarget = me->SummonCreature(CREATURE_IMPALE_TARGET, targetPos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 6*IN_MILLISECONDS))
+            if (TempSummon* pImpaleTarget = me->SummonCreature(CREATURE_IMPALE_TARGET, targetPos, TEMPSUMMON_TIMED_DESPAWN, 6*IN_MILLISECONDS))
             {
                 uiImpaleTarget = pImpaleTarget->GetGUID();
                 pImpaleTarget->SetReactState(REACT_PASSIVE);
@@ -217,15 +221,18 @@ public:
 
                 if (!bGuardianSummoned)
                 {
-                    for (uint8 i = 0; i < 2; ++i)
+                    if (uiGuardianTimer <= diff)
                     {
-                        if (Creature *Guardian = me->SummonCreature(CREATURE_GUARDIAN,SpawnPointGuardian[i],TEMPSUMMON_CORPSE_DESPAWN,0))
+                        for (uint8 i = 0; i < 2; ++i)
                         {
-                            Guardian->AddThreat(me->getVictim(), 0.0f);
-                            DoZoneInCombat(Guardian);
+                            if (Creature *Guardian = me->SummonCreature(CREATURE_GUARDIAN,SpawnPointGuardian[i],TEMPSUMMON_CORPSE_DESPAWN,0))
+                            {
+                                Guardian->AddThreat(me->getVictim(), 0.0f);
+                                DoZoneInCombat(Guardian);
+                            }
                         }
-                    }
-                    bGuardianSummoned = true;
+                        bGuardianSummoned = true;
+                    } else uiGuardianTimer -= diff;
                 }
 
                 if (!bVenomancerSummoned)
@@ -261,7 +268,7 @@ public:
                             DoZoneInCombat(Darter);
                         }
                     }
-                    uiDarterTimer = 20*IN_MILLISECONDS / uiUndergroundPhase;
+                    uiDarterTimer = 30*IN_MILLISECONDS / uiUndergroundPhase;
                 } else uiDarterTimer -= diff;
 
                 if (uiUndergroundTimer <= diff)
@@ -287,7 +294,8 @@ public:
 
                     uiUndergroundTimer = 40*IN_MILLISECONDS;
                     uiVenomancerTimer = 25*IN_MILLISECONDS;
-                    uiDarterTimer = 5*IN_MILLISECONDS;
+                    uiGuardianTimer = 5*IN_MILLISECONDS;
+                    uiDarterTimer = 10*IN_MILLISECONDS;
 
                     uiImpalePhase = 0;
                     uiImpaleTimer = 9*IN_MILLISECONDS;
@@ -297,19 +305,35 @@ public:
 
                     uiPhase = PHASE_UNDERGROUND;
                     ++uiUndergroundPhase;
+
+                    if (me->HasAura(DUNGEON_MODE(SPELL_LEECHING_SWARM, SPELL_LEECHING_SWARM_H)))
+                        me->RemoveAurasDueToSpell(DUNGEON_MODE(SPELL_LEECHING_SWARM, SPELL_LEECHING_SWARM_H));
                 }
 
                 if (bChanneling == true)
                 {
-                    for (uint8 i = 0; i < 8; ++i)
-                    DoCast(me->getVictim(), SPELL_SUMMON_CARRION_BEETLES, true);
-                    bChanneling = false;
+                    if (uiCarrionBeetlesTimer <= diff)
+                    {
+                        for (uint8 i = 0; i < 2; ++i)
+                            if (Creature* pBeetle = me->SummonCreature(CREATURE_CARRION_BEETLE, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                                    pBeetle->AI()->AttackStart(pTarget);
+
+                        uiCarrionBeetlesTimer = 2*IN_MILLISECONDS;
+                        uiBeetleCounter++;
+                    } else uiCarrionBeetlesTimer -= diff;
+
+                    if (uiBeetleCounter == 4)
+                    {
+                        bChanneling = false;
+                        uiBeetleCounter = 0;
+                        uiCarrionBeetlesTimer = 60*IN_MILLISECONDS; // handled by leeching swarm
+                    }
                 }
                 else if (uiCarrionBeetlesTimer <= diff)
                 {
                     bChanneling = true;
                     DoCastVictim(SPELL_CARRION_BEETLES);
-                    uiCarrionBeetlesTimer = 60*IN_MILLISECONDS; // handled by leeching swarm
                 } else uiCarrionBeetlesTimer -= diff;
 
                 if (uiLeechingSwarmTimer <= diff)
@@ -317,7 +341,7 @@ public:
                     if(!me->IsNonMeleeSpellCasted(false))
                     {
                         DoCast(me, DUNGEON_MODE(SPELL_LEECHING_SWARM, SPELL_LEECHING_SWARM_H), true);
-                        uiLeechingSwarmTimer = urand(25*IN_MILLISECONDS, 30*IN_MILLISECONDS);
+                        uiLeechingSwarmTimer = urand(30*IN_MILLISECONDS, 35*IN_MILLISECONDS);
                         uiCarrionBeetlesTimer = 2*IN_MILLISECONDS;
                     }
                 } else uiLeechingSwarmTimer -= diff;
@@ -329,7 +353,7 @@ public:
                     me->GetNearPoint2D(x, y, -2.5f, me->GetOrientation());
 
                     // summon the temp target relative to self instead of current victim, should prevent facing issues while casting
-                    if (Creature *pTempTarget = me->SummonCreature(CREATURE_IMPALE_TARGET, x, y, z, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 3500))
+                    if (Creature *pTempTarget = me->SummonCreature(CREATURE_IMPALE_TARGET, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 3500))
                     {
                         me->SetFacingToObject(pTempTarget);
                         pTempTarget->SetReactState(REACT_PASSIVE);
