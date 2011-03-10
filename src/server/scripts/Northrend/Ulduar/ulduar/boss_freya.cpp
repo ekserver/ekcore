@@ -117,11 +117,11 @@ enum Spells
 {
     // Freya
     SPELL_BERSERK                                       = 82395,
-    SPELL_TOUCH_OF_EONAR                                = 62528,
-    SPELL_TOUCH_OF_EONAR_H                              = 62892,
+    SPELL_TOUCH_OF_EONAR_10                             = 62528,
+    SPELL_TOUCH_OF_EONAR_25                             = 62892,
     SPELL_ATTUNED_TO_NATURE                             = 62519,
-    SPELL_SUNBEAM                                       = 62623,
-    SPELL_SUNBEAM_H                                     = 62872,
+    SPELL_SUNBEAM_10                                    = 62623,
+    SPELL_SUNBEAM_25                                    = 62872,
 
     SPELL_NATURE_BOMB_VISUAL                            = 64648, // Projectile Visual ... Dummy
     SPELL_NATURE_BOMB_SUMMON                            = 64606, // castet from player ... 
@@ -138,9 +138,11 @@ enum Spells
     SPELL_LIFEBINDERS_GIFT_VISUAL                       = 62579,
 
     // Hardmode
-    SPELL_BRIGHTLEAFS_ESSENCE                           = 62385,
-    SPELL_IRONBRANCHS_ESSENCE                           = 62387,
-    SPELL_STONEBARKS_ESSENCE                            = 62386,
+    SPELL_BRIGHTLEAFS_ESSENCE                           = 62385, // triggers 62968  //alt 65585 -> triggers 65761
+    SPELL_BRIGHTLEAFS_ESSENCE_AURA                      = 62968, // 65761
+    SPELL_IRONBRANCHS_ESSENCE                           = 62387, // alt 65586 triggers both 62713
+    SPELL_IRONBRANCHS_ESSENCE_AURA                      = 62713,
+    SPELL_STONEBARKS_ESSENCE_AURA                       = 62386, // alt 62386
 
     SPELL_FREYA_UNSTABLE_ENERGY_10                      = 62451,
     SPELL_FREYA_UNSTABLE_ENERGY_25                      = 62865,
@@ -302,6 +304,7 @@ public:
         uint32 uiWave_Timer;
         uint32 Berserk_Timer;
         uint32 Lifebinders_Gift_Timer;
+        uint32 uiSunbeam_Timer;
 
         bool bIsElderBrightleafAlive;
         bool bIsElderIronbranchAlive;
@@ -393,7 +396,7 @@ public:
 
         void DoSummonWave()
         {
-            uint32 spawntype = WaveCount > 3 ? WaveCount-3 : WaveCount;
+            uint32 spawntype = WaveCount % 3;
             DoCast(WaveSpells[SpawnWaves[spawntype]]);
             WaveCount++;
         }
@@ -436,7 +439,7 @@ public:
 
         void SetAttunedToNatureAura()
         {
-            DoCast(RAID_MODE(SPELL_TOUCH_OF_EONAR,SPELL_TOUCH_OF_EONAR_H));
+            DoCast(RAID_MODE(SPELL_TOUCH_OF_EONAR_10,SPELL_TOUCH_OF_EONAR_25));
             me->AddAura(SPELL_ATTUNED_TO_NATURE,me);
             me->SetAuraStack(SPELL_ATTUNED_TO_NATURE,me,150);
         }
@@ -450,19 +453,30 @@ public:
             if(pInstance)
             {
                 if(Creature* elder = Creature::GetCreature(*me,pInstance->GetData64(TYPE_ELDER_BRIGHTLEAF)))
-                    bIsElderBrightleafAlive = elder->isAlive();
+                {
+                    if(bIsElderBrightleafAlive = elder->isAlive())
+                    {
+                        me->AddAura(SPELL_BRIGHTLEAFS_ESSENCE_AURA,me);
+                        elder->CastSpell(elder,SPELL_DRAINED_OF_POWER,false);
+                    }
+                }
                 if(Creature* elder = Creature::GetCreature(*me,pInstance->GetData64(TYPE_ELDER_IRONBRANCH)))
-                    bIsElderIronbranchAlive = elder->isAlive();
+                {
+                    if(bIsElderIronbranchAlive = elder->isAlive())
+                    {
+                        me->AddAura(SPELL_IRONBRANCHS_ESSENCE_AURA,me);
+                        elder->CastSpell(elder,SPELL_DRAINED_OF_POWER,false);
+                    }
+                }
                 if(Creature* elder = Creature::GetCreature(*me,pInstance->GetData64(TYPE_ELDER_STONEBARK)))
-                    bIsElderStonebarkAlive = elder->isAlive();
+                {
+                    if(bIsElderStonebarkAlive = elder->isAlive())
+                    {
+                        me->AddAura(SPELL_STONEBARKS_ESSENCE_AURA,me);
+                        elder->CastSpell(elder,SPELL_DRAINED_OF_POWER,false);
+                    }
+                }
             }
-
-            if(bIsElderBrightleafAlive)
-                me->AddAura(SPELL_BRIGHTLEAFS_ESSENCE,me);
-            if(bIsElderIronbranchAlive)
-                me->AddAura(SPELL_IRONBRANCHS_ESSENCE,me);
-            if(bIsElderStonebarkAlive)
-                me->AddAura(SPELL_STONEBARKS_ESSENCE,me);
         }
 
         void UpdateAI(const uint32 diff)
@@ -482,14 +496,25 @@ public:
 
             if(Berserk_Timer <= diff)
             {
-                DoCast(me,SPELL_BERSERK,true);
-            } else {Berserk_Timer -= diff;}
+                if(!me->HasAura(SPELL_BERSERK))
+                    DoCast(me,SPELL_BERSERK,true);
+            } else Berserk_Timer -= diff;
 
             if(Lifebinders_Gift_Timer <= diff)
             {
-                DoCast(RAID_MODE(SPELL_LIFEBINDERS_GIFT_TRIGGER_MISSILE_1,SPELL_LIFEBINDERS_GIFT_TRIGGER_MISSILE_2));
+                DoCastAOE(RAID_MODE(SPELL_LIFEBINDERS_GIFT_TRIGGER_MISSILE_1,SPELL_LIFEBINDERS_GIFT_TRIGGER_MISSILE_2),true);
                 Lifebinders_Gift_Timer = 35000 + urand(2000, 10000);
             } else Lifebinders_Gift_Timer -= diff;
+
+            if(uiSunbeam_Timer <= diff)
+            {
+                if(!me->IsNonMeleeSpellCasted(false))
+                {
+                    if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM,1,500,true))
+                        DoCast(target,RAID_MODE(SPELL_SUNBEAM_10,SPELL_SUNBEAM_25));
+                }
+                uiSunbeam_Timer = urand(20000,30000);
+            } else uiSunbeam_Timer -= diff;
 
             DoMeleeAttackIfReady();
 
@@ -1260,6 +1285,9 @@ public:
 
             void UpdateAI(const uint32 diff)
             {
+                if(!UpdateVictim())
+                    return;
+
                 if(Fists_Of_Stone_Timer <= diff)
                 {
                     DoCast(SPELL_FISTS_OF_STONE);
