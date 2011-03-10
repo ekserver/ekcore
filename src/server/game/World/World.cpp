@@ -2871,6 +2871,3 @@ void World::SendWintergraspState()
     }
 
 }
-
-}
-
