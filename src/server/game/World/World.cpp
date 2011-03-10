@@ -2869,3 +2869,4 @@ void World::SendWintergraspState()
                 itr->second->GetPlayer()->SendInitWorldStates(itr->second->GetPlayer()->GetZoneId(), itr->second->GetPlayer()->GetAreaId());
             }
     }
+}
