@@ -766,6 +766,7 @@ class spell_gen_dungeon_credit : public SpellScriptLoader
             return new spell_gen_dungeon_credit_SpellScript();
         }
 };
+
 class spell_gen_profession_research : public SpellScriptLoader
 {
     public:
@@ -808,10 +809,7 @@ class spell_gen_parachute_wg : public SpellScriptLoader
 
                 if (target->ToPlayer()->m_movementInfo.fallTime > 2000)
                     target->CastSpell(target,SPELL_PARACHUTE_WG,true);
-            }
 
-            void Register()
-            {
                 OnCheckCast += SpellCheckCastFn(spell_gen_profession_research_SpellScript::CheckRequirement);
             }
         };
@@ -819,7 +817,6 @@ class spell_gen_parachute_wg : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_gen_profession_research_SpellScript();
-
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_gen_parachute_wgAuraScript::HandleTriggerSpell, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
             }
         };
