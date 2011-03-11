@@ -55,10 +55,25 @@ enum eTypes
     DATA_LEFT_ARM,
     DATA_RIGHT_ARM,
 
-    //Freya Elders
+    // Freya Elders
     TYPE_ELDER_BRIGHTLEAF,
     TYPE_ELDER_IRONBRANCH,
     TYPE_ELDER_STONEBARK,
+
+    // Thorim
+    DATA_RUNIC_COLOSSUS,
+    DATA_RUNE_GIANT,
+    DATA_RUNIC_DOOR,
+    DATA_STONE_DOOR,
+    DATA_HODIR_RARE_CHEST,
+
+    DATA_CALL_TRAM,
+    //Mimiron
+    DATA_LEVIATHAN_MK_II,
+    DATA_MIMIRON_ELEVATOR,
+    DATA_AERIAL_UNIT,
+    DATA_VX_001,
+    DATA_MAGNETIC_CORE,
 };
 
 enum eNPCs
@@ -80,8 +95,14 @@ enum eNPCs
     NPC_RUBBLE                  = 33768,
     NPC_AURIAYA                 = 33515,
     NPC_MIMIRON                 = 33350,
+    NPC_AERIAL_UNIT             = 33670,
+    NPC_MAGNETIC_CORE           = 34068,
+    NPC_LEVIATHAN_MKII          = 33432,
+    NPC_VX_001                  = 33651,
     NPC_HODIR                   = 32845,
     NPC_THORIM                  = 32865,
+    NPC_RUNIC_COLOSSUS          = 32872,
+    NPC_RUNE_GIANT              = 32873,
     NPC_FREYA                   = 32906,
     NPC_ELDER_IRONBRANCH        = 32913,
     NPC_ELDER_STONEBARK         = 32914,

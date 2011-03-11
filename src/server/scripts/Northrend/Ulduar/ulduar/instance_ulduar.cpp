@@ -67,17 +67,31 @@ public:
         uint64 uiLeftArmGUID;
         uint64 uiRightArmGUID;
         uint64 uiAuriayaGUID;
+
         uint64 uiMimironGUID;
+        uint64 uiLeviathanMKIIGUID;
+        uint64 uiVX001GUID;
+        uint64 uiAerialUnitGUID;
+        uint64 uiMagneticCoreGUID;
+
         uint64 uiHodirGUID;
+
         uint64 uiThorimGUID;
+        uint64 uiRunicColossusGUID;
+        uint64 uiRuneGiantGUID;
+
         uint64 uiFreyaGUID;
         uint64 uiElderBrightleafGUID;
         uint64 uiElderIronbranchGUID;
         uint64 uiElderStonebarkGUID;
+
         uint64 uiVezaxGUID;
+
         uint64 uiYoggSaronGUID;
         uint64 uiSaraGUID;
+
         uint64 uiAlgalonGUID;
+
         uint64 uiLeviathanDoor[7];
         uint64 uiLeviathanGateGUID;
         uint64 uiVezaxDoorGUID;
@@ -202,14 +216,29 @@ public:
                 case NPC_AURIAYA:
                     uiAuriayaGUID = creature->GetGUID();
                     break;
+
+                // Mimiron
                 case NPC_MIMIRON:
                     uiMimironGUID = creature->GetGUID();
                     break;
+                case NPC_LEVIATHAN_MKII: uiLeviathanMKIIGUID = creature->GetGUID(); break;
+                case NPC_VX_001: uiVX001GUID = creature->GetGUID(); break;
+                case NPC_AERIAL_UNIT: uiAerialUnitGUID = creature->GetGUID(); break;
+                case NPC_MAGNETIC_CORE: uiMagneticCoreGUID = creature->GetGUID(); break;
+
                 case NPC_HODIR:
                     uiHodirGUID = creature->GetGUID();
                     break;
+
+                // Thorim
                 case NPC_THORIM:
                     uiThorimGUID = creature->GetGUID();
+                    break;
+                case NPC_RUNIC_COLOSSUS:
+                    uiRunicColossusGUID = creature->GetGUID();
+                    break;
+                case NPC_RUNE_GIANT:
+                    uiRuneGiantGUID = creature->GetGUID();
                     break;
 
                 // Freya
@@ -404,6 +433,14 @@ public:
              return true;
         }
 
+        EncounterState GetBossState(uint32 type)
+        {
+            if(type > MAX_ENCOUNTER)
+                return NOT_STARTED;
+
+            return EncounterState(uiEncounter[type]);
+        }
+
         void SetData(uint32 type, uint32 data)
         {
             switch(type)
@@ -449,9 +486,19 @@ public:
                 case DATA_LEFT_ARM:             return uiLeftArmGUID;
                 case DATA_RIGHT_ARM:            return uiRightArmGUID;
                 case TYPE_AURIAYA:              return uiAuriayaGUID;
+                // Mimiron
                 case TYPE_MIMIRON:              return uiMimironGUID;
+                case DATA_LEVIATHAN_MK_II:      return uiLeviathanMKIIGUID;
+                case DATA_VX_001:               return uiVX001GUID;
+                case DATA_AERIAL_UNIT:          return uiAerialUnitGUID;
+                case DATA_MAGNETIC_CORE:        return uiMagneticCoreGUID;
+
                 case TYPE_HODIR:                return uiHodirGUID;
+
+                // Thorim
                 case TYPE_THORIM:               return uiThorimGUID;
+                case DATA_RUNIC_COLOSSUS:       return uiRunicColossusGUID;
+                case DATA_RUNE_GIANT:           return uiRuneGiantGUID;
 
                 // Freya
                 case TYPE_FREYA:                return uiFreyaGUID;
@@ -553,11 +600,37 @@ public:
             OUT_LOAD_INST_DATA_COMPLETE;
         }
     };
-
 };
 
+class go_call_tram : public GameObjectScript
+{
+public:
+    go_call_tram() : GameObjectScript("go_call_tram") { }
+
+    bool OnGossipHello(Player* /*pPlayer*/, GameObject* pGo)
+    {
+        InstanceScript* pInstance = pGo->GetInstanceScript();
+
+        if (!pInstance)
+            return false;
+
+        switch(pGo->GetEntry())
+        {
+            case 194914:
+            case 194438:
+                pInstance->SetData(DATA_CALL_TRAM, 0);
+                break;
+            case 194912:
+            case 194437:
+                pInstance->SetData(DATA_CALL_TRAM, 1);
+                break;
+        }
+        return true;
+    }
+};
 
 void AddSC_instance_ulduar()
 {
     new instance_ulduar();
+    new go_call_tram();
 }
