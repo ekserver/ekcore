@@ -37,11 +37,11 @@ public:
         uint64 uiExitPortalGUID;
         uint64 uiFocusingIrisGUID;
 
-        uint8  m_auiEncounter[MAX_ENCOUNTER];
+        uint32 auiEncounter[MAX_ENCOUNTER];
 
         void Initialize()
         {
-            memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
+            memset(&auiEncounter, 0, sizeof(auiEncounter));
 
             uiMalygosGUID = 0;
             uiPlatformGUID = 0;
@@ -52,7 +52,7 @@ public:
         bool IsEncounterInProgress() const
         {
             for (int i = 0; i < MAX_ENCOUNTER; ++i)
-                if (m_auiEncounter[i] == IN_PROGRESS)
+                if (auiEncounter[i] == IN_PROGRESS)
                     return true;
 
             return false;
@@ -74,7 +74,7 @@ public:
             {
                 case GO_PLATFORM:
                     uiPlatformGUID = go->GetGUID();
-                    //if (m_auiEncounter[0] == DONE)
+                    //if (auiEncounter[0] == DONE)
                     //    go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
                     break;
                 case GO_EXIT_PORTAL:
@@ -83,7 +83,7 @@ public:
                 case GO_FOCUSING_IRIS:
                 case GO_FOCUSING_IRIS_H:
                     uiFocusingIrisGUID = go->GetGUID();
-                    if (m_auiEncounter[0] == DONE)
+                    if (auiEncounter[0] == DONE)
                         go->SetPhaseMask(2, true);
                     break;
             }
@@ -94,7 +94,7 @@ public:
             switch(uiType)
             {
                 case TYPE_MALYGOS:
-                    m_auiEncounter[0] = uiData;
+                    auiEncounter[0] = uiData;
 
                     if (uiData == NOT_STARTED)
                     {
@@ -134,7 +134,7 @@ public:
         {
             switch (uiType)
             {
-                case TYPE_MALYGOS: return m_auiEncounter[0];
+                case TYPE_MALYGOS: return auiEncounter[0];
             }
             return 0;
         }
@@ -151,39 +151,46 @@ public:
 
         std::string GetSaveData()
         {
-            std::ostringstream saveStream;
-            saveStream << "E E ";
-            for (int i = 0; i < MAX_ENCOUNTER; ++i)
-                saveStream << m_auiEncounter[i] << " ";
+            OUT_SAVE_INST_DATA;
 
+            std::ostringstream saveStream;
+            saveStream << "E E " << auiEncounter[0];
+
+            OUT_SAVE_INST_DATA_COMPLETE;
             return saveStream.str();
         }
 
-        void Load(const char * data)
+        void Load(const char* data)
         {
-            std::istringstream loadStream(data);
-            char dataHead1, dataHead2;
-            loadStream >> dataHead1 >> dataHead2;
-            std::string newdata = loadStream.str();
-
-            uint32 buff;
-            if (dataHead1 == 'E' && dataHead2 == 'E')
+            if (!data)
             {
-                for (int i = 0; i < MAX_ENCOUNTER; ++i)
-                {
-                    loadStream >> buff;
-                    m_auiEncounter[i]= buff;
-                }
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
             }
 
-            for (int i = 0; i < MAX_ENCOUNTER; ++i)
-                if (m_auiEncounter[i] != DONE)
-                    m_auiEncounter[i] = NOT_STARTED;
+            OUT_LOAD_INST_DATA(data);
+
+            char dataHead1, dataHead2;
+            uint16 data0;
+
+            std::istringstream loadStream(data);
+            loadStream >> dataHead1 >> dataHead2 >> data0;
+
+            if (dataHead1 == 'E' && dataHead2 == 'E')
+            {
+                auiEncounter[0] = data0;
+
+                if (auiEncounter[0] == IN_PROGRESS)
+                    auiEncounter[0] = NOT_STARTED;
+
+            } else OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
         }
 
         void OnPlayerEnter(Player* pPlayer)
         {
-            //if (m_auiEncounter[0] == DONE)
+            //if (auiEncounter[0] == DONE)
             //{
             //   if (Creature* pMount = pPlayer->SummonCreature(NPC_WYRMREST_SKYTALON, pPlayer->GetPositionX(), pPlayer->GetPositionY(), 260.0f, 0.0f))
             //    {
