@@ -321,7 +321,7 @@ public:
                             m_bTargetDied = true;
                             me->GetMotionMaster()->MoveJump(gormok->GetPositionX(), gormok->GetPositionY(), gormok->GetPositionZ(), 15.0f, 15.0f);
                         }
-                        else if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        else if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         {
                             m_uiTargetGUID = target->GetGUID();
                             me->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 15.0f, 15.0f);
@@ -332,7 +332,7 @@ public:
 
             if (m_uiFireBombTimer < uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_FIRE_BOMB);
                 m_uiFireBombTimer = 20000;
             }
@@ -506,7 +506,7 @@ struct boss_jormungarAI : public ScriptedAI
             case 4: // Stationary
                 if (sprayTimer <= uiDiff)
                 {
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, spraySpell);
                     sprayTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
                 } else sprayTimer -= uiDiff;
@@ -811,7 +811,7 @@ public:
 
                     if (m_uiArticBreathTimer <= uiDiff)
                     {
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_ARCTIC_BREATH);
                         m_uiArticBreathTimer = urand(25*IN_MILLISECONDS, 40*IN_MILLISECONDS);
                     } else m_uiArticBreathTimer -= uiDiff;
