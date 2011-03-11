@@ -308,8 +308,10 @@ public:
         {
             me->GetMotionMaster()->MovePoint(1,735.81f,661.92f,412.39f);
 
-            if (me->SummonCreature(uiArgentChampion,SpawnPosition))
+            if (Creature* pArgentChampion = me->SummonCreature(uiArgentChampion,SpawnPosition))
             {
+                pInstance->SetData(BOSS_ARGENT_CHAMPION_GUID, pArgentChampion->GetGUID());
+
                 for (uint8 i = 0; i < 3; ++i)
                 {
                     if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER,SpawnPosition))
