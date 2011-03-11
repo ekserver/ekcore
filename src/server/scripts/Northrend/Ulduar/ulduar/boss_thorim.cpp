@@ -953,7 +953,7 @@ public:
 /*
 -- Thorim
 -- WDB/Sniff
-UPDATE `creature_template` SET `faction_A`=14,`faction_H`=14,WHERE `entry` IN (32882,32908,32885,33110);
+UPDATE `creature_template` SET `faction_A`=14,`faction_H`=14 WHERE `entry` IN (32882,32908,32885,33110);
 UPDATE `creature_template` SET `unit_flags`=0,`faction_A`=14,`faction_H`=14 WHERE `entry` IN (32876,32904,32878,32877,32874,32875);
 UPDATE `creature_template` SET `flags_extra`=2 WHERE `entry` IN (32892,32879,32780,33140,33141);
 UPDATE `creature_template` SET `unit_flags`=`unit_flags`|33686020 WHERE `entry`=33378;

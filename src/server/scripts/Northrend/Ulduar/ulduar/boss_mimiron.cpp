@@ -1713,7 +1713,7 @@ UPDATE `creature_template` SET `faction_A`=14,`faction_H`=14 WHERE `entry`=34147
 -- Other Updates
 DELETE FROM `creature` WHERE `id`=34071;
 DELETE FROM `vehicle_accessory` WHERE `entry`=33432;
-INSERT INTO vehicle_accessory VALUE (33432,34071,7,1, 'Leviathan Mk II turret');
+INSERT INTO vehicle_accessory VALUE (33432,34071,7,1, 'Leviathan Mk II turret',0,0);
 UPDATE `creature_template` SET `mechanic_immune_mask`=`mechanic_immune_mask`|650854235,`flags_extra`=1 WHERE `entry` IN (33432,33651,33670);
 DELETE FROM `creature` WHERE `id` IN (33651,33670);;
 INSERT INTO `creature` (`id`,`map`,`spawnMask`,`phaseMask`,`modelid`,`equipment_id`,`position_x`,`position_y`,`position_z`,`orientation`,`spawntimesecs`,`spawndist`,`currentwaypoint`,`curhealth`,`curmana`,`DeathState`,`MovementType`) VALUES
