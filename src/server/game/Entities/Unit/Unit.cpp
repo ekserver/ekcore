@@ -1051,10 +1051,11 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                     if (attackType == RANGED_ATTACK)
                         critPctDamageMod += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE);
                     else
-                    {
                         critPctDamageMod += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE);
-                        critPctDamageMod += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS_MELEE);
-                    }
+
+                    // Increase crit damage from SPELL_AURA_MOD_CRIT_DAMAGE_BONUS
+                    critPctDamageMod += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS);
+
                     // Increase crit damage from SPELL_AURA_MOD_CRIT_PERCENT_VERSUS
                     critPctDamageMod += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_PERCENT_VERSUS, crTypeMask);
 
@@ -1251,10 +1252,10 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
                 if (damageInfo->attackType == RANGED_ATTACK)
                     mod += damageInfo->target->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE);
                 else
-                {
                     mod += damageInfo->target->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE);
-                    mod += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS_MELEE);
-                }
+
+                // Increase crit damage from SPELL_AURA_MOD_CRIT_DAMAGE_BONUS
+                mod += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS);
 
                 uint32 crTypeMask = damageInfo->target->GetCreatureTypeMask();
 
@@ -10949,6 +10950,9 @@ uint32 Unit::SpellCriticalDamageBonus(SpellEntry const *spellProto, uint32 damag
             crit_bonus = damage / 2;                        // for spells is 50%
             break;
     }
+
+    // adds additional damage to crit_bonus (from SPELL_AURA_MOD_CRIT_DAMAGE_BONUS)
+    crit_bonus = int32(crit_bonus * float(100.0f + GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS, spellProto->SchoolMask))/100.0f);
 
     // adds additional damage to crit_bonus (from talents)
     if (Player* modOwner = GetSpellModOwner())
