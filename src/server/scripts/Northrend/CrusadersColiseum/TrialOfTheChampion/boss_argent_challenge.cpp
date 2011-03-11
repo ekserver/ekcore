@@ -53,7 +53,27 @@ enum eSpells
     SPELL_SHADOWS_PAST          = 66619,
     SPELL_SHADOWS_PAST_H        = 67678,
     SPELL_WAKING_NIGHTMARE      = 66552,
-    SPELL_WAKING_NIGHTMARE_H    = 67677
+    SPELL_WAKING_NIGHTMARE_H    = 67677, 
+
+    //Monk
+    SPELL_DIVINE_SHIELD         = 67251, 
+    SPELL_FINAL_MEDITATION      = 67255,
+    SPELL_FLURRY_OF_BLOWS       = 67233, 
+    SPELL_PUMMEL                = 67235,
+
+    //Priestess
+    SPELL_HOLY_SMITE_H          = 67289,
+    SPELL_MIND_CONTROLL         = 67229, //not supported yet
+    SPELL_DOT_PAIN_H            = 34942,
+    SPELL_HOLY_SMITE            = 36176,
+    SPELL_DOT_PAIN              = 34941,
+    SPELL_FOUNTIN_OF_LIGHT      = 67194, //partially not work
+
+    //Lightwielder
+    SPELL_BLAZING_LIGHT_H       = 67290,
+    SPELL_BLAZING_LIGHT         = 67247,
+    SPELL_UNBALANCING_STRIKE    = 67237,
+    SPELL_CLEAVE                = 15284
 };
 
 class boss_eadric : public CreatureScript
@@ -99,23 +119,13 @@ public:
             }
         }
 
-        void MovementInform(uint32 MovementType, uint32 /*Data*/)
-        {
-            if (MovementType != POINT_MOTION_TYPE)
-                return;
-
-            if (pInstance)
-                pInstance->SetData(BOSS_ARGENT_CHALLENGE_E, DONE);
-
-            me->DisappearAndDie();
-        }
-
         void UpdateAI(const uint32 uiDiff)
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
                 me->GetMotionMaster()->MovePoint(0,746.87f,665.87f,411.75f);
-                bDone = false;
+                pInstance->SetData(BOSS_ARGENT_CHALLENGE_E, DONE);
+                me->DisappearAndDie();
             } else uiResetTimer -= uiDiff;
 
             if (!UpdateVictim())
@@ -213,7 +223,7 @@ public:
             if (uiId == 1)
                 me->RemoveAura(SPELL_SHIELD);
         }
-
+        
         void DamageTaken(Unit * /*done_by*/, uint32 &damage)
         {
             if (damage >= me->GetHealth())
@@ -223,26 +233,16 @@ public:
                 me->setFaction(35);
                 bDone = true;
             }
-        }
-
-        void MovementInform(uint32 MovementType, uint32 Point)
-        {
-            if (MovementType != POINT_MOTION_TYPE || Point != 0)
-                return;
-
-            if (pInstance)
-                pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
-
-            me->DisappearAndDie();
-        }
+        } 
 
         void UpdateAI(const uint32 uiDiff)
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
                 me->GetMotionMaster()->MovePoint(0,746.87f,665.87f,411.75f);
-                bDone = false;
-            } else uiResetTimer -= uiDiff;
+                pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
+                me->DisappearAndDie();
+            } else uiResetTimer -= uiDiff; 
 
             if (!UpdateVictim())
                 return;
@@ -347,7 +347,7 @@ public:
 
             if (uiOldWoundsTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                 {
                     if (pTarget && pTarget->isAlive())
                         DoCast(pTarget, SPELL_OLD_WOUNDS);
@@ -363,7 +363,7 @@ public:
 
             if (uiShadowPastTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,1))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,1))
                 {
                     if (pTarget && pTarget->isAlive())
                         DoCast(pTarget,SPELL_SHADOWS_PAST);
@@ -398,7 +398,7 @@ class npc_argent_soldier : public CreatureScript
 public:
     npc_argent_soldier() : CreatureScript("npc_argent_soldier") { }
 
-    // THIS AI NEEDS MORE IMPROVEMENTS
+    
     struct npc_argent_soldierAI : public npc_escortAI
     {
         npc_argent_soldierAI(Creature* pCreature) : npc_escortAI(pCreature)
@@ -412,6 +412,38 @@ public:
         InstanceScript* pInstance;
 
         uint8 uiWaypoint;
+        uint32 uiCleaveTimer;
+        uint32 uiStrikeTimer;
+        uint32 uiblazingLightTimer;
+        uint32 uiFlurryTimer;
+        uint32 uiPummelTimer;
+        uint32 uiHolySmiteTimer;
+        uint32 uiMindControllTimer;
+        uint32 uiPainDotTimer;
+        uint32 uiFountainTimer;
+        bool Shielded;
+        
+        void Reset()
+        {
+            switch(me->GetEntry())
+            {
+                case NPC_ARGENT_LIGHWIELDER:
+                    uiCleaveTimer = 10000;
+                    uiStrikeTimer = 12000;
+                    uiblazingLightTimer = 9000;
+                    break;
+                case NPC_ARGENT_MONK:
+                    uiFlurryTimer = 8000;
+                    uiPummelTimer = 10000;
+                    Shielded = false;
+                    break;
+                case NPC_PRIESTESS:
+                    uiHolySmiteTimer = 9000;
+                    uiPainDotTimer   = 8000;
+                    uiFountainTimer  = 10000;
+                    break;
+            }
+        }
 
         void WaypointReached(uint32 uiPoint)
         {
@@ -486,12 +518,101 @@ public:
             uiWaypoint = uiType;
         }
 
+        void DamageTaken(Unit * /*done_by*/, uint32 &damage)
+        {
+            if (me->GetEntry() == NPC_ARGENT_MONK && IsHeroic() && Shielded==false) 
+            {
+                if (damage >= me->GetHealth())
+                {
+                    DoCast(me, SPELL_DIVINE_SHIELD);
+                    DoCast(me, SPELL_FINAL_MEDITATION);
+                    me->SetHealth(1);
+                    damage = 0;
+                    Shielded = true;
+                }
+            }
+        } 
+
         void UpdateAI(const uint32 uiDiff)
         {
             npc_escortAI::UpdateAI(uiDiff);
 
             if (!UpdateVictim())
                 return;
+            
+            switch(me->GetEntry())
+            {
+                case NPC_ARGENT_LIGHWIELDER:
+                    if (uiCleaveTimer <= uiDiff)
+                    {
+                         DoCast(me->getVictim(), SPELL_CLEAVE);
+                         uiCleaveTimer = 10000;
+                    }else 
+                         uiCleaveTimer -= uiDiff;
+
+                    if (uiStrikeTimer <= uiDiff && IsHeroic())
+                    {
+                         DoCast(me->getVictim(), SPELL_UNBALANCING_STRIKE);
+                         uiStrikeTimer = 12000;
+                    }else 
+                         uiStrikeTimer -= uiDiff;
+
+                    if (uiblazingLightTimer <= uiDiff)
+                    {
+                         if (IsHeroic())
+                             DoCast(me, SPELL_BLAZING_LIGHT_H); 
+                         else
+                             DoCast(me, SPELL_BLAZING_LIGHT); 
+                         uiblazingLightTimer = 12000;
+                    }else 
+                         uiblazingLightTimer -= uiDiff;
+                    break;
+                case NPC_ARGENT_MONK:
+                    if (uiFlurryTimer <= uiDiff)
+                    {
+                         DoCast(me, SPELL_FLURRY_OF_BLOWS);
+                         uiFlurryTimer = 15000;
+                    }else 
+                         uiFlurryTimer -= uiDiff;
+                    
+                    if (uiPummelTimer <= uiDiff)
+                    {
+                         DoCast(me->getVictim(), SPELL_PUMMEL);
+                         uiPummelTimer = 15000;
+                    }else
+                         uiPummelTimer -= uiDiff;
+
+                    break;
+                case NPC_PRIESTESS:
+                    if (uiHolySmiteTimer <= uiDiff)
+                    {
+                         if(IsHeroic())
+                             DoCast(me->getVictim(), SPELL_HOLY_SMITE_H);
+                         else
+                             DoCast(me->getVictim(), SPELL_HOLY_SMITE);
+                         uiHolySmiteTimer = 9000;
+                    }else 
+                         uiHolySmiteTimer -= uiDiff;
+
+                    if (uiPainDotTimer <= uiDiff)
+                    {
+                         if (IsHeroic())
+                             DoCast(me->getVictim(), SPELL_DOT_PAIN_H); 
+                         else
+                             DoCast(me->getVictim(), SPELL_DOT_PAIN); 
+                         uiPainDotTimer = 25000;
+                    }else 
+                         uiPainDotTimer -= uiDiff;
+
+                    if (uiFountainTimer <= uiDiff)
+                    {
+                         DoCast(me, SPELL_FOUNTIN_OF_LIGHT); 
+                         uiFountainTimer = 60000;
+                    }else 
+                         uiFountainTimer -= uiDiff;
+
+                    break;
+            }
 
             DoMeleeAttackIfReady();
         }
@@ -499,7 +620,17 @@ public:
         void JustDied(Unit* /*pKiller*/)
         {
             if (pInstance)
+            {
                 pInstance->SetData(DATA_ARGENT_SOLDIER_DEFEATED,pInstance->GetData(DATA_ARGENT_SOLDIER_DEFEATED) + 1);
+                if (pInstance->GetData(DATA_ARGENT_SOLDIER_DEFEATED) == 9)
+                {
+                        Creature* pArgentChampion = Unit::GetCreature(*me, pInstance->GetData(BOSS_ARGENT_CHAMPION_GUID));
+                        if (pArgentChampion) 
+                        {
+                            pArgentChampion->setFaction(16);
+                        }
+                }
+            }
         }
     };
 

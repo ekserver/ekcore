@@ -220,7 +220,7 @@ public:
             if (BiteTimer <= uiDiff)
             {
                 DoCast(me, WORGEN_BITE);
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,1))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,1))
                     me->AddAura(WORGEN_CALL, pTarget);
                 BiteTimer = 45000;
             } else BiteTimer -= uiDiff;
@@ -316,7 +316,7 @@ public:
             if (LavaTimer <= uiDiff)
             {
                 me->InterruptNonMeleeSpells(false);
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,1))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,1))
                     DoCast(pTarget, LAVA_BURST);
                 DoCast(me, LIGHTNING_SHIELD);
                 LavaTimer = 15000;
@@ -326,7 +326,7 @@ public:
             if (ShockTimer <= uiDiff)
             {
                 me->InterruptNonMeleeSpells(false);
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,1))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,1))
                     DoCast(pTarget, EARTH_SHOCK);
                 DoCast(me, LIGHTNING_RING);
                 ShockTimer = 20000;
@@ -433,7 +433,7 @@ public:
                 me->AttackStop();
                 me->RemoveAllAuras();
                 // In Fase 2 evoca 3 Murloc
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     for (uint8 i = 1; i <= 3; i++)
                     {
                         me->SummonCreature(SUMMONED_MURLOC, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 60000);
@@ -462,7 +462,7 @@ public:
                 if (SporeTimer <= uiDiff)
                 {
                     me->InterruptNonMeleeSpells(false);
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         Creature* trig = me->SummonCreature(TOXIC_SPORES_TRIGGER, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 30000);
                         if (trig)
@@ -486,7 +486,7 @@ public:
                 if (RootTimer <= uiDiff)
                 {
                     me->InterruptNonMeleeSpells(false);
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, SPELL_ENTANGLE);
                     RootTimer = 25000;
                 } else RootTimer -= uiDiff;
@@ -566,7 +566,7 @@ public:
             // Multishot ogni 2 sec
             if (MultiTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_MULTISHOT);
                 MultiTimer = 4000;
             } else MultiTimer -= uiDiff;
@@ -581,7 +581,7 @@ public:
             // Ogni 5 sec casta Snake Trap su un target random
             if (SnakeTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     for (uint8 i = 1; i <= 3; i++)
                     {
                         me->SummonCreature(SUMMONED_SNAKE, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 60000);
@@ -687,7 +687,7 @@ public:
             // Summon Fire Elemental ogni 30 sec
             if (FireTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     me->SummonCreature(SUMMON_FIRE_ELEMENTAL, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 60000);
                 FireTimer = 30000;
             } else FireTimer -= uiDiff;
@@ -773,7 +773,7 @@ public:
             if (GriefTimer <= uiDiff)
             {
                 me->InterruptNonMeleeSpells(false);
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget, STORM_OF_GRIEF);
                 GriefTimer = 20000;
             } else GriefTimer -= uiDiff;
@@ -782,7 +782,7 @@ public:
             if (PiercingTimer <= uiDiff)
             {
                 me->InterruptNonMeleeSpells(false);
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_TOPAGGRO,0))
                     DoCast(pTarget, PIERCING_SHADOW);
                 PiercingTimer = 10000;
             } else PiercingTimer -= uiDiff;
@@ -882,7 +882,7 @@ public:
             // Shock of sorrow Ogni 40 sec.
             if (ShockTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget, SHOCK_OF_SORROW);
                 ShockTimer = 40000;
             } else ShockTimer -= uiDiff;

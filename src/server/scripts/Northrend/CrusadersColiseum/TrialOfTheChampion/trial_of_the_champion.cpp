@@ -308,8 +308,10 @@ public:
         {
             me->GetMotionMaster()->MovePoint(1,735.81f,661.92f,412.39f);
 
-            if (me->SummonCreature(uiArgentChampion,SpawnPosition))
+            if (Creature* pArgentChampion = me->SummonCreature(uiArgentChampion,SpawnPosition))
             {
+                pInstance->SetData(BOSS_ARGENT_CHAMPION_GUID, pArgentChampion->GetGUID());
+
                 for (uint8 i = 0; i < 3; ++i)
                 {
                     if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER,SpawnPosition))
@@ -384,10 +386,21 @@ public:
             {
                 if (Player* pPlayer = i->getSource())
                 {
-                    if (pPlayer->isGameMaster())
-                        continue;
-
-                    if (pPlayer->isAlive())
+                    if (pPlayer->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && !pPlayer->isGameMaster())
+                    {
+                        Creature* pCreature = pPlayer->GetVehicleBase()->ToCreature();  
+                        
+                        if (pCreature)
+                        {
+                            pTemp->SetHomePosition(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),me->GetOrientation());
+                            pTemp->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+                            pTemp->SetReactState(REACT_AGGRESSIVE);
+                            pTemp->SetInCombatWith(pCreature);
+                            pPlayer->SetInCombatWith(pTemp);
+                            pCreature->SetInCombatWith(pTemp);
+                            pTemp->AddThreat(pCreature, 0.0f);
+                        }
+                    } else if (pPlayer->isAlive() && !pPlayer->isGameMaster() )
                     {
                         pTemp->SetHomePosition(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),me->GetOrientation());
                         pTemp->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
@@ -396,6 +409,9 @@ public:
                         pPlayer->SetInCombatWith(pTemp);
                         pTemp->AddThreat(pPlayer, 0.0f);
                     }
+                    
+                    if (pPlayer->isGameMaster())
+                        continue;                   
                 }
             }
         }

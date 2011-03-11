@@ -102,10 +102,20 @@ void AggroAllPlayers(Creature* pTemp)
     {
         if (Player* pPlayer = i->getSource())
         {
-            if (pPlayer->isGameMaster())
-                continue;
-
-            if (pPlayer->isAlive())
+            if (pPlayer->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && !pPlayer->isGameMaster())
+            {
+                Creature* pCreature = pPlayer->GetVehicleBase()->ToCreature();  
+                    
+                if (pCreature)
+                {
+                    pTemp->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    pTemp->SetReactState(REACT_AGGRESSIVE);
+                    pTemp->SetInCombatWith(pCreature);
+                    pPlayer->SetInCombatWith(pTemp);
+                    pCreature->SetInCombatWith(pTemp);
+                    pTemp->AddThreat(pCreature, 0.0f);
+                 }
+            } else if (pPlayer->isAlive() && !pPlayer->isGameMaster())
             {
                 pTemp->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
                 pTemp->SetReactState(REACT_AGGRESSIVE);
@@ -113,6 +123,9 @@ void AggroAllPlayers(Creature* pTemp)
                 pPlayer->SetInCombatWith(pTemp);
                 pTemp->AddThreat(pPlayer, 0.0f);
             }
+
+            if (pPlayer->isGameMaster())
+                continue;
         }
     }
 }
@@ -541,7 +554,7 @@ public:
 
             if (uiPolymorphTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget, SPELL_POLYMORPH);
                 uiPolymorphTimer = 8000;
             } else uiPolymorphTimer -= uiDiff;
@@ -673,7 +686,7 @@ public:
 
             if (uiChainLightningTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget,SPELL_CHAIN_LIGHTNING);
 
                 uiChainLightningTimer = 16000;
@@ -980,7 +993,7 @@ public:
 
             if (uiPosionBottleTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget,SPELL_POISON_BOTTLE);
                 uiPosionBottleTimer = 19000;
             } else uiPosionBottleTimer -= uiDiff;
