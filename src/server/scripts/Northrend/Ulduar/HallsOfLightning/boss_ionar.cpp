@@ -203,7 +203,7 @@ public:
                 lSparkList.Summon(pSummoned);
 
                 pSummoned->CastSpell(pSummoned, DUNGEON_MODE(SPELL_SPARK_VISUAL_TRIGGER,H_SPELL_SPARK_VISUAL_TRIGGER), true);
-                Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (pTarget)
                 {
                     pSummoned->SetInCombatWith(pTarget);
@@ -263,7 +263,7 @@ public:
             {
                 if (!me->IsNonMeleeSpellCasted(false))
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, DUNGEON_MODE(SPELL_STATIC_OVERLOAD,H_SPELL_STATIC_OVERLOAD));
 
                     uiStaticOverloadTimer = 11*IN_MILLISECONDS;

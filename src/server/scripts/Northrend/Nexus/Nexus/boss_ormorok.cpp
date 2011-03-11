@@ -202,9 +202,9 @@ public:
 
             if (IsHeroic() && (uiSummonCrystallineTanglerTimer <= diff))
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
-                    if (Creature* pTangler = me->SummonCreature(MOB_CRYSTALLINE_TANGLER, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000))
+                    if (Creature *pTangler = me->SummonCreature(MOB_CRYSTALLINE_TANGLER, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000))
                     {
                         pTangler->CastSpell(pTangler, SPELL_TANGLE, true);
                         pTangler->AI()->AttackStart(pTarget);

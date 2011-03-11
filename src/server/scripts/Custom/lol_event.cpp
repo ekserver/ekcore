@@ -820,8 +820,8 @@ public:
 
             if(strike_Timer <= diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0);
-                DoCast(target,SPELL_SHADOW_STRIKE);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM,0);
+                DoCast(ptarget,SPELL_SHADOW_STRIKE);
                 strike_Timer = 10000 + rand()%10000;
             }else strike_Timer -= diff;
 

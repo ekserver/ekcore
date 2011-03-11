@@ -226,7 +226,7 @@ public:
             {
                 m_lGolemGUIDList.push_back(pSummoned->GetGUID());
 
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     pSummoned->AI()->AttackStart(pTarget);
 
                 //useless at this position

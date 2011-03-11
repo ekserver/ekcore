@@ -83,7 +83,7 @@ public:
             //ShadowBolt_Timer
             if (ShadowBolt_Timer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
                     DoCast(pTarget, SPELL_SHADOWBOLT);
 
                 ShadowBolt_Timer = 7000;
@@ -92,7 +92,7 @@ public:
             //RainOfFire_Timer
             if (RainOfFire_Timer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_RAINOFFIRE);
 
                 RainOfFire_Timer = urand(4000,12000);

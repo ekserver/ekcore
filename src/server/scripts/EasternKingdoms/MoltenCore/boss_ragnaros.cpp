@@ -269,9 +269,9 @@ public:
                     // summon 10 elementals
                     for (uint8 i = 0; i < 9; ++i)
                     {
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
-                            if (Creature* pSummoned = me->SummonCreature(12143,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,900000))
+                            if (Creature *pSummoned = me->SummonCreature(12143,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,900000))
                                 pSummoned->AI()->AttackStart(pTarget);
                         }
                     }
@@ -288,9 +288,9 @@ public:
 
                     for (uint8 i = 0; i < 9; ++i)
                     {
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
-                            if (Creature* pSummoned = me->SummonCreature(12143,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,900000))
+                            if (Creature *pSummoned = me->SummonCreature(12143,pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(),0.0f,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,900000))
                             pSummoned->AI()->AttackStart(pTarget);
                         }
                     }

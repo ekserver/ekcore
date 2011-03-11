@@ -367,9 +367,9 @@ struct mob_zulaman_trashAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoAttackerAreaInCombat(who, 100);
-        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-        if(target)
-            SendAttacker(target);
+        Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+        if(ptarget)
+            SendAttacker(ptarget);
 
         CheckBugusing();
     }
@@ -1596,7 +1596,7 @@ public:
                 {
                     if(shoot_timer < diff)
                     {
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM,0),SPELL_SHOOT);
+                        DoCast(SelectTarget(SELECT_TARGET_RANDOM,0),SPELL_SHOOT);
                         shoot_timer = 2000;
                     }else shoot_timer -= diff;
                 }

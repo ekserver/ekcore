@@ -891,22 +891,22 @@ public:
 
                         if(Keeper_FrostBolt_Timer < diff)
                         {
-                            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                            DoCast(target, FROST_BOLT_KEEPER);
+                            Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                            DoCast(ptarget, FROST_BOLT_KEEPER);
                             Keeper_FrostBolt_Timer = 2000+rand()%2000;
                         }else Keeper_FrostBolt_Timer -= diff;
 
                         if(Keeper_Polymorph_Timer < diff)
                         {
-                            Unit *target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1);
-                            DoCast(target, POLYMORPH);
+                            Unit *ptarget = SelectTarget(SELECT_TARGET_TOPAGGRO, 1);
+                            DoCast(ptarget, POLYMORPH);
                             Keeper_Polymorph_Timer = 9999999;
                         }else Keeper_Polymorph_Timer -= diff;
 
                         if(Keeper_Pyroblast_Timer < diff)
                         {
-                            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                            DoCast(target, PYROBLAST);
+                            Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                            DoCast(ptarget, PYROBLAST);
                             Keeper_Pyroblast_Timer = 15000;
                         }else Keeper_Pyroblast_Timer -= diff;
                     }
@@ -920,15 +920,15 @@ public:
 
                         if(Keeper_Curse_Timer < diff)
                         {
-                            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                            DoCast(target, CURSE_OF_VULNERABILITY);
+                            Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                            DoCast(ptarget, CURSE_OF_VULNERABILITY);
                             Keeper_Curse_Timer = 9999999;
                         }else Keeper_Curse_Timer -= diff;
 
                         if(Keeper_Fear_Timer < diff)
                         {
-                            Unit *target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1);
-                            DoCast(target, FEAR);
+                            Unit *ptarget = SelectTarget(SELECT_TARGET_TOPAGGRO, 1);
+                            DoCast(ptarget, FEAR);
                             Keeper_Fear_Timer = 9999999;
                         }else Keeper_Fear_Timer -= diff;
                     }

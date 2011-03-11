@@ -495,7 +495,7 @@ public:
                         {
                             if(!me->IsNonMeleeSpellCasted(false))
                             {
-                                if (Unit *newTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                                if (Unit *newTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
                                     m_uiWhirlGUID = newTarget->GetGUID();
 
                                 DoCast(DUNGEON_MODE(SPELL_WHIRLWIND, H_SPELL_WHIRLWIND));
@@ -514,7 +514,7 @@ public:
                                 me->GetMotionMaster()->Clear();
                                 me->GetMotionMaster()->MovePoint(0,whirlTarget->GetPositionX(),whirlTarget->GetPositionY(),whirlTarget->GetPositionZ());
                             } 
-                            else if (Unit *newTarget = SelectUnit(SELECT_TARGET_RANDOM, 1)) //whirl target died
+                            else if (Unit *newTarget = SelectTarget(SELECT_TARGET_RANDOM, 1)) //whirl target died
                             {
                                 me->GetMotionMaster()->Clear();
                                 m_uiWhirlGUID = newTarget->GetGUID();

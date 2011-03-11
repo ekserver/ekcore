@@ -152,9 +152,9 @@ public:
 
             if(ShadowBoltTimer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target , SPELL_SHADOWBOLT);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget , SPELL_SHADOWBOLT);
                 ShadowBoltTimer = 2000;
             }else ShadowBoltTimer -= diff;
 
@@ -475,12 +475,12 @@ public:
         //                Construct->CastSpell(Construct, SPELL_PASSIVE_SHADOWFORM, true);
         //                SetThreatList(Construct);               // Use same function as Doom Blossom to set Threat List.
         //                ((mob_shadowy_constructAI*)Construct->AI())->GhostGUID = GhostGUID;
-        //                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-        //                if(!target)                             // someone's trying to solo.
-        //                    target = me->getVictim();
+        //                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
+        //                if(!ptarget)                             // someone's trying to solo.
+        //                    ptarget = me->getVictim();
 
-        //                if(target)
-        //                    Construct->GetMotionMaster()->MoveChase(target);
+        //                if(ptarget)
+        //                    Construct->GetMotionMaster()->MoveChase(ptarget);
         //            }
         //        }
         //    }
@@ -572,12 +572,12 @@ public:
             //        //Shadow = me->SummonCreature(CREATURE_SHADOWY_CONSTRUCT, X, me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 0);
             //        if(Shadow)
             //        {
-            //            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-            //            if(!target)
-            //                target = me->getVictim();
+            //            Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
+            //            if(!ptarget)
+            //                ptarget = me->getVictim();
 
-            //            if(target)
-            //                Shadow->AI()->AttackStart(target);
+            //            if(ptarget)
+            //                Shadow->AI()->AttackStart(ptarget);
             //        }
             //    }
             //    SummonShadowsTimer = 60000;
@@ -585,9 +585,9 @@ public:
 
             if(SummonDoomBlossomTimer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
-                    if(TryDoCast(target,SPELL_SUMMON_DOOM_BLOSSOM))
+                    if(TryDoCast(ptarget,SPELL_SUMMON_DOOM_BLOSSOM))
                         SummonDoomBlossomTimer = 35000;
                 }
             }else SummonDoomBlossomTimer -= diff;
@@ -673,28 +673,28 @@ public:
                             {
                                 float x,y,z;
                                 temp->GetPosition(x,y,z);
-                                Unit* target;
+                                Unit *ptarget;
                                 Creature* c_temp;
 
                                 c_temp = me->SummonCreature(CREATURE_SHADOWY_CONSTRUCT, x+3 ,y+3 , z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 0);
-                                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                                if(!target) target = me->getVictim();
-                                if(target) c_temp->Attack(target,true);
+                                ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                                if(!ptarget) ptarget = me->getVictim();
+                                if(ptarget) c_temp->Attack(ptarget,true);
 
                                 c_temp = me->SummonCreature(CREATURE_SHADOWY_CONSTRUCT, x-3 ,y+3 , z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 0);
-                                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                                if(!target) target = me->getVictim();
-                                if(target) c_temp->Attack(target,true);
+                                ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                                if(!ptarget) ptarget = me->getVictim();
+                                if(ptarget) c_temp->Attack(ptarget,true);
 
                                 c_temp = me->SummonCreature(CREATURE_SHADOWY_CONSTRUCT, x+3 ,y-3 , z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 0);
-                                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                                if(!target) target = me->getVictim();
-                                if(target) c_temp->Attack(target,true);
+                                ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                                if(!ptarget) ptarget = me->getVictim();
+                                if(ptarget) c_temp->Attack(ptarget,true);
 
                                 c_temp = me->SummonCreature(CREATURE_SHADOWY_CONSTRUCT, x-3 ,y-3 , z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 0);
-                                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                                if(!target) target = me->getVictim();
-                                if(target) c_temp->Attack(target,true);
+                                ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                                if(!ptarget) ptarget = me->getVictim();
+                                if(ptarget) c_temp->Attack(ptarget,true);
 
                                 del_player.push_back(*itr);
                             }

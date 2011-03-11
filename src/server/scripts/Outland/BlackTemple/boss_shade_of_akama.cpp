@@ -391,8 +391,8 @@ public:
                     {
                         Spawn->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
                         Spawn->GetMotionMaster()->MovePoint(0, AGGRO_X, AGGRO_Y, AGGRO_Z);
-                        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                        Spawn->AI()->AttackStart(target);
+                        Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                        Spawn->AI()->AttackStart(ptarget);
                         DoZoneInCombat(Spawn);
                     }
                 }

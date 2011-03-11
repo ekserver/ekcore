@@ -836,9 +836,6 @@ class spell_gen_parachute_wg : public SpellScriptLoader
         }
 };
 
-
-
-
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();

@@ -747,7 +747,7 @@ public:
         {
             if(Tidal_Wave_Timer <= diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_TIDAL_WAVE_10, SPELL_TIDAL_WAVE_25));
+                DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_TIDAL_WAVE_10, SPELL_TIDAL_WAVE_25));
                 Tidal_Wave_Timer = 20000;
             }
             else {Tidal_Wave_Timer -= diff;}
@@ -799,14 +799,14 @@ public:
         {
             if(Lightning_Lash_Timer <= diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_LIGHTNING_LASH_10, SPELL_LIGHTNING_LASH_25));
+                DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_LIGHTNING_LASH_10, SPELL_LIGHTNING_LASH_25));
                 Lightning_Lash_Timer = 6000;
             }
             else { Lightning_Lash_Timer -= diff; }
 
             if(Stormbolt_Timer <= diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_STORMBOLT_10, SPELL_STORMBOLT_25));
+                DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_STORMBOLT_10, SPELL_STORMBOLT_25));
                 Stormbolt_Timer = 3000;
             }
             else { Stormbolt_Timer -= diff; }
@@ -905,7 +905,7 @@ public:
 
             if(Natures_Fury_Timer <= diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_NATURES_FURY_10, SPELL_NATURES_FURY_25));
+                DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_NATURES_FURY_10, SPELL_NATURES_FURY_25));
                 Natures_Fury_Timer = 15000;
             }
             else {Natures_Fury_Timer -= diff;}
@@ -1041,7 +1041,7 @@ public:
             if (Unstable_Sunbeam_Timer <= 0)
             {
                 // Das gefaellt mir nicht
-                Unit* target[2] = {SelectUnit(SELECT_TARGET_RANDOM, 0), SelectUnit(SELECT_TARGET_RANDOM, 0)};
+                Unit* target[2] = {SelectTarget(SELECT_TARGET_RANDOM, 0), SelectTarget(SELECT_TARGET_RANDOM, 0)};
 
                 me->SummonCreature(ENTRY_CREATURE_UNSTABLE_SUN_BEAM, target[1]->GetPositionX(), target[1]->GetPositionY(), target[1]->GetPositionZ());
                 me->SummonCreature(ENTRY_CREATURE_UNSTABLE_SUN_BEAM, target[2]->GetPositionX(), target[2]->GetPositionY(), target[2]->GetPositionZ());

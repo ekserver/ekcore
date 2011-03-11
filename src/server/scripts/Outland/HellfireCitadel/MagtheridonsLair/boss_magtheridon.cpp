@@ -431,7 +431,7 @@ public:
 
             if (Blaze_Timer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     float x, y, z;
                     pTarget->GetPosition(x, y, z);
@@ -463,7 +463,7 @@ public:
             {
                 if (Debris_Timer <= diff)
                 {
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         float x, y, z;
                         pTarget->GetPosition(x, y, z);
@@ -570,14 +570,14 @@ public:
 
             if (Fear_Timer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
                     DoCast(pTarget, SPELL_FEAR);
                 Fear_Timer = 25000 + rand()%15000;
             } else Fear_Timer -= diff;
 
             if (Infernal_Timer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_BURNING_ABYSSAL, true);
                 Infernal_Timer = 30000 + rand()%10000;
             } else Infernal_Timer -= diff;

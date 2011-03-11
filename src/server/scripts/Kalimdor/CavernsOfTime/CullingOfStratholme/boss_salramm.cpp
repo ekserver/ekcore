@@ -138,7 +138,7 @@ public:
             //Shadow bolt timer
             if (uiShadowBoltTimer <= diff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, DUNGEON_MODE(SPELL_SHADOW_BOLT, H_SPELL_SHADOW_BOLT));
                 uiShadowBoltTimer = urand(8000, 10000);
             } else uiShadowBoltTimer -= diff;

@@ -141,7 +141,7 @@ public:
             //Immolate_Timer
             if (Immolate_Timer <= diff)
             {
-                 if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget, SPELL_IMMOLATE);
 
                 Immolate_Timer = urand(5000,10000);

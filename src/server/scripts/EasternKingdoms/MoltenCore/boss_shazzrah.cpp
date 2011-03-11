@@ -96,7 +96,7 @@ public:
             if (ShazzrahCurse_Timer <= diff)
             {
                 Unit *pTarget = NULL;
-                pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                 if (pTarget) DoCast(pTarget, SPELL_SHAZZRAHCURSE);
 
                 ShazzrahCurse_Timer = 25000 + rand()%5000;

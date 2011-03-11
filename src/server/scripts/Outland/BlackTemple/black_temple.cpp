@@ -145,9 +145,9 @@ struct  mob_black_temple_tashAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoAttackerAreaInCombat(who, 100);
-        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-        if(target)
-            SendAttacker(target);
+        Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+        if(ptarget)
+            SendAttacker(ptarget);
     }
     void KilledUnit(Unit *victim){}
     void JustDied(Unit *victim){}
@@ -897,10 +897,10 @@ public:
 
             if(hurricane_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                if(target)
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                if(ptarget)
                 {
-                    DoCast(target,SPELL_HURRICANE);
+                    DoCast(ptarget,SPELL_HURRICANE);
                     hurricane_Timer =  20000+rand()%10000;
                 }else hurricane_Timer = 4000;
             }else hurricane_Timer -= diff;
@@ -1158,11 +1158,11 @@ public:
             if(!MarkSet)
                 if( ((me->GetHealth()*100) / me->GetMaxHealth()) < 50 )
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
                     {
                         MarkSet = true;
-                        DoCast(target,SPELL_HARPOONERS_MARK);
+                        DoCast(ptarget,SPELL_HARPOONERS_MARK);
                     }
                 }
 
@@ -1286,9 +1286,9 @@ public:
             if(arrow_Timer < diff)
             {
 
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_IMMOLATION_ARROW);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_IMMOLATION_ARROW);
                 arrow_Timer =  10000+rand()%10000;
             }else arrow_Timer -= diff;
 
@@ -1348,9 +1348,9 @@ public:
             {
                 if (!me->IsNonMeleeSpellCasted(false))
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
-                        DoCast(target,SPELL_DOOMBOLT);
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
+                        DoCast(ptarget,SPELL_DOOMBOLT);
                     doombolt_Timer =  10000+rand()%10000;
                 }
             }else doombolt_Timer -= diff;
@@ -1441,9 +1441,9 @@ public:
 
             if(fixate_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_FIXATE);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_FIXATE);
 
                 fixate_Timer = 30000;
             }else fixate_Timer -= diff;
@@ -1558,12 +1558,12 @@ public:
                 {
                     if(!me->IsNonMeleeSpellCasted(false))
                     {
-                        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                        if(target)
+                        Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                        if(ptarget)
                         {
-                            DoCast(target,SPELL_RAIN_OF_CHAOS);
+                            DoCast(ptarget,SPELL_RAIN_OF_CHAOS);
                             float x,y,z;
-                            target->GetPosition(x,y,z);
+                            ptarget->GetPosition(x,y,z);
                             Creature* trigger = me->SummonTrigger(x,y,z,0,10000);
                             rainTrigger = trigger->GetGUID();
                         }
@@ -1633,8 +1633,8 @@ public:
             {
                 if(curse_Timer < diff)
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
                         DoCast(me,SPELL_ILLI_CURSE_OF_MENDING);
                     curse_Timer = 10000+rand()%15000;
                 }else curse_Timer -= diff;
@@ -1694,8 +1694,8 @@ public:
 
             if(step_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
                     DoCast(me,SPELL_SHADOWSTEP);
                 step_Timer = 10000+rand()%10000;
             }else step_Timer -= diff;
@@ -1757,10 +1757,10 @@ public:
 
             if(throw_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target && me->GetDistance2d(target) > 10 && me->GetDistance2d(target) < 40 )
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget && me->GetDistance2d(ptarget) > 10 && me->GetDistance2d(ptarget) < 40 )
                 {
-                    DoCast(target,SPELL_CONCUSSIVE_THROW);
+                    DoCast(ptarget,SPELL_CONCUSSIVE_THROW);
                     throw_Timer = 10000 + rand()%10000;
                 }
             }else throw_Timer -= diff;
@@ -1869,10 +1869,10 @@ public:
             if(sting_Timer < diff)
             {
 
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target && me->GetDistance2d(target) > 10 && me->GetDistance2d(target) < 35)
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget && me->GetDistance2d(ptarget) > 10 && me->GetDistance2d(ptarget) < 35)
                 {
-                    DoCast(target,SPELL_WYVERN_STING);
+                    DoCast(ptarget,SPELL_WYVERN_STING);
                     sting_Timer =  10000+rand()%10000;
                 }
             }else sting_Timer -= diff;
@@ -1881,10 +1881,10 @@ public:
             if(multi_Timer < diff)
             {
 
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target && me->GetDistance2d(target) > 10 && me->GetDistance2d(target) < 30)
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget && me->GetDistance2d(ptarget) > 10 && me->GetDistance2d(ptarget) < 30)
                 {
-                    DoCast(target,SPELL_MULTI_SHOOT);
+                    DoCast(ptarget,SPELL_MULTI_SHOOT);
                     multi_Timer =  10000+rand()%10000;
                 }
             }else multi_Timer -= diff;
@@ -1957,16 +1957,16 @@ public:
 
             if(shock_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
                 {
                     switch(rand()%2)
                     {
                     case 0:
-                        DoCast(target,SPELL_FLAME_SHOCK);
+                        DoCast(ptarget,SPELL_FLAME_SHOCK);
                         break;
                     case 1:
-                        DoCast(target,SPELL_FROST_SHOCK);
+                        DoCast(ptarget,SPELL_FROST_SHOCK);
                         break;
                     }
                 }
@@ -2268,37 +2268,37 @@ public:
 
             if(banish_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                if(target)
-                    DoCast(target,SPELL_BANISH);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_BANISH);
                 banish_Timer = 15000;
             }else banish_Timer -= diff;
 
             if(curse_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target && !target->HasAura(SPELL_CURSE_OF_AGONY,0))
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget && !ptarget->HasAura(SPELL_CURSE_OF_AGONY,0))
                 {
-                    DoCast(target,SPELL_CURSE_OF_AGONY);
+                    DoCast(ptarget,SPELL_CURSE_OF_AGONY);
                     curse_Timer = 10000 + rand()%10000;
                 }
             }else curse_Timer -= diff;
 
             if(immolation_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target && !target->HasAura(SPELL_FEL_IMMOLATE,0))
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget && !ptarget->HasAura(SPELL_FEL_IMMOLATE,0))
                 {
-                    DoCast(target,SPELL_FEL_IMMOLATE);
+                    DoCast(ptarget,SPELL_FEL_IMMOLATE);
                     immolation_Timer = 15000 + rand()%10000;
                 }
             }else immolation_Timer -= diff;
 
             if(rain_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                if(target)
-                    DoCast(target,SPELL_RAIN_OF_CHAOS_ILLIDARI_DEFILER);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_RAIN_OF_CHAOS_ILLIDARI_DEFILER);
                 rain_Timer = 20000 + rand()%10000;
             }else rain_Timer -= diff;
 
@@ -2410,9 +2410,9 @@ public:
                     temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(!target) target = me->getVictim();
-                    temp->AI()->AttackStart(target);
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(!ptarget) ptarget = me->getVictim();
+                    temp->AI()->AttackStart(ptarget);
                     temp->CastSpell(temp,SPELL_DEMENTIA_WHIRLWIND,false);
 
                     image_Timer = 20000 + rand()%10000;
@@ -2443,9 +2443,9 @@ public:
 
             if(curse_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_CURSE_OF_VITALITY);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_CURSE_OF_VITALITY);
 
                 curse_Timer = 10000 + rand()%5000;
             }else curse_Timer -= diff;
@@ -2503,9 +2503,9 @@ public:
 
             if(shadowword_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_SIS_SHADOWWORD_PAIN);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_SIS_SHADOWWORD_PAIN);
                 shadowword_Timer = 10000 + rand()%8000;
             }else shadowword_Timer -= diff;
 
@@ -2606,9 +2606,9 @@ public:
 
             if(poly_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_CONC_POLYMORPH);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_CONC_POLYMORPH);
                 poly_Timer = 15000;
             }else poly_Timer -= diff;
 
@@ -2638,17 +2638,17 @@ public:
 
             if(mc_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                if(target)
-                    DoCast(target,SPELL_INFATUATION);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_INFATUATION);
                 mc_Timer = 30000 + rand()%10000;
             }else mc_Timer -= diff;
 
             if(throw_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_COURT_POISONOUS_THROW);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_COURT_POISONOUS_THROW);
                 throw_Timer = 15000;
             }else throw_Timer -= diff;
 
@@ -2720,9 +2720,9 @@ public:
 
             if(sleep_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                if(target)
-                    DoCast(target,SPELL_ATTENDANT_SLEEP);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_ATTENDANT_SLEEP);
                 sleep_Timer = 15000 + rand()%10000;
             }else sleep_Timer -= diff;
 
@@ -2864,17 +2864,17 @@ public:
 
             if(blizzard_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_ILLI_BLIZZARD);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_ILLI_BLIZZARD);
                 blizzard_Timer = 20000 + rand()%10000;
             }else blizzard_Timer -= diff;
 
             if(flame_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_ILLI_FLAMESTRIKE);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_ILLI_FLAMESTRIKE);
                 flame_Timer = 15000 + rand()%10000;
             }else flame_Timer -= diff;
 
@@ -3003,17 +3003,17 @@ public:
             {
                 if(blast_Timer < diff)
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
-                        DoCast(target,SPELL_ILLI_MIND_BLAST);
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
+                        DoCast(ptarget,SPELL_ILLI_MIND_BLAST);
                     blast_Timer = 5000 + rand()%10000;
                 }else blast_Timer -= diff;
 
                 if(death_Timer < diff)
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
-                        DoCast(target,SPELL_ILLI_SHADOWWORD_DEATH);
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
+                        DoCast(ptarget,SPELL_ILLI_SHADOWWORD_DEATH);
                     death_Timer = 30000 + rand()%10000;
                 }else death_Timer -= diff;
             }
@@ -3037,9 +3037,9 @@ public:
 
                 if(smite_Timer < diff)
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
-                        DoCast(target,SPELL_ILLI_HOLY_SMITE);
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
+                        DoCast(ptarget,SPELL_ILLI_HOLY_SMITE);
                     smite_Timer = 5000 + rand()%5000;
                 }else smite_Timer -= diff;
             }
@@ -3078,19 +3078,19 @@ public:
 
             if(arcaneL4_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_L4_ARCANE_CHARGE);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_L4_ARCANE_CHARGE);
                 arcaneL4_Timer = 10000;
             }else arcaneL4_Timer -= diff;
 
             if(arcaneL5_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
                 {
-                    int damage = target->GetMaxHealth();
-                    me->CastCustomSpell(target, SPELL_L5_ARCANE_CHARGE, &damage, NULL, NULL, false, NULL, NULL, me->GetGUID());
+                    int damage = ptarget->GetMaxHealth();
+                    me->CastCustomSpell(ptarget, SPELL_L5_ARCANE_CHARGE, &damage, NULL, NULL, false, NULL, NULL, me->GetGUID());
                 }
                 arcaneL5_Timer = 10000+ rand()%15000;
             }else arcaneL5_Timer -= diff;
@@ -3172,9 +3172,9 @@ public:
 
             if(bolt_timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_BLOOD_BOLT_SCRIPT);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_BLOOD_BOLT_SCRIPT);
                 bolt_timer = 10000 + rand()%5000;
             }else bolt_timer -= diff;
 
@@ -3334,9 +3334,9 @@ public:
             {
                 if(!me->IsNonMeleeSpellCasted(false))
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
-                        DoCast(target,SPELL_SM_DEATH_COIL);
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
+                        DoCast(ptarget,SPELL_SM_DEATH_COIL);
                     coil_Timer = 10000 + rand()%10000;
                 }
             }else coil_Timer -= diff;
@@ -3386,9 +3386,9 @@ public:
             {
                 if(!me->HasAuraType(SPELL_AURA_MOD_DISARM))
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
-                        DoCast(target,SPELL_SM_CHAOTIC_LIGHT);
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
+                        DoCast(ptarget,SPELL_SM_CHAOTIC_LIGHT);
                     light_Timer = 5000 + rand()%5000;
                 }
             }else light_Timer -= diff;
@@ -3487,9 +3487,9 @@ public:
 
             if(shot_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target,SPELL_SMHM_SILENCING_SHOT);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_SMHM_SILENCING_SHOT);
                 shot_Timer = 10000 + rand()% 10000;
             }else shot_Timer -= diff;
 
@@ -3550,9 +3550,9 @@ public:
 
             if(charge_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                if(target)
-                    DoCast(target,SPELL_SMRH_CHARGE);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                if(ptarget)
+                    DoCast(ptarget,SPELL_SMRH_CHARGE);
                 charge_Timer = 10000 + rand()% 10000;
             }else charge_Timer -= diff;
 
@@ -3768,9 +3768,9 @@ public:
 
                 if(meteor_Timer < diff)
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
-                        DoCast(target,SPELL_BEHEMOTH_METEOR);
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
+                        DoCast(ptarget,SPELL_BEHEMOTH_METEOR);
                     meteor_Timer = 10000 + rand()%5000;
                 }else meteor_Timer -= diff;
             }
@@ -3778,10 +3778,10 @@ public:
             {
                 if(charge_Timer < diff)
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_FARTHEST,0);
-                    if(target)
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_FARTHEST,0);
+                    if(ptarget)
                     {
-                        DoCast(target,SPELL_BEHEMOTH_CHARGE);
+                        DoCast(ptarget,SPELL_BEHEMOTH_CHARGE);
                         charge_Timer = 10000 + rand()%5000;
                     }
                 }else charge_Timer -= diff;
@@ -3923,9 +3923,9 @@ public:
 
             if(prophecy_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target && !(target->HasAura(SPELL_BCBP_PROPHECY_BLOOD_1,0) || target->HasAura(SPELL_BCBP_PROPHECY_BLOOD_2,0)))
-                    DoCast(target, rand()%2 == 0 ? SPELL_BCBP_PROPHECY_BLOOD_1 : SPELL_BCBP_PROPHECY_BLOOD_2);
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget && !(ptarget->HasAura(SPELL_BCBP_PROPHECY_BLOOD_1,0) || ptarget->HasAura(SPELL_BCBP_PROPHECY_BLOOD_2,0)))
+                    DoCast(ptarget, rand()%2 == 0 ? SPELL_BCBP_PROPHECY_BLOOD_1 : SPELL_BCBP_PROPHECY_BLOOD_2);
                 prophecy_Timer = 5000 + rand()%5000;
             }else prophecy_Timer -= diff;
 

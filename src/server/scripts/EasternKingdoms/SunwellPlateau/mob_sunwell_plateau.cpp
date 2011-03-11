@@ -91,9 +91,9 @@ struct mob_sunwell_plateau_tashAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoAttackerAreaInCombat(who, 100);
-        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-        if(target)
-            SendAttacker(target);
+        Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+        if(ptarget)
+            SendAttacker(ptarget);
     }
     void KilledUnit(Unit *victim){}
     void JustDied(Unit *victim){}
@@ -528,10 +528,10 @@ public:
             {
                 if(!me->IsNonMeleeSpellCasted(false))
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
                     {
-                        DoCast(target,SPELL_SWKP_SHADOWWORD_PAIN);
+                        DoCast(ptarget,SPELL_SWKP_SHADOWWORD_PAIN);
                         pain_Timer = 12000;
                     }
                 }
@@ -541,10 +541,10 @@ public:
             {
                 if(!me->IsNonMeleeSpellCasted(false))
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target)
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget)
                     {
-                        DoCast(target,SPELL_SWKP_FEAR);
+                        DoCast(ptarget,SPELL_SWKP_FEAR);
                         fear_Timer = 12000;
                     }
                 }
@@ -1502,10 +1502,10 @@ public:
 
             if(polymorph_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
+                Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if(ptarget)
                 {
-                    if(TryDoCast(target,SPELL_OM_POLYMORPH))
+                    if(TryDoCast(ptarget,SPELL_OM_POLYMORPH))
                         polymorph_Timer = 12000;
                 }
             }else polymorph_Timer -= diff;

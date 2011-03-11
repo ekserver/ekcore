@@ -336,7 +336,7 @@ public:
         {
             if(summon->GetEntry() == MOB_DEAD)
             {
-                summon->AI()->AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0));
+                summon->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM, 0));
                 DoZoneInCombat(summon);
                 summon->CastSpell(summon, SPELL_DEAD_PASSIVE, true);
             }
@@ -518,7 +518,7 @@ public:
                 if(BreathCount < 3) FlightCount = 5;
                 break;
             case 9:
-                if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
+                if(Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0))
                 {
                     float x, y, z;
                     target->GetContactPoint(me, x, y, z);
@@ -543,8 +543,8 @@ public:
                 me->StopMoving();
                 me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                 EnterPhase(PHASE_GROUND);
-                //me->AI()->AttackStart(SelectUnit(SELECT_TARGET_TOPAGGRO, 0));
-                DoStartMovement(SelectUnit(SELECT_TARGET_TOPAGGRO, 0));
+                //me->AI()->AttackStart(SelectTarget(SELECT_TARGET_TOPAGGRO, 0));
+                DoStartMovement(SelectTarget(SELECT_TARGET_TOPAGGRO, 0));
                 break;
             default:
                 break;
@@ -708,7 +708,7 @@ public:
         void UpdateAI(const uint32 diff)
         {
             if(!me->getVictim())
-                AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0));
+                AttackStart(SelectTarget(SELECT_TARGET_RANDOM, 0));
         }
     };
 };

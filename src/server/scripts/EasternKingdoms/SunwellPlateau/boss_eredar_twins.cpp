@@ -169,7 +169,7 @@ struct boss_eredar_twinAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoAttackerAreaInCombat(who, 100);
-        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
         if(target)
             SendAttacker(target);
     }
@@ -425,16 +425,16 @@ public:
 
             if(ShadowimageTimer <= diff)
             {
-                Unit* target = NULL;
+                Unit* ptarget = NULL;
                 Creature* temp = NULL;
                 for(int i = 0;i<3;i++)
                 {
-                    target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                    ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     temp = DoSpawnCreature(MOB_SHADOW_IMAGE,0,0,0,0,TEMPSUMMON_CORPSE_DESPAWN,10000);
-                    if(temp && target)
+                    if(temp && ptarget)
                     {
-                        temp->AI()->AttackStart(target);
-                        temp->getThreatManager().addThreat(target,500000.0f);
+                        temp->AI()->AttackStart(ptarget);
+                        temp->getThreatManager().addThreat(ptarget,500000.0f);
                     }
                 }
                 ShadowimageTimer = 20000;

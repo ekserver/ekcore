@@ -277,7 +277,7 @@ public:
                 if(TryDoCast(me, SPELL_NEEDLE_SPINE, true))
                 {
                     //std::list<Unit*> target;
-                    //SelectUnitList(target, 3, SELECT_TARGET_RANDOM, 100, true);
+                    //SelectTargetList(target, 3, SELECT_TARGET_RANDOM, 100, true);
                     //for(std::list<Unit*>::iterator i = target.begin(); i != target.end(); ++i)
                     //    me->CastSpell(*i, 39835, true);
                     NeedleSpineTimer = 3000;

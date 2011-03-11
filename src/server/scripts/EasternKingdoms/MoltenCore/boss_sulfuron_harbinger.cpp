@@ -129,7 +129,7 @@ public:
             if (Flamespear_Timer <= diff)
             {
                 Unit *pTarget = NULL;
-                pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                 if (pTarget) DoCast(pTarget, SPELL_FLAMESPEAR);
 
                 Flamespear_Timer = 12000 + rand()%4000;
@@ -198,7 +198,7 @@ public:
             if (ShadowWordPain_Timer <= diff)
             {
                 Unit *pTarget = NULL;
-                pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                 if (pTarget) DoCast(pTarget, SPELL_SHADOWWORDPAIN);
 
                 ShadowWordPain_Timer = 18000+rand()%8000;
@@ -208,7 +208,7 @@ public:
             if (Immolate_Timer <= diff)
             {
                 Unit *pTarget = NULL;
-                pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                 if (pTarget) DoCast(pTarget, SPELL_IMMOLATE);
 
                 Immolate_Timer = 15000+rand()%10000;

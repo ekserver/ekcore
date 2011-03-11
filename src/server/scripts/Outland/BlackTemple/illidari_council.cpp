@@ -758,9 +758,9 @@ public:
             {
                 if(!me->IsNonMeleeSpellCasted(false))
                 {
-                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if(Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
-                        DoCast(target, SPELL_BLIZZARD);
+                        DoCast(ptarget, SPELL_BLIZZARD);
                         BlizzardTimer = 30000 + rand()%15 * 1000;
                     }
                 }
@@ -770,9 +770,9 @@ public:
             {
                 if(!me->IsNonMeleeSpellCasted(false))
                 {
-                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if(Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
-                        DoCast(target, SPELL_FLAMESTRIKE);
+                        DoCast(ptarget, SPELL_FLAMESTRIKE);
                         FlamestrikeTimer = 30000 + rand()%15 * 1000;
                     }
                 }
@@ -873,9 +873,9 @@ public:
 
             if(DivineWrathTimer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if(Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
-                    if(TryDoCast(target, SPELL_DIVINE_WRATH))
+                    if(TryDoCast(ptarget, SPELL_DIVINE_WRATH))
                         DivineWrathTimer = 20000 + rand()%20 * 1000;
                 }
             }else DivineWrathTimer -= diff;
@@ -980,7 +980,7 @@ public:
 
                 if(VanishTimer < diff)                          // Disappear and stop attacking, but follow a random unit
                 {
-                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if(Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         DoCast(me,SPELL_DEADLY_POISON_TRIGGER,true);
                         DoCast(me,SPELL_VANISH,false);
@@ -1013,10 +1013,10 @@ public:
                 //    {
                 //        DeadlyPoisonTimer = 5000;
 
-                //        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1,50,true);
-                //        if(!target) target = me->getVictim();
+                //        Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 1,50,true);
+                //        if(!ptarget) ptarget = me->getVictim();
                 //        DoResetThreat();
-                //        me->AddThreat(target, 50000.0f);
+                //        me->AddThreat(ptarget, 50000.0f);
                 //    }
                 //}else DeadlyPoisonTimer -= diff;
 

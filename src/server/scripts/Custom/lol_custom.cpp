@@ -2107,14 +2107,14 @@ public:
 
             if(RainOfFire_Timer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget,SPELL_AZALOTH_RAINOFFIRE);
                 RainOfFire_Timer = 20000;
             }else RainOfFire_Timer -= diff;
 
             if(Cripple_Timer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget,SPELL_AZALOTH_CRIPPLE);
                 Cripple_Timer = 10000;
             }else Cripple_Timer -= diff;

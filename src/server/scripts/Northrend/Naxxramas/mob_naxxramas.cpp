@@ -206,9 +206,9 @@ struct mob_naxxramas_tashAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoAttackerAreaInCombat(who, 100);
-        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-        if(target)
-            SendAttacker(target);
+        Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+        if(ptarget)
+            SendAttacker(ptarget);
     }
     void KilledUnit(Unit *victim){}
     void JustDied(Unit *victim){}

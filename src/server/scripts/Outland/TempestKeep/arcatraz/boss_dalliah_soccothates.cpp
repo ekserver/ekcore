@@ -250,8 +250,8 @@ public:
                 {
                     if (!me->IsNonMeleeSpellCasted(false))
                     {
-                        Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0);
-                        DoCast(target,H_SPELL_SHADOW_WAVE);
+                        Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM,0);
+                        DoCast(ptarget,H_SPELL_SHADOW_WAVE);
                         shadow_wave_timer = 10000;
                     }
                 }else shadow_wave_timer -= diff;
@@ -428,9 +428,9 @@ public:
 
             if ( flameshock_timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0);
-                if (target)
-                    DoCast(target,HeroicMode ? H_SPELL_FELFIRE_SHOCK : SPELL_FELFIRE_SHOCK);
+                Unit* ptarget = SelectTarget(SELECT_TARGET_RANDOM,0);
+                if (ptarget)
+                    DoCast(ptarget,HeroicMode ? H_SPELL_FELFIRE_SHOCK : SPELL_FELFIRE_SHOCK);
                 flameshock_timer = 15000; 
             }else flameshock_timer -= diff;
 

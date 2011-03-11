@@ -884,7 +884,7 @@ public:
                 case EVENT_FIREBALL:
                     if(!me->IsNonMeleeSpellCasted(false))
                     {
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_FIREBALL);
+                        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_FIREBALL);
                         Timer[EVENT_FIREBALL] = 3000;
                     }
                     break;
@@ -892,7 +892,7 @@ public:
                 case EVENT_DARK_BARRAGE:
                     if(!me->IsNonMeleeSpellCasted(false))
                     {
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_DARK_BARRAGE);
+                        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_DARK_BARRAGE);
                         Timer[EVENT_DARK_BARRAGE] = 0;
                     }
                     break;
@@ -1013,8 +1013,8 @@ public:
                     Glaive->InterruptNonMeleeSpells(true);
                     DoCast(me, SPELL_FLAME_ENRAGE, true);
                     DoResetThreat();
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if(target && target->isAlive())
+                    Unit *ptarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if(ptarget && ptarget->isAlive())
                     {
                         me->AddThreat(me->getVictim(), 5000000.0f);
                         AttackStart(me->getVictim());
@@ -1646,7 +1646,7 @@ public:
         {
             if(GETCRE(Illidan, IllidanGUID))
             {
-                Unit* target = CAST_AI(boss_illidan_stormrage::boss_illidan_stormrageAI,Illidan->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* target = CAST_AI(boss_illidan_stormrage::boss_illidan_stormrageAI,Illidan->AI())->SelectTarget(SELECT_TARGET_RANDOM, 0);
 
                 if(!target || !me->IsWithinDistInMap(target, 80) || Illidan->IsWithinDistInMap(target, 20))
                 {

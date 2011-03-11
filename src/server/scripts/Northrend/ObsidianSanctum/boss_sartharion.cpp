@@ -710,7 +710,7 @@ public:
             {
                 if(m_FireCycloneFireing)
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         if(m_uifireCount < 10)
                         {
                             CastLavaStrikeOnTarget(pTarget,false);
@@ -1215,7 +1215,7 @@ public:
             {
                 if(!me->IsNonMeleeSpellCasted(false))
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE));
 
                     m_uiShadowFissureTimer = urand(15000,20000);
@@ -1333,7 +1333,7 @@ public:
             {
                 if(!me->IsNonMeleeSpellCasted(false))
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE_H));
 
                     m_uiShadowFissureTimer = urand(15000,20000);
@@ -1454,7 +1454,7 @@ public:
             {
                 if(!me->IsNonMeleeSpellCasted(false))
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE_H));
 
                     m_uiShadowFissureTimer = urand(15000,20000);

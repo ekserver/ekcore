@@ -187,7 +187,7 @@ public:
 
             if (uiGrabTimer <= diff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     DoCast(me, DUNGEON_MODE(SPELL_WEB_GRAB, H_SPELL_WEB_GRAB));
                     DoCast(me, DUNGEON_MODE(SPELL_ACID_CLOUD, H_SPELL_ACID_CLOUD));
