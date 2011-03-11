@@ -588,7 +588,7 @@ public:
 
             if (GripOfTheLegionTimer <= diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_GRIP_OF_THE_LEGION);
+                DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_GRIP_OF_THE_LEGION);
                 GripOfTheLegionTimer = urand(5000,25000);
             } else GripOfTheLegionTimer -= diff;
 
@@ -599,7 +599,7 @@ public:
                 else
                     DoScriptText(SAY_AIR_BURST2, me);
 
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 1), SPELL_AIR_BURST);//not on tank
+                DoCast(SelectTarget(SELECT_TARGET_RANDOM, 1), SPELL_AIR_BURST);//not on tank
                 AirBurstTimer = urand(25000,40000);
             } else AirBurstTimer -= diff;
 
@@ -616,7 +616,7 @@ public:
                 else
                     DoScriptText(SAY_DOOMFIRE2, me);
 
-                Unit *temp = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                Unit *temp = SelectTarget(SELECT_TARGET_RANDOM, 1);
                 if (!temp)
                     temp = me->getVictim();
 
@@ -631,7 +631,7 @@ public:
             {
                 if (CanUseFingerOfDeath())
                 {
-                    DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_FINGER_OF_DEATH);
+                    DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_FINGER_OF_DEATH);
                     MeleeRangeCheckTimer = 1000;
                 }
 
