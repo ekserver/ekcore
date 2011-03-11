@@ -119,23 +119,13 @@ public:
             }
         }
 
-        void MovementInform(uint32 MovementType, uint32 /*Data*/)
-        {
-            if (MovementType != POINT_MOTION_TYPE)
-                return;
-
-            if (pInstance)
-                pInstance->SetData(BOSS_ARGENT_CHALLENGE_E, DONE);
-
-            me->DisappearAndDie();
-        }
-
         void UpdateAI(const uint32 uiDiff)
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
                 me->GetMotionMaster()->MovePoint(0,746.87f,665.87f,411.75f);
-                bDone = false;
+                pInstance->SetData(BOSS_ARGENT_CHALLENGE_E, DONE);
+                me->DisappearAndDie();
             } else uiResetTimer -= uiDiff;
 
             if (!UpdateVictim())
@@ -245,23 +235,13 @@ public:
             }
         } 
 
-        void MovementInform(uint32 MovementType, uint32 Point)
-        {
-            if (MovementType != POINT_MOTION_TYPE || Point != 0)
-                return;
-
-            if (pInstance)
-                pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
-
-            me->DisappearAndDie();
-        }
-
         void UpdateAI(const uint32 uiDiff)
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
                 me->GetMotionMaster()->MovePoint(0,746.87f,665.87f,411.75f);
-                bDone = false;
+                pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
+                me->DisappearAndDie();
             } else uiResetTimer -= uiDiff; 
 
             if (!UpdateVictim())

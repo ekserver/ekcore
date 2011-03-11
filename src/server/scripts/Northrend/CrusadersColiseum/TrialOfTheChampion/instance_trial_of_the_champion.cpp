@@ -206,6 +206,7 @@ public:
                             pBoss->GetMotionMaster()->MovePoint(0,746.88f,618.74f,411.06f);
                             pBoss->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                             pBoss->SetReactState(REACT_AGGRESSIVE);
+                            pBoss->setFaction(16);
                         }
                     }
                     break;
