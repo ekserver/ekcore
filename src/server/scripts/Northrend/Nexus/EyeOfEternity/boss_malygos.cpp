@@ -102,7 +102,8 @@ enum eSpells
 
     SPELL_ALEXSTRASZAS_GIFT_VISUAL           = 61023,
     SPELL_ALEXSTRASZAS_GIFT_BEAM             = 61028,
-    SPELL_ENRAGE                             = 47008
+    SPELL_ENRAGE                             = 47008,
+    SPELL_ROOT                               = 18373 //hack
 };
 
 enum ePhase
@@ -112,8 +113,7 @@ enum ePhase
     PHASE_VORTEX        = 2, // phase 1 vortex
     PHASE_ADDS          = 3, // phase 2
     PHASE_DRAGONS       = 4, // phase 3
-    PHASE_IDLE          = 5, // used between main phases
-    PHASE_ENRAGE        = 6
+    PHASE_IDLE          = 5  // used between main phases
 };
 
 enum eAction
@@ -243,6 +243,12 @@ public:
             }
         }
 
+        // try to fix bad reset (due to grid issues)?
+        void JustReachedHome()
+        {
+            Reset();
+        }
+
         void JustSummoned(Creature *summon)
         {
             switch (summon->GetEntry())
@@ -330,6 +336,10 @@ public:
                 {
                     me->SetInCombatWithZone();
                     me->GetMotionMaster()->MovePoint(POINT_START, Locations[0]);
+
+                    while (Creature* pDragon = me->FindNearestCreature(NPC_WYRMREST_SKYTALON, 250.0f))
+                        pDragon->ForcedDespawn();
+
                     break;
                 }
                 case ACTION_VORTEX:
@@ -350,11 +360,6 @@ public:
                                 pVortex->SetFlying(true);
                                 i_pl->EnterVehicle(pVortex, 0);
                                 i_pl->AddAura(SPELL_VORTEX_PLAYER, i_pl);
-
-                                // TODO: bind sight to vortex
-                                // TODO: any way to set rotation speed?
-                                //pVortex->SetSpeed(MOVE_TURN_RATE, 5.0f);
-                                //pVortex->GetMotionMaster()->MoveRotate(10000, ROTATE_DIRECTION_LEFT);
                             }
                         }
                     }   
@@ -383,6 +388,7 @@ public:
                     {
                         if (!urand(0, 2))
                             DoScriptText(SAY_ANTI_MAGIC_SHELL, me);
+                        pOverload->AddUnitState(UNIT_STAT_ROOT);
                         pOverload->SetReactState(REACT_PASSIVE);
                         pOverload->SetInCombatWithZone();
                         DoCast(pOverload, SPELL_ARCANE_BOMB, true);
@@ -427,6 +433,8 @@ public:
                             if (Creature* pTemp = me->SummonCreature(NPC_DISC_NPC, Locations[1], TEMPSUMMON_CORPSE_DESPAWN))
                             {
                                 pScion->EnterVehicle(pTemp, 0);
+                                pTemp->SetFlying(true);
+                                pTemp->SetSpeed(MOVE_FLIGHT, 0.7f);
                                 pTemp->SetReactState(REACT_PASSIVE);
                                 pTemp->GetMotionMaster()->MovePoint(0, Locations[2]);
                                 pTemp->AI()->SetData(0, (i + 1) * RAID_MODE(4, 2));
@@ -557,10 +565,9 @@ public:
                 {
                     DoScriptText(SAY_PHASE3_AGGRO, me);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoCast(me, 18373, true); // root self, TODO: replace
-                    uiSurgeOfPowerTimer = 15*IN_MILLISECONDS;
-                    uiStormTimer = 5*IN_MILLISECONDS;
+                    DoCast(me, SPELL_ROOT, true);
+                    uiSurgeOfPowerTimer = 10*IN_MILLISECONDS;
+                    uiStormTimer = 15*IN_MILLISECONDS;
                     uiPhase = PHASE_DRAGONS;
                     break;
                 }
@@ -576,9 +583,19 @@ public:
                 target->CastSpell(target, SPELL_ARCANE_BOMB_KNOCKBACK, true);
                 target->CastSpell(target, SPELL_ARCANE_OVERLOAD, true);
             }
-            // TODO: maybe should be casted by malygos to same targets as dmg spell
-            //if (spell->Id == RAID_MODE(SPELL_ARCANE_STORM_N, SPELL_ARCANE_STORM_H))
-            //    target->CastSpell(target, SPELL_ARCANE_STORM_VISUAL, true);
+        }
+
+        Unit* SelectVehicleBaseOrPlayer()
+        {
+            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
+            {
+                if (Unit* pVehicle = pTarget->GetVehicleBase())
+                    return pVehicle;
+
+                return pTarget;
+            }
+
+            return NULL;
         }
 
         void UpdateAI(const uint32 uiDiff)
@@ -596,18 +613,20 @@ public:
             {
                 if (uiEnrageTimer <= uiDiff)
                 {
-                    me->InterruptNonMeleeSpells(true);
-                    DoCast(me, SPELL_ENRAGE, true);
+                    if (uiPhase == PHASE_GROUND || uiPhase == PHASE_ADDS || uiPhase == PHASE_DRAGONS)
+                    {
+                        me->InterruptNonMeleeSpells(true);
+                        DoCast(me, SPELL_ENRAGE, true);
 
-                    if (me->HasAura(18373))
-                        me->RemoveAurasDueToSpell(18373);
-
-                    me->SetFlying(true);
-                    me->SetSpeed(MOVE_FLIGHT, 10.0f);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->GetMotionMaster()->Clear();
-                    me->GetMotionMaster()->MoveChase(me->getVictim());
-                    uiPhase = PHASE_ENRAGE;
+                        if (uiPhase == PHASE_ADDS)
+                        {
+                            me->SetFlying(true);
+                            me->SetSpeed(MOVE_FLIGHT, 10.0f);
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            me->GetMotionMaster()->Clear();
+                            me->GetMotionMaster()->MoveChase(me->getVictim());
+                        }
+                    }
                 } else uiEnrageTimer -= uiDiff;
             }
 
@@ -651,11 +670,14 @@ public:
                     // fly up for p2
                     if (HealthBelowPct(50))
                     {
-                        DoScriptText(SAY_PHASE1_END, me);
-                        me->SetFlying(true);
-                        me->SetReactState(REACT_PASSIVE);
-                        me->GetMotionMaster()->MovePoint(POINT_PHASE_2, Locations[3]);
-                        uiPhase = PHASE_IDLE;
+                        if (!me->HasAura(SPELL_ENRAGE))
+                        {
+                            DoScriptText(SAY_PHASE1_END, me);
+                            me->SetFlying(true);
+                            me->SetReactState(REACT_PASSIVE);
+                            me->GetMotionMaster()->MovePoint(POINT_PHASE_2, Locations[3]);
+                            uiPhase = PHASE_IDLE;
+                        }
                     }
 
                     DoMeleeAttackIfReady();
@@ -707,48 +729,55 @@ public:
                         Summons.DespawnAll(); // remove remaining anti-magic shells and discs
                         uiPhase = PHASE_IDLE;
                     }
+
+                    if (me->HasAura(SPELL_ENRAGE))
+                        DoMeleeAttackIfReady();
+
                     break;
                 }
                 case PHASE_DRAGONS:
                 {
-                    if (me->HasUnitState(UNIT_STAT_CASTING))
-                        return;
-
                     if (uiStormTimer <= uiDiff)
                     {
-                        if (!urand(0, 2))
-                            DoScriptText(RAND(SAY_PHASE3_CAST_1, SAY_PHASE3_CAST_2, SAY_PHASE3_CAST_3), me);
-                        DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_N, SPELL_ARCANE_STORM_H));
-                        uiStormTimer = urand(8*IN_MILLISECONDS, 12*IN_MILLISECONDS);
+                        if (!me->IsNonMeleeSpellCasted(false))
+                        {
+                            if (!urand(0, 2))
+                                DoScriptText(RAND(SAY_PHASE3_CAST_1, SAY_PHASE3_CAST_2, SAY_PHASE3_CAST_3), me);
+                            DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_N, SPELL_ARCANE_STORM_H));
+                            uiStormTimer = urand(8*IN_MILLISECONDS, 12*IN_MILLISECONDS);
+                        }
                     } else uiStormTimer -= uiDiff;
 
-                    // TODO: timer
+                    // TODO: check timer
                     if (uiSurgeOfPowerTimer <= uiDiff)
                     {
-                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
+                        if (Unit* pTarget = SelectVehicleBaseOrPlayer())
                         {
-                            if (!urand(0, 3))
+                            if (!urand(0, 2))
                                 DoScriptText(SAY_SURGE_OF_POWER, me);
                             DoCast(pTarget, RAID_MODE(SPELL_SURGE_OF_POWER_N, SPELL_SURGE_OF_POWER_H));
                         }
-                        uiSurgeOfPowerTimer = urand(11*IN_MILLISECONDS, 16*IN_MILLISECONDS);
+                        uiSurgeOfPowerTimer = urand(12*IN_MILLISECONDS, 16*IN_MILLISECONDS);
                     } else uiSurgeOfPowerTimer -= uiDiff;
 
                     if (uiArcanePulseTimer <= uiDiff)
                     {
                         DoCast(me, SPELL_ARCANE_PULSE, true);
-                        uiArcanePulseTimer = urand(5*IN_MILLISECONDS, 15*IN_MILLISECONDS);
+                        uiArcanePulseTimer = 10*IN_MILLISECONDS;
                     } else uiArcanePulseTimer -= uiDiff;
 
                     if (uiStaticFieldTimer <= uiDiff)
                     {
-                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
+                        if (!me->IsNonMeleeSpellCasted(false))
                         {
-                            if (!urand(0, 2))
-                                DoScriptText(RAND(SAY_PHASE3_CAST_1, SAY_PHASE3_CAST_2, SAY_PHASE3_CAST_3), me);
-                            DoCast(pTarget, SPELL_STATIC_FIELD_MISSLE);
+                            if (Unit* pTarget = SelectVehicleBaseOrPlayer())
+                            {
+                                if (!urand(0, 2))
+                                    DoScriptText(RAND(SAY_PHASE3_CAST_1, SAY_PHASE3_CAST_2, SAY_PHASE3_CAST_3), me);
+                                DoCast(pTarget, SPELL_STATIC_FIELD_MISSLE);
+                            }
+                            uiStaticFieldTimer = 25*IN_MILLISECONDS;
                         }
-                        uiStaticFieldTimer = 25*IN_MILLISECONDS;
                     } else uiStaticFieldTimer -= uiDiff;
                     break;
                 }
@@ -786,11 +815,6 @@ public:
                             }
                         }
                     } else uiWaitTimer -= uiDiff;
-                    break;
-                }
-                case PHASE_ENRAGE:
-                {
-                    DoMeleeAttackIfReady();
                     break;
                 }
                 default:
@@ -842,11 +866,9 @@ public:
                         me->AddAura(spellInfo, 2, pTarget);
 
                     DoCast(pTarget, SPELL_ARCANE_BARRAGE);
-                    uiArcaneBarrageTimer = urand(8*IN_MILLISECONDS, 12*IN_MILLISECONDS);
+                    uiArcaneBarrageTimer = urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS);
                 }
             } else uiArcaneBarrageTimer -= uiDiff;
-
-            DoMeleeAttackIfReady();
         }
     };
 };
@@ -1105,6 +1127,7 @@ public:
         {
             move = false;
             uiCheckTimer = 1*IN_MILLISECONDS;
+            me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_ARCANE_BOMB_KNOCKBACK, true);
         }
 
         void PassengerBoarded(Unit* pWho, int8 /*seatId*/, bool apply)
@@ -1133,6 +1156,7 @@ public:
                     pUnit->ToCreature()->SetReactState(REACT_AGGRESSIVE);
                     pUnit->ToCreature()->SetInCombatWithZone();
                     me->SetReactState(REACT_AGGRESSIVE);
+                    me->SetInCombatWithZone();
                 }
                 else
                 {
@@ -1150,7 +1174,7 @@ public:
                 angle = float(count) * 2 * M_PI / 16;
                 x = Locations[1].GetPositionX() + float(urand(20, 28)) * cos(angle);
                 y = Locations[1].GetPositionY() + float(urand(20, 28)) * sin(angle);
-                me->GetMotionMaster()->MovePoint(1, x, y, FLOOR_Z + 15.0f);
+                me->GetMotionMaster()->MovePoint(1, x, y, FLOOR_Z + 10.0f);
 
                 count--;
                 if (count == 0)
