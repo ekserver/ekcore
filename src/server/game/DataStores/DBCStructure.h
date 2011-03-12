@@ -42,7 +42,7 @@
 struct AchievementEntry
 {
     uint32    ID;                                           // 0
-    int32    factionFlag;                                   // 1 -1=all, 0=horde, 1=alliance
+    int32    requiredFaction;                               // 1 -1=all, 0=horde, 1=alliance
     int32    mapID;                                         // 2 -1=none
     //uint32 parentAchievement;                             // 3 its Achievement parent (can`t start while parent uncomplete, use its Criteria if don`t have own, use its progress on begin)
     char *name[16];                                         // 4-19
@@ -501,7 +501,7 @@ struct AchievementCriteriaEntry
 
     //char*  name[16];                                      // 9-24
     //uint32 name_flags;                                    // 25
-    uint32  completionFlag;                                 // 26
+    uint32  flags;                                          // 26
     uint32  timedType;                                      // 27
     uint32  timerStartEvent;                                // 28 Alway appears with timed events
                                                             // for timed spells it is spell id for
@@ -1867,7 +1867,8 @@ struct VehicleSeatEntry
 
     bool CanEnterOrExit() const { return m_flags & VEHICLE_SEAT_FLAG_CAN_ENTER_OR_EXIT; }
     bool CanSwitchFromSeat() const { return m_flags & VEHICLE_SEAT_FLAG_B_CANSWITCH; }
-    bool IsUsableByAura() const { return m_flagsB & (VEHICLE_SEAT_FLAG_B_USABLE_FORCED | VEHICLE_SEAT_FLAG_B_USABLE_FORCED_2 | VEHICLE_SEAT_FLAG_B_USABLE_FORCED_3); }
+    bool IsUsableByOverride() const { return (m_flags & VEHICLE_SEAT_FLAG_UNCONTROLLED)
+                                    || (m_flagsB & VEHICLE_SEAT_FLAG_B_USABLE_FORCED | VEHICLE_SEAT_FLAG_B_USABLE_FORCED_2 | VEHICLE_SEAT_FLAG_B_USABLE_FORCED_3); }
     bool IsEjectable() const { return m_flagsB & VEHICLE_SEAT_FLAG_B_EJECTABLE; }
 };
 

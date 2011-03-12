@@ -335,7 +335,7 @@ struct SpellClickInfo
     SpellClickUserTypes userType;
 
     // helpers
-    bool IsFitToRequirements(Player const* player, Creature const * clickNpc) const;
+    bool IsFitToRequirements(Unit const* clicker, Unit const * clickee) const;
 };
 
 typedef std::multimap<uint32, SpellClickInfo> SpellClickInfoMap;
@@ -592,6 +592,7 @@ class ObjectMgr
         typedef UNORDERED_MAP<uint32, Item*> ItemMap;
 
         typedef std::set<Group *> GroupSet;
+        typedef std::vector<Group *> GroupStorage;
 
         typedef std::vector <Guild *> GuildMap;
 
@@ -628,6 +629,12 @@ class ObjectMgr
         Group * GetGroupByGUID(uint32 guid) const;
         void AddGroup(Group* group) { mGroupSet.insert(group); }
         void RemoveGroup(Group* group) { mGroupSet.erase(group); }
+
+        uint32 GenerateNewGroupStorageId();
+        void RegisterGroupStorageId(uint32 storageId, Group* group);
+        void FreeGroupStorageId(Group* group);
+        void SetNextGroupStorageId(uint32 storageId) { NextGroupStorageId = storageId; };
+        Group* GetGroupByStorageId(uint32 storageId) const;
 
         Guild* GetGuildByLeader(uint64 const&guid) const;
         Guild* GetGuildById(uint32 guildId) const;
@@ -800,10 +807,19 @@ class ObjectMgr
             return NULL;
         }
 
-        VehicleAccessoryList const* GetVehicleAccessoryList(uint32 uiEntry) const
+        VehicleAccessoryList const* GetVehicleAccessoryList(Vehicle* veh) const
         {
-            VehicleAccessoryMap::const_iterator itr = m_VehicleAccessoryMap.find(uiEntry);
-            if (itr != m_VehicleAccessoryMap.end())
+            if (Creature* cre = veh->GetBase()->ToCreature())
+            {
+                // Give preference to GUID-based accessories
+                VehicleAccessoryMap::const_iterator itr = m_VehicleAccessoryMap.find(cre->GetDBTableGUIDLow());
+                if (itr != m_VehicleAccessoryMap.end())
+                    return &itr->second;
+            }
+
+            // Otherwise return entry-based
+            VehicleAccessoryMap::const_iterator itr = m_VehicleTemplateAccessoryMap.find(veh->GetCreatureEntry());
+            if (itr != m_VehicleTemplateAccessoryMap.end())
                 return &itr->second;
             return NULL;
         }
@@ -914,6 +930,7 @@ class ObjectMgr
         void LoadInstanceTemplate();
         void LoadInstanceEncounters();
         void LoadMailLevelRewards();
+        void LoadVehicleTemplateAccessories();
         void LoadVehicleAccessories();
         void LoadVehicleScaling();
 
@@ -946,8 +963,6 @@ class ObjectMgr
         void LoadNPCSpellClickSpells();
 
         void LoadGameTele();
-
-        void LoadNpcTextId();
 
         void LoadGossipMenu();
         void LoadGossipMenuItems();
@@ -1264,6 +1279,10 @@ class ObjectMgr
         uint32 m_hiGroupGuid;
         uint32 m_hiMoTransGuid;
 
+        // Database storage IDs
+
+        uint32 NextGroupStorageId;
+
         QuestMap            mQuestTemplates;
 
         typedef UNORDERED_MAP<uint32, GossipText> GossipTextMap;
@@ -1272,6 +1291,7 @@ class ObjectMgr
         typedef std::set<uint32> GameObjectForQuestSet;
 
         GroupSet            mGroupSet;
+        GroupStorage        mGroupStorage;
         GuildMap            mGuildMap;
         ArenaTeamMap        mArenaTeamMap;
 
@@ -1315,6 +1335,7 @@ class ObjectMgr
 
         ItemRequiredTargetMap m_ItemRequiredTarget;
 
+        VehicleAccessoryMap m_VehicleTemplateAccessoryMap;
         VehicleAccessoryMap m_VehicleAccessoryMap;
         VehicleScalingMap m_VehicleScalingMap;
 

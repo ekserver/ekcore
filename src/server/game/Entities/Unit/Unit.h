@@ -556,7 +556,7 @@ enum UnitFlags
     UNIT_FLAG_UNK_6                 = 0x00000040,
     UNIT_FLAG_NOT_ATTACKABLE_1      = 0x00000080,           // ?? (UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
     UNIT_FLAG_OOC_NOT_ATTACKABLE    = 0x00000100,           // 2.0.8 - (OOC Out Of Combat) Can not be attacked when not in combat. Removed if unit for some reason enter combat.
-    UNIT_FLAG_UNK_9                 = 0x00000200,           // 3.0.3 - makes you unable to attack everything
+    UNIT_FLAG_PASSIVE               = 0x00000200,           // makes you unable to attack everything. Almost identical to our "civilian"-term. Will ignore it's surroundings and not engage in combat unless "called upon" or engaged by another unit.
     UNIT_FLAG_LOOTING               = 0x00000400,           // loot animation
     UNIT_FLAG_PET_IN_COMBAT         = 0x00000800,           // in combat?, 2.0.8
     UNIT_FLAG_PVP                   = 0x00001000,           // changed in 3.0.3
@@ -622,10 +622,8 @@ enum NPCFlags
     UNIT_NPC_FLAG_AUCTIONEER            = 0x00200000,       // 100%
     UNIT_NPC_FLAG_STABLEMASTER          = 0x00400000,       // 100%
     UNIT_NPC_FLAG_GUILD_BANKER          = 0x00800000,       // cause client to send 997 opcode
-    UNIT_NPC_FLAG_SPELLCLICK            = 0x01000000,       // cause client to send 1015 opcode (spell click), dynamic, set at loading and don't must be set in DB
+    UNIT_NPC_FLAG_SPELLCLICK            = 0x01000000,       // cause client to send 1015 opcode (spell click)
     UNIT_NPC_FLAG_PLAYER_VEHICLE        = 0x02000000,       // players with mounts that have vehicle data should have it set
-    UNIT_NPC_FLAG_GUARD                 = 0x10000000,       // custom flag for guards
-    UNIT_NPC_FLAG_OUTDOORPVP            = 0x20000000,       // custom flag for outdoor pvp creatures
 };
 
 enum MovementFlags
@@ -723,7 +721,7 @@ enum SplineFlags
     SPLINEFLAG_UNKNOWN22      = 0x00200000,
     SPLINEFLAG_UNKNOWN23      = 0x00400000,
     SPLINEFLAG_TRANSPORT      = 0x00800000,
-    SPLINEFLAG_UNKNOWN25      = 0x01000000,
+    SPLINEFLAG_EXIT_VEHICLE   = 0x01000000,
     SPLINEFLAG_UNKNOWN26      = 0x02000000,
     SPLINEFLAG_UNKNOWN27      = 0x04000000,
     SPLINEFLAG_UNKNOWN28      = 0x08000000,
@@ -939,6 +937,30 @@ enum CurrentSpellTypes
 #define CURRENT_FIRST_NON_MELEE_SPELL 1
 #define CURRENT_MAX_SPELL             4
 
+struct GlobalCooldown
+{
+    explicit GlobalCooldown(uint32 _dur = 0, uint32 _time = 0) : duration(_dur), cast_time(_time) {}
+
+    uint32 duration;
+    uint32 cast_time;
+};
+
+typedef UNORDERED_MAP<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
+
+class GlobalCooldownMgr                                     // Shared by Player and CharmInfo
+{
+public:
+    GlobalCooldownMgr() {}
+
+public:
+    bool HasGlobalCooldown(SpellEntry const* spellInfo) const;
+    void AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd);
+    void CancelGlobalCooldown(SpellEntry const* spellInfo);
+
+private:
+    GlobalCooldownList m_GlobalCooldowns;
+};
+
 enum ActiveStates
 {
     ACT_PASSIVE  = 0x01,                                    // 0x01 - passive
@@ -1059,6 +1081,8 @@ struct CharmInfo
 
         CharmSpellEntry* GetCharmSpell(uint8 index) { return &(m_charmspells[index]); }
 
+        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+
         void SetIsCommandAttack(bool val);
         bool IsCommandAttack();
         void SetIsAtStay(bool val);
@@ -1090,6 +1114,8 @@ struct CharmInfo
         float m_stayX;
         float m_stayY;
         float m_stayZ;
+
+        GlobalCooldownMgr m_GlobalCooldownMgr;
 };
 
 // for clearing special attacks
@@ -1422,13 +1448,10 @@ class Unit : public WorldObject
             return HasFlag(UNIT_NPC_FLAGS,
                 UNIT_NPC_FLAG_VENDOR | UNIT_NPC_FLAG_TRAINER | UNIT_NPC_FLAG_FLIGHTMASTER |
                 UNIT_NPC_FLAG_PETITIONER | UNIT_NPC_FLAG_BATTLEMASTER | UNIT_NPC_FLAG_BANKER |
-                UNIT_NPC_FLAG_INNKEEPER | UNIT_NPC_FLAG_GUARD | UNIT_NPC_FLAG_SPIRITHEALER |
+                UNIT_NPC_FLAG_INNKEEPER | UNIT_NPC_FLAG_SPIRITHEALER |
                 UNIT_NPC_FLAG_SPIRITGUIDE | UNIT_NPC_FLAG_TABARDDESIGNER | UNIT_NPC_FLAG_AUCTIONEER);
         }
         bool isSpiritService() const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER | UNIT_NPC_FLAG_SPIRITGUIDE); }
-
-        //Need fix or use this
-        bool isGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
 
         bool isInFlight()  const { return HasUnitState(UNIT_STAT_IN_FLIGHT); }
 
@@ -1498,6 +1521,7 @@ class Unit : public WorldObject
         void SendMonsterStop(bool on_death = false);
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 MoveFlags, uint32 time, float speedZ, Player *player = NULL);
+        void SendMonsterMoveExitVehicle(Position const* newPos);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
         void SendMonsterMoveTransport(Unit *vehicleOwner);
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime = 0, Player* player = NULL);
@@ -1511,6 +1535,8 @@ class Unit : public WorldObject
         void SendClearThreatListOpcode();
         void SendRemoveFromThreatListOpcode(HostileReference* pHostileReference);
         void SendThreatListUpdate();
+
+        void SendClearTarget();
 
         void BuildHeartBeatMsg(WorldPacket *data) const;
 
@@ -2013,7 +2039,7 @@ class Unit : public WorldObject
         Unit *GetMisdirectionTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
 
         bool IsAIEnabled, NeedChangeAI;
-        bool CreateVehicleKit(uint32 id);
+        bool CreateVehicleKit(uint32 id, uint32 creatureEntry);
         void RemoveVehicleKit();
         Vehicle *GetVehicleKit()const { return m_vehicleKit; }
         Vehicle *GetVehicle()   const { return m_vehicle; }
@@ -2031,10 +2057,14 @@ class Unit : public WorldObject
         bool m_ControlledByPlayer;
 
         bool CheckPlayerCondition(Player* pPlayer);
-        void EnterVehicle(Unit *base, int8 seatId = -1, AuraApplication const * aurApp = NULL) { EnterVehicle(base->GetVehicleKit(), seatId, aurApp); }
-        void EnterVehicle(Vehicle *vehicle, int8 seatId = -1, AuraApplication const * aurApp = NULL);
-        void ExitVehicle();
-        void ChangeSeat(int8 seatId, bool next = true, bool byAura = false);
+        bool HandleSpellClick(Unit* clicker, int8 seatId = -1);
+        void EnterVehicle(Unit *base, int8 seatId = -1);
+        void ExitVehicle(Position const* exitPosition = NULL);
+        void ChangeSeat(int8 seatId, bool next = true);
+
+        // Should only be called by AuraEffect::HandleAuraControlVehicle(AuraApplication const* auraApp, uint8 mode, bool apply) const;
+        void _ExitVehicle(Position const* exitPosition = NULL);
+        void _EnterVehicle(Vehicle* vehicle, int8 seatId, AuraApplication const* aurApp = NULL);
 
         void BuildMovementPacket(ByteBuffer *data) const;
 

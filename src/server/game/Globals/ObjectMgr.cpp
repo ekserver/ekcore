@@ -195,49 +195,57 @@ LanguageDesc const* GetLanguageDescByID(uint32 lang)
     return NULL;
 }
 
-bool SpellClickInfo::IsFitToRequirements(Player const* player, Creature const * clickNpc) const
+bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clickee) const
 {
-    if (questStart)
+    Player const* playerClicker = NULL;
+    if (playerClicker = clicker->ToPlayer())
     {
-        // not in expected required quest state
-        if (!player || ((!questStartCanActive || !player->IsActiveQuest(questStart)) && !player->GetQuestRewardStatus(questStart)))
-            return false;
-    }
+        if (questStart)
+        {
+            // not in expected required quest state
+            if (((!questStartCanActive || !playerClicker->IsActiveQuest(questStart)) && !playerClicker->GetQuestRewardStatus(questStart)))
+                return false;
+        }
 
-    if (questEnd)
-    {
-        // not in expected forbidden quest state
-        if (!player || player->GetQuestRewardStatus(questEnd))
-            return false;
+        if (questEnd)
+        {
+            // not in expected forbidden quest state
+            if (playerClicker->GetQuestRewardStatus(questEnd))
+                return false;
+        }
     }
 
     if (auraRequired)
-        if (!player->HasAura(auraRequired))
+        if (!clicker->HasAura(auraRequired))
             return false;
 
     if (auraForbidden)
-        if (player->HasAura(auraForbidden))
+        if (clicker->HasAura(auraForbidden))
             return false;
 
     Unit const * summoner = NULL;
     // Check summoners for party
-    if (clickNpc->isSummon())
-        summoner = clickNpc->ToTempSummon()->GetSummoner();
+    if (clickee->isSummon())
+        summoner = clickee->ToTempSummon()->GetSummoner();
     if (!summoner)
-        summoner = clickNpc;
+        summoner = clickee;
 
+    if (!playerClicker)
+        return true;
+
+    // This only applies to players
     switch (userType)
     {
         case SPELL_CLICK_USER_FRIEND:
-            if (!player->IsFriendlyTo(summoner))
+            if (!playerClicker->IsFriendlyTo(summoner))
                 return false;
             break;
         case SPELL_CLICK_USER_RAID:
-            if (!player->IsInRaidWith(summoner))
+            if (!playerClicker->IsInRaidWith(summoner))
                 return false;
             break;
         case SPELL_CLICK_USER_PARTY:
-            if (!player->IsInPartyWith(summoner))
+            if (!playerClicker->IsInPartyWith(summoner))
                 return false;
             break;
         default:
@@ -266,6 +274,7 @@ ObjectMgr::ObjectMgr()
     m_guildId           = 1;
     m_arenaTeamId       = 1;
     m_auctionid         = 1;
+    NextGroupStorageId  = 1;
 }
 
 ObjectMgr::~ObjectMgr()
@@ -309,6 +318,16 @@ Group * ObjectMgr::GetGroupByGUID(uint32 guid) const
 
     return NULL;
 }
+
+Group* ObjectMgr::GetGroupByStorageId(uint32 storageId) const
+{
+    if (storageId < mGroupStorage.size())
+        return mGroupStorage[storageId];
+
+    return NULL;
+}
+
+
 
 // Guild collection
 Guild* ObjectMgr::GetGuildById(uint32 guildId) const
@@ -771,12 +790,6 @@ void ObjectMgr::CheckCreatureTemplate(CreatureInfo const* cInfo)
     if (cInfo->rangeattacktime == 0)
         const_cast<CreatureInfo*>(cInfo)->rangeattacktime = BASE_ATTACK_TIME;
 
-    if (cInfo->npcflag & UNIT_NPC_FLAG_SPELLCLICK)
-    {
-        sLog->outErrorDb("Creature (Entry: %u) has dynamic flag UNIT_NPC_FLAG_SPELLCLICK (%u) set, it is expected to be set by code handling `npc_spellclick_spells` content.", cInfo->Entry, UNIT_NPC_FLAG_SPELLCLICK);
-        const_cast<CreatureInfo*>(cInfo)->npcflag &= ~UNIT_NPC_FLAG_SPELLCLICK;
-    }
-
     if ((cInfo->npcflag & UNIT_NPC_FLAG_TRAINER) && cInfo->trainer_type >= MAX_TRAINER_TYPE)
         sLog->outErrorDb("Creature (Entry: %u) has wrong trainer type %u.", cInfo->Entry, cInfo->trainer_type);
 
@@ -853,6 +866,12 @@ void ObjectMgr::CheckCreatureTemplate(CreatureInfo const* cInfo)
     {
         sLog->outErrorDb("Table `creature_template` lists creature (Entry: %u) with expansion %u. Ignored and set to 0.", cInfo->Entry, cInfo->expansion);
         const_cast<CreatureInfo*>(cInfo)->expansion = 0;
+    }
+
+    if (uint32 badFlags = (cInfo->flags_extra & ~CREATURE_FLAG_EXTRA_DB_ALLOWED))
+    {
+        sLog->outErrorDb("Table `creature_template` lists creature (Entry: %u) with disallowed `flags_extra` %u, removing incorrect flag.", cInfo->Entry, badFlags);
+        const_cast<CreatureInfo*>(cInfo)->flags_extra &= CREATURE_FLAG_EXTRA_DB_ALLOWED;
     }
 
     const_cast<CreatureInfo*>(cInfo)->dmg_multiplier *= Creature::_GetDamageMod(cInfo->rank);
@@ -1676,7 +1695,7 @@ uint32 ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, float y, float 
         map->Add(go);
     }
 
-    sLog->outDebug("AddGOData: dbguid %u entry %u map %u x %f y %f z %f o %f", guid, entry, mapId, x, y, z, o);
+    sLog->outDebug(LOG_FILTER_MAPS, "AddGOData: dbguid %u entry %u map %u x %f y %f z %f o %f", guid, entry, mapId, x, y, z, o);
 
     return guid;
 }
@@ -2722,6 +2741,62 @@ void ObjectMgr::LoadItemSetNames()
     sLog->outString();
 }
 
+void ObjectMgr::LoadVehicleTemplateAccessories()
+{
+    uint32 oldMSTime = getMSTime();
+
+    m_VehicleTemplateAccessoryMap.clear();                           // needed for reload case
+
+    uint32 count = 0;
+
+    QueryResult result = WorldDatabase.Query("SELECT `entry`,`accessory_entry`,`seat_id`,`minion`,`summontype`,`summontimer` FROM `vehicle_template_accessory`");
+
+    if (!result)
+    {
+        sLog->outErrorDb(">> Loaded 0 vehicle template accessories. DB table `vehicle_template_accessory` is empty.");
+        sLog->outString();
+        return;
+    }
+
+    do
+    {
+        Field *fields = result->Fetch();
+
+        uint32 uiEntry      = fields[0].GetUInt32();
+        uint32 uiAccessory  = fields[1].GetUInt32();
+        int8   uiSeat       = int8(fields[2].GetInt16());
+        bool   bMinion      = fields[3].GetBool();
+        uint8  uiSummonType = fields[4].GetUInt8();
+        uint32 uiSummonTimer= fields[5].GetUInt32();
+
+        if (!sCreatureStorage.LookupEntry<CreatureInfo>(uiEntry))
+        {
+            sLog->outErrorDb("Table `vehicle_template_accessory`: creature template entry %u does not exist.", uiEntry);
+            continue;
+        }
+
+        if (!sCreatureStorage.LookupEntry<CreatureInfo>(uiAccessory))
+        {
+            sLog->outErrorDb("Table `vehicle_template_accessory`: Accessory %u does not exist.", uiAccessory);
+            continue;
+        }
+
+        if (mSpellClickInfoMap.find(uiEntry) == mSpellClickInfoMap.end())
+        {
+            sLog->outErrorDb("Table `vehicle_template_accessory`: creature template entry %u has no data in npc_spellclick_spells", uiEntry);
+            continue;
+        }
+
+        m_VehicleTemplateAccessoryMap[uiEntry].push_back(VehicleAccessory(uiAccessory, uiSeat, bMinion, uiSummonType, uiSummonTimer));
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outString(">> Loaded %u Vehicle Template Accessories in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString();
+}
+
 void ObjectMgr::LoadVehicleAccessories()
 {
     uint32 oldMSTime = getMSTime();
@@ -2730,30 +2805,25 @@ void ObjectMgr::LoadVehicleAccessories()
 
     uint32 count = 0;
 
-    QueryResult result = WorldDatabase.Query("SELECT `entry`,`accessory_entry`,`seat_id`,`minion` FROM `vehicle_accessory`");
+    QueryResult result = WorldDatabase.Query("SELECT `guid`,`accessory_entry`,`seat_id`,`minion`,`summontype`,`summontimer` FROM `vehicle_accessory`");
 
     if (!result)
     {
-        sLog->outErrorDb(">> Loaded 0 LoadVehicleAccessor. DB table `vehicle_accessory` is empty.");
+        sLog->outErrorDb(">> Loaded 0 vehicle accessories. DB table `vehicle_accessory` is empty.");
         sLog->outString();
         return;
     }
-
 
     do
     {
         Field *fields = result->Fetch();
 
-        uint32 uiEntry       = fields[0].GetUInt32();
-        uint32 uiAccessory   = fields[1].GetUInt32();
-        int8   uiSeat        = int8(fields[2].GetInt16());
-        bool   bMinion       = fields[3].GetBool();
-
-        if (!sCreatureStorage.LookupEntry<CreatureInfo>(uiEntry))
-        {
-            sLog->outErrorDb("Table `vehicle_accessory`: creature template entry %u does not exist.", uiEntry);
-            continue;
-        }
+        uint32 uiGUID       = fields[0].GetUInt32();
+        uint32 uiAccessory  = fields[1].GetUInt32();
+        int8   uiSeat       = int8(fields[2].GetInt16());
+        bool   bMinion      = fields[3].GetBool();
+        uint8  uiSummonType = fields[4].GetUInt8();
+        uint32 uiSummonTimer= fields[5].GetUInt32();
 
         if (!sCreatureStorage.LookupEntry<CreatureInfo>(uiAccessory))
         {
@@ -2761,10 +2831,11 @@ void ObjectMgr::LoadVehicleAccessories()
             continue;
         }
 
-        m_VehicleAccessoryMap[uiEntry].push_back(VehicleAccessory(uiAccessory, uiSeat, bMinion));
+        m_VehicleAccessoryMap[uiGUID].push_back(VehicleAccessory(uiAccessory, uiSeat, bMinion, uiSummonType, uiSummonTimer));
 
         ++count;
-    } while (result->NextRow());
+    }
+    while (result->NextRow());
 
     sLog->outString(">> Loaded %u Vehicle Accessories in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
@@ -3635,7 +3706,7 @@ void ObjectMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphaned guild rank entries before loading the valid ones
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_CLEAN_GUILD_RANKS);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_NONEXISTENT_GUILD_RANKS);
         CharacterDatabase.Execute(stmt);
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_GUILD_RANKS);
@@ -3672,7 +3743,7 @@ void ObjectMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphaned guild member entries before loading the valid ones
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_CLEAN_GUILD_MEMBERS);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_NONEXISTENT_GUILD_MEMBERS);
         CharacterDatabase.Execute(stmt);
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_GUILD_MEMBERS);
@@ -3709,7 +3780,7 @@ void ObjectMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphaned guild bank right entries before loading the valid ones
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_CLEAN_GUILD_BANK_RIGHTS);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_NONEXISTENT_GUILD_BANK_RIGHTS);
         CharacterDatabase.Execute(stmt);
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_GUILD_BANK_RIGHTS);
@@ -3821,7 +3892,7 @@ void ObjectMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphaned guild bank tab entries before loading the valid ones
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_CLEAN_GUILD_BANK_TABS);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_NONEXISTENT_GUILD_BANK_TABS);
         CharacterDatabase.Execute(stmt);
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_GUILD_BANK_TABS);
@@ -3858,7 +3929,7 @@ void ObjectMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphan guild bank items
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_CLEAN_GUILD_BANK_ITEMS);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_NONEXISTENT_GUILD_BANK_ITEMS);
         CharacterDatabase.Execute(stmt);
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_GUILD_BANK_ITEMS);
@@ -3964,14 +4035,14 @@ void ObjectMgr::LoadGroups()
         uint32 oldMSTime = getMSTime();
 
         // Delete all groups whose leader does not exist
-        CharacterDatabase.Execute(CharacterDatabase.GetPreparedStatement(CHAR_DEL_LEADERLESS_GROUPS));
+        CharacterDatabase.DirectExecute("DELETE FROM groups WHERE leaderGuid NOT IN (SELECT guid FROM characters)");
         // Delete all groups with less than 2 members
-        CharacterDatabase.Execute(CharacterDatabase.GetPreparedStatement(CHAR_DEL_TINY_GROUPS));
+        CharacterDatabase.DirectExecute("DELETE FROM groups WHERE guid NOT IN (SELECT guid FROM group_member GROUP BY guid HAVING COUNT(guid) > 1)");
 
         //                                                        0           1           2             3          4      5      6      7      8     9
         QueryResult result = CharacterDatabase.PQuery("SELECT leaderGuid, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6"
         //                                                10     11     12         13              14        15
-                                                      ",icon7, icon8, groupType, difficulty, raiddifficulty, guid FROM groups");
+                                                      ",icon7, icon8, groupType, difficulty, raiddifficulty, guid FROM groups ORDER BY guid ASC");
         if (!result)
         {
             sLog->outString(">> Loaded 0 group definitions. DB table `groups` is empty!");
@@ -3984,11 +4055,19 @@ void ObjectMgr::LoadGroups()
         do
         {
             Field *fields = result->Fetch();
-            ++count;
             Group *group = new Group;
-            group->LoadGroupFromDB(fields[15].GetUInt32(), result, false);
-            // group load will never be false (we have run consistency sql's before loading)
+            group->LoadGroupFromDB(fields);
             AddGroup(group);
+
+            //
+            uint32 storageId = group->GetStorageId();
+
+            RegisterGroupStorageId(storageId, group);
+
+            if (storageId == NextGroupStorageId)
+                NextGroupStorageId++;
+
+            ++count;
         }
         while (result->NextRow());
 
@@ -4001,12 +4080,12 @@ void ObjectMgr::LoadGroups()
         uint32 oldMSTime = getMSTime();
 
         // Delete all rows from group_member or group_instance with no group
-        CharacterDatabase.Execute(CharacterDatabase.GetPreparedStatement(CHAR_DEL_NONEXISTENT_GROUP_MEMBERS));
-        CharacterDatabase.Execute(CharacterDatabase.GetPreparedStatement(CHAR_DEL_NONEXISTENT_GROUP_INSTANCES));
+        CharacterDatabase.DirectExecute("DELETE FROM group_member WHERE guid NOT IN (SELECT guid FROM groups)");
+        CharacterDatabase.DirectExecute("DELETE FROM group_instance WHERE guid NOT IN (SELECT guid FROM groups)");
         // Delete all members that does not exist
-        CharacterDatabase.Execute(CharacterDatabase.GetPreparedStatement(CHAR_DEL_NONEXISTENT_CHARACTER_GROUP_MEMBERS));
+        CharacterDatabase.DirectExecute("DELETE FROM group_member WHERE memberGuid NOT IN (SELECT guid FROM characters)");
 
-        //                                       0     1           2            3         4
+        //                                                    0        1           2            3       4
         QueryResult result = CharacterDatabase.Query("SELECT guid, memberGuid, memberFlags, subgroup, roles FROM group_member ORDER BY guid");
         if (!result)
         {
@@ -4015,21 +4094,18 @@ void ObjectMgr::LoadGroups()
             return;
         }
 
-        uint32 groupLowGuid = 0;
         uint32 count = 0;
-        Group* group = NULL;
+
         do
         {
             Field* fields = result->Fetch();
-            if (groupLowGuid != fields[0].GetUInt32())
-            {
-                groupLowGuid = fields[0].GetUInt32();
-                group = GetGroupByGUID(groupLowGuid);
-            }
-            if (group)                                          // Should never be null
+            Group* group = GetGroupByStorageId(fields[0].GetUInt32());
+
+            if (group)
                 group->LoadMemberFromDB(fields[1].GetUInt32(), fields[2].GetUInt8(), fields[3].GetUInt8(), fields[4].GetUInt8());
             else
-                sLog->outError("ObjectMgr::LoadGroups: Consistency failed, can't find group (lowguid %u)", groupLowGuid);
+                sLog->outError("ObjectMgr::LoadGroups: Consistency failed, can't find group (storage id: %u)", fields[0].GetUInt32());
+
             ++count;
         }
         while (result->NextRow());
@@ -4037,7 +4113,6 @@ void ObjectMgr::LoadGroups()
         sLog->outString(">> Loaded %u group members in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
         sLog->outString();
     }
-
 
     sLog->outString("Loading Group instance saves...");
     {
@@ -4060,7 +4135,7 @@ void ObjectMgr::LoadGroups()
         do
         {
             Field *fields = result->Fetch();
-            Group *group = GetGroupByGUID(fields[0].GetUInt32());
+            Group *group = GetGroupByStorageId(fields[0].GetUInt32());
             // group will never be NULL (we have run consistency sql's before loading)
 
             MapEntry const* mapEntry = sMapStore.LookupEntry(fields[1].GetUInt32());
@@ -5571,38 +5646,15 @@ void ObjectMgr::LoadInstanceEncounters()
     {
         Field* fields = result->Fetch();
         uint32 entry = fields[0].GetUInt32();
+        uint8 creditType = fields[1].GetUInt8();
+        uint32 creditEntry = fields[2].GetUInt32();
+        uint32 lastEncounterDungeon = fields[3].GetUInt32();
         DungeonEncounterEntry const* dungeonEncounter = sDungeonEncounterStore.LookupEntry(entry);
         if (!dungeonEncounter)
         {
             sLog->outErrorDb("Table `instance_encounters` has an invalid encounter id %u, skipped!", entry);
             continue;
         }
-
-        uint8 creditType = fields[1].GetUInt8();
-        uint32 creditEntry = fields[2].GetUInt32();
-
-        switch (creditType)
-        {
-            case ENCOUNTER_CREDIT_KILL_CREATURE:
-                if (!GetCreatureInfo(creditEntry))
-                {
-                    sLog->outErrorDb("Table `instance_encounters` has an invalid creature (entry %u) linked to the encounter %u (%s), skipped!", creditEntry, entry, dungeonEncounter->encounterName[0]);
-                    continue;
-                }
-                break;
-            case ENCOUNTER_CREDIT_CAST_SPELL:
-                if (!sSpellStore.LookupEntry(creditEntry))
-                {
-                    sLog->outErrorDb("Table `instance_encounters` has an invalid spell (entry %u) linked to the encounter %u (%s), skipped!", creditEntry, entry, dungeonEncounter->encounterName[0]);
-                    continue;
-                }
-                break;
-            default:
-                sLog->outErrorDb("Table `instance_encounters` has an invalid credit type (%u) for encounter %u (%s), skipped!", creditType, entry, dungeonEncounter->encounterName[0]);
-                continue;
-        }
-
-        uint32 lastEncounterDungeon = fields[3].GetUInt32();
 
         if (lastEncounterDungeon && !sLFGDungeonStore.LookupEntry(lastEncounterDungeon))
         {
@@ -5620,6 +5672,31 @@ void ObjectMgr::LoadInstanceEncounters()
             }
 
             dungeonLastBosses[lastEncounterDungeon] = dungeonEncounter;
+        }
+
+        switch (creditType)
+        {
+            case ENCOUNTER_CREDIT_KILL_CREATURE:
+            {
+                CreatureInfo const* creatureInfo = GetCreatureInfo(creditEntry);
+                if (!creatureInfo)
+                {
+                    sLog->outErrorDb("Table `instance_encounters` has an invalid creature (entry %u) linked to the encounter %u (%s), skipped!", creditEntry, entry, dungeonEncounter->encounterName[0]);
+                    continue;
+                }
+                const_cast<CreatureInfo*>(creatureInfo)->flags_extra |= CREATURE_FLAG_EXTRA_DUNGEON_BOSS;
+                break;
+            }
+            case ENCOUNTER_CREDIT_CAST_SPELL:
+                if (!sSpellStore.LookupEntry(creditEntry))
+                {
+                    sLog->outErrorDb("Table `instance_encounters` has an invalid spell (entry %u) linked to the encounter %u (%s), skipped!", creditEntry, entry, dungeonEncounter->encounterName[0]);
+                    continue;
+                }
+                break;
+            default:
+                sLog->outErrorDb("Table `instance_encounters` has an invalid credit type (%u) for encounter %u (%s), skipped!", creditType, entry, dungeonEncounter->encounterName[0]);
+                continue;
         }
 
         DungeonEncounterList& encounters = mDungeonEncounters[MAKE_PAIR32(dungeonEncounter->mapId, dungeonEncounter->difficulty)];
@@ -5749,7 +5826,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
     time_t curTime = time(NULL);
     tm* lt = localtime(&curTime);
     uint64 basetime(curTime);
-    sLog->outDebug("Returning mails current time: hour: %d, minute: %d, second: %d ", lt->tm_hour, lt->tm_min, lt->tm_sec);
+    sLog->outDetail("Returning mails current time: hour: %d, minute: %d, second: %d ", lt->tm_hour, lt->tm_min, lt->tm_sec);
 
     // Delete all old mails without item and without body immediately, if starting server
     if (!serverUp)
@@ -6634,7 +6711,7 @@ void ObjectMgr::SetHighestGuids()
 
     result = CharacterDatabase.Query("SELECT MAX(guid) FROM groups");
     if (result)
-        m_hiGroupGuid = (*result)[0].GetUInt32()+1;
+        mGroupStorage.resize((*result)[0].GetUInt32()+1);
 }
 
 uint32 ObjectMgr::GenerateArenaTeamId()
@@ -7589,9 +7666,6 @@ void ObjectMgr::LoadNPCSpellClickSpells()
             continue;
         }
 
-        if (!(cInfo->npcflag & UNIT_NPC_FLAG_SPELLCLICK))
-            const_cast<CreatureInfo*>(cInfo)->npcflag |= UNIT_NPC_FLAG_SPELLCLICK;
-
         uint32 spellid = fields[1].GetUInt32();
         SpellEntry const *spellinfo = sSpellStore.LookupEntry(spellid);
         if (!spellinfo)
@@ -7663,12 +7737,23 @@ void ObjectMgr::LoadNPCSpellClickSpells()
         info.userType = SpellClickUserTypes(userType);
         mSpellClickInfoMap.insert(SpellClickInfoMap::value_type(npc_entry, info));
 
-        // mark creature template as spell clickable
-        const_cast<CreatureInfo*>(cInfo)->npcflag |= UNIT_NPC_FLAG_SPELLCLICK;
-
         ++count;
     }
     while (result->NextRow());
+
+    // all spellclick data loaded, now we check if there are creatures with NPC_FLAG_SPELLCLICK but with no data
+    // NOTE: It *CAN* be the other way around: no spellclick flag but with spellclick data, in case of creature-only vehicle accessories
+    for (uint32 i = 0; i < sCreatureStorage.MaxEntry; ++i)
+    {
+        if (CreatureInfo const* cInfo = GetCreatureTemplate(i))
+        {
+            if ((cInfo->npcflag & UNIT_NPC_FLAG_SPELLCLICK) && mSpellClickInfoMap.find(i) == mSpellClickInfoMap.end())
+            {
+                sLog->outErrorDb("npc_spellclick_spells: Creature template %u has UNIT_NPC_FLAG_SPELLCLICK but no data in spellclick table! Removing flag", i);
+                const_cast<CreatureInfo*>(cInfo)->npcflag &= ~UNIT_NPC_FLAG_SPELLCLICK;
+            }
+        }
+    }
 
     sLog->outString(">> Loaded %u spellclick definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
@@ -7848,7 +7933,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, std::string table,
 
         if (mQuestTemplates.find(quest) == mQuestTemplates.end())
         {
-            sLog->outErrorDb("Table `%s: Quest %u listed for entry %u does not exist.", table.c_str(), quest, id);
+            sLog->outErrorDb("Table `%s`: Quest %u listed for entry %u does not exist.", table.c_str(), quest, id);
             continue;
         }
 
@@ -8779,53 +8864,6 @@ void ObjectMgr::LoadVendors()
     sLog->outString();
 }
 
-void ObjectMgr::LoadNpcTextId()
-{
-    uint32 oldMSTime = getMSTime();
-
-    m_mCacheNpcTextIdMap.clear();
-
-    QueryResult result = WorldDatabase.Query("SELECT npc_guid, textid FROM npc_gossip");
-
-    if (!result)
-    {
-        sLog->outErrorDb(">> Loaded 0 NpcTextId. DB table `npc_gossip` is empty!");
-        sLog->outString();
-        return;
-    }
-
-    uint32 count = 0;
-    uint32 guid, textid;
-
-    do
-    {
-
-        Field* fields = result->Fetch();
-
-        guid   = fields[0].GetUInt32();
-        textid = fields[1].GetUInt32();
-
-        if (!GetCreatureData(guid))
-        {
-            sLog->outErrorDb("Table `npc_gossip` have not existed creature (GUID: %u) entry, ignore. ",guid);
-            continue;
-        }
-        if (!GetGossipText(textid))
-        {
-            sLog->outErrorDb("Table `npc_gossip` for creature (GUID: %u) have wrong Textid (%u), ignore. ", guid, textid);
-            continue;
-        }
-
-        m_mCacheNpcTextIdMap[guid] = textid ;
-        ++count;
-
-    }
-    while (result->NextRow());
-
-    sLog->outString(">> Loaded %d NpcTextId in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-    sLog->outString();
-}
-
 void ObjectMgr::LoadGossipMenu()
 {
     uint32 oldMSTime = getMSTime();
@@ -9459,4 +9497,45 @@ void ObjectMgr::LoadFactionChangeReputations()
 
     sLog->outString(">> Loaded %u faction change reputation pairs in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
+}
+
+uint32 ObjectMgr::GenerateNewGroupStorageId()
+{
+    uint32 newStorageId = NextGroupStorageId;
+
+    for (uint32 i = ++NextGroupStorageId; i < 0xFFFFFFFF; ++i)
+    {
+        if ((i < mGroupStorage.size() && mGroupStorage[i] == NULL) || i >= mGroupStorage.size())
+        {
+            NextGroupStorageId = i;
+            break;
+        }
+    }
+
+    if (newStorageId == NextGroupStorageId)
+    {
+        sLog->outError("Group storage ID overflow!! Can't continue, shutting down server. ");
+        World::StopNow(ERROR_EXIT_CODE);
+    }
+
+    return newStorageId;
+}
+
+void ObjectMgr::RegisterGroupStorageId(uint32 storageId, Group* group)
+{
+    // Allocate space if necessary.
+    if (storageId >= uint32(mGroupStorage.size()))
+        mGroupStorage.resize(storageId + 1);
+
+    mGroupStorage[storageId] = group;
+}
+
+void ObjectMgr::FreeGroupStorageId(Group* group)
+{
+    uint32 storageId = group->GetStorageId();
+
+    if (storageId < NextGroupStorageId)
+        NextGroupStorageId = storageId;
+
+    mGroupStorage[storageId] = NULL;
 }
