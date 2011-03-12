@@ -17,8 +17,8 @@
 
 /* ScriptData
 SDName: Argent Challenge Encounter.
-SD%Complete: 50 %
-SDComment: AI for Argent Soldiers are not implemented. AI from bosses need more improvements.
+SD%Complete: 90 %
+SDComment: AI from bosses need more improvements. Need AI for lightwell
 SDCategory: Trial of the Champion
 EndScriptData */
 
@@ -67,7 +67,7 @@ enum eSpells
     SPELL_DOT_PAIN_H            = 34942,
     SPELL_HOLY_SMITE            = 36176,
     SPELL_DOT_PAIN              = 34941,
-    SPELL_FOUNTIN_OF_LIGHT      = 67194, //partially not work
+    SPELL_FOUNTAIN_OF_LIGHT     = 67194, //partially not work
 
     //Lightwielder
     SPELL_BLAZING_LIGHT_H       = 67290,
@@ -126,6 +126,7 @@ public:
                 me->GetMotionMaster()->MovePoint(0,746.87f,665.87f,411.75f);
                 pInstance->SetData(BOSS_ARGENT_CHALLENGE_E, DONE);
                 me->DisappearAndDie();
+                bDone = false;
             } else uiResetTimer -= uiDiff;
 
             if (!UpdateVictim())
@@ -242,6 +243,7 @@ public:
                 me->GetMotionMaster()->MovePoint(0,746.87f,665.87f,411.75f);
                 pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
                 me->DisappearAndDie();
+                bDone = false;
             } else uiResetTimer -= uiDiff; 
 
             if (!UpdateVictim())
@@ -606,7 +608,7 @@ public:
 
                     if (uiFountainTimer <= uiDiff)
                     {
-                         DoCast(me, SPELL_FOUNTIN_OF_LIGHT); 
+                         DoCastAOE(SPELL_FOUNTAIN_OF_LIGHT,false); 
                          uiFountainTimer = 60000;
                     }else 
                          uiFountainTimer -= uiDiff;
@@ -620,17 +622,7 @@ public:
         void JustDied(Unit* /*pKiller*/)
         {
             if (pInstance)
-            {
                 pInstance->SetData(DATA_ARGENT_SOLDIER_DEFEATED,pInstance->GetData(DATA_ARGENT_SOLDIER_DEFEATED) + 1);
-                if (pInstance->GetData(DATA_ARGENT_SOLDIER_DEFEATED) == 9)
-                {
-                        Creature* pArgentChampion = Unit::GetCreature(*me, pInstance->GetData(BOSS_ARGENT_CHAMPION_GUID));
-                        if (pArgentChampion) 
-                        {
-                            pArgentChampion->setFaction(16);
-                        }
-                }
-            }
         }
     };
 
