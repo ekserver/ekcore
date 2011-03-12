@@ -369,7 +369,7 @@ public:
                if ((pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE &&
                    pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE) ||
                    pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == DONE)
-                    me->SummonCreature(VEHICLE_BLACK_KNIGHT,769.834f,651.915f,447.035f,0);
+                   me->SummonCreature(BOSS_BLACK_KNIGHT,SpawnPosition);
             }
         }
 
