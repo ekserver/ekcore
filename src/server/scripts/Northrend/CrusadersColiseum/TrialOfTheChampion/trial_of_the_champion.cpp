@@ -18,7 +18,7 @@
 /* ScriptData
 SDName: Trial Of the Champion
 SD%Complete:
-SDComment:
+SDComment: 
 SDCategory: trial_of_the_champion
 EndScriptData */
 
@@ -369,7 +369,7 @@ public:
                if ((pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE &&
                    pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE) ||
                    pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == DONE)
-                   me->SummonCreature(BOSS_BLACK_KNIGHT,SpawnPosition);
+                   me->SummonCreature(VEHICLE_BLACK_KNIGHT,769.834f,651.915f,447.035f,0);
             }
         }
 

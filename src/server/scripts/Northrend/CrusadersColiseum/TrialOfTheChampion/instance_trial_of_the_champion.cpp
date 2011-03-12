@@ -42,6 +42,7 @@ public:
         instance_trial_of_the_champion_InstanceMapScript(Map* pMap) : InstanceScript(pMap) {Initialize();}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
+        uint32 TeamInInstance;
 
         uint16 uiMovementDone;
         uint16 uiGrandChampionsDeaths;
@@ -49,6 +50,7 @@ public:
 
         uint64 uiAnnouncerGUID;
         uint64 uiMainGateGUID;
+        uint64 uiMainGate1GUID;
         uint64 uiGrandChampionVehicle1GUID;
         uint64 uiGrandChampionVehicle2GUID;
         uint64 uiGrandChampionVehicle3GUID;
@@ -69,9 +71,11 @@ public:
             uiMovementDone = 0;
             uiGrandChampionsDeaths = 0;
             uiArgentSoldierDeaths = 0;
+            TeamInInstance = 0;
 
             uiAnnouncerGUID        = 0;
             uiMainGateGUID         = 0;
+            uiMainGate1GUID        = 0;
             uiGrandChampionVehicle1GUID   = 0;
             uiGrandChampionVehicle2GUID   = 0;
             uiGrandChampionVehicle3GUID   = 0;
@@ -102,7 +106,6 @@ public:
         void OnCreatureCreate(Creature* creature)
         {
             Map::PlayerList const &players = instance->GetPlayers();
-            uint32 TeamInInstance = 0;
 
             if (!players.isEmpty())
             {
@@ -156,6 +159,9 @@ public:
             {
                 case GO_MAIN_GATE:
                     uiMainGateGUID = go->GetGUID();
+                    break;
+                case GO_MAIN_GATE1:
+                    uiMainGate1GUID = go->GetGUID();
                     break;
                 case GO_CHAMPIONS_LOOT:
                 case GO_CHAMPIONS_LOOT_H:
@@ -245,6 +251,7 @@ public:
 
                 case DATA_MOVEMENT_DONE: return uiMovementDone;
                 case DATA_ARGENT_SOLDIER_DEFEATED: return uiArgentSoldierDeaths;
+                case DATA_TEAM_IN_INSTANCE: return TeamInInstance;
             }
 
             return 0;
@@ -256,6 +263,7 @@ public:
             {
                 case DATA_ANNOUNCER: return uiAnnouncerGUID;
                 case DATA_MAIN_GATE: return uiMainGateGUID;
+                case DATA_MAIN_GATE1: return uiMainGate1GUID;
 
                 case DATA_GRAND_CHAMPION_1: return uiGrandChampion1GUID;
                 case DATA_GRAND_CHAMPION_2: return uiGrandChampion2GUID;

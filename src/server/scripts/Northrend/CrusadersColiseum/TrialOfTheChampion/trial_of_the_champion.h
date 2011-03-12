@@ -30,13 +30,15 @@ enum eData
     DATA_LESSER_CHAMPIONS_DEFEATED,
     DATA_START,
     DATA_IN_POSITION,
-    DATA_ARGENT_SOLDIER_DEFEATED
+    DATA_ARGENT_SOLDIER_DEFEATED,
+    DATA_TEAM_IN_INSTANCE
 };
 
 enum Data64
 {
     DATA_ANNOUNCER,
     DATA_MAIN_GATE,
+    DATA_MAIN_GATE1,
 
     DATA_GRAND_CHAMPION_VEHICLE_1,
     DATA_GRAND_CHAMPION_VEHICLE_2,
@@ -82,15 +84,16 @@ enum eNpcs
 enum eGameObjects
 {
     GO_MAIN_GATE                = 195647,
+    GO_MAIN_GATE1               = 195650,
 
     GO_CHAMPIONS_LOOT           = 195709,
-    GO_CHAMPIONS_LOOT_H            = 195710,
+    GO_CHAMPIONS_LOOT_H         = 195710,
 
     GO_EADRIC_LOOT              = 195374,
     GO_EADRIC_LOOT_H            = 195375,
 
     GO_PALETRESS_LOOT           = 195323,
-    GO_PALETRESS_LOOT_H            = 195324
+    GO_PALETRESS_LOOT_H         = 195324
 };
 
 enum eVehicles

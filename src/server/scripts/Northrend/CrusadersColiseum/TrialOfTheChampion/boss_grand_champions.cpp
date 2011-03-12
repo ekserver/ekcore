@@ -73,6 +73,12 @@ enum eSpells
     SPELL_POISON_BOTTLE             = 67701
 };
 
+enum eEnums
+{
+    SAY_START_1                      = -1999939,
+    SAY_START_2                      = -1999937
+};
+
 enum eSeat
 {
     SEAT_ID_0                       = 0
@@ -377,6 +383,7 @@ public:
             if (!bDone && GrandChampionsOutVehicle(me))
             {
                 bDone = true;
+                DoScriptText(SAY_START_2, me);
 
                 if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_1))
                     me->SetHomePosition(739.678f,662.541f,412.393f,4.49f);
@@ -438,6 +445,7 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            DoScriptText(SAY_START_1, me);
             if (pInstance)
                 pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
@@ -578,6 +586,7 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            DoScriptText(SAY_START_1, me);
             if (pInstance)
                 pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
@@ -725,6 +734,7 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            DoScriptText(SAY_START_1, me);
             if (pInstance)
                 pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
@@ -881,6 +891,7 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            DoScriptText(SAY_START_1, me);
             if (pInstance)
                 pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
@@ -1003,6 +1014,7 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            DoScriptText(SAY_START_1, me);
             if (pInstance)
                 pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
