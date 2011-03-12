@@ -605,7 +605,7 @@ public:
 
             if (uiThreatTimer <= uiDiff)
             {
-                me->SetInCombatWithZone();
+                DoAttackerAreaInCombat(me, 100.0f);
                 uiThreatTimer = 5*IN_MILLISECONDS;
             } else uiThreatTimer -= uiDiff;
 
@@ -866,7 +866,7 @@ public:
                         me->AddAura(spellInfo, 2, pTarget);
 
                     DoCast(pTarget, SPELL_ARCANE_BARRAGE);
-                    uiArcaneBarrageTimer = urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS);
+                    uiArcaneBarrageTimer = urand(8*IN_MILLISECONDS, 12*IN_MILLISECONDS);
                 }
             } else uiArcaneBarrageTimer -= uiDiff;
         }
