@@ -20,3 +20,4 @@ printf "\n===================================\n\n"
 
 printf "Full Thread Backtrace:\n"
 thread apply all bt full
+kill

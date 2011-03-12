@@ -87,7 +87,7 @@ class CoredSignalHandler : public Trinity::SignalHandler
 
                     sprintf(buffer, "./createbacktrace %u crash, %u", getpid(), SigNum);
                     system(buffer);
-                    exit(CRASH_EXIT_CODE);
+                    //exit(CRASH_EXIT_CODE);
                     break;
                 }
                 #endif /* WITH_AUTOBACKTRACE */
