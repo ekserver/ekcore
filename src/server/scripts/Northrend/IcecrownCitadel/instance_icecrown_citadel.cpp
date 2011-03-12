@@ -164,7 +164,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         break;
                     case NPC_SE_HIGH_OVERLORD_SAURFANG:
                         if (teamInInstance == ALLIANCE)
-                            creature->UpdateEntry(NPC_SE_MURADIN_BRONZEBEARD, ALLIANCE);
+                            creature->UpdateEntry(NPC_SE_MURADIN_BRONZEBEARD, ALLIANCE, creature->GetCreatureData());
                     case NPC_SE_MURADIN_BRONZEBEARD:
                         saurfangEventNPC = creature->GetGUID();
                         creature->LastUsedScriptID = creature->GetScriptId();
@@ -394,6 +394,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                         return rimefangTrash;
                     case DATA_COLDFLAME_JETS:
                         return coldflameJetsState;
+                    case DATA_TEAM_IN_INSTANCE:
+                        return teamInInstance;
                     default:
                         break;
                 }
@@ -835,10 +837,10 @@ class instance_icecrown_citadel : public InstanceMapScript
             uint64 rimefang;
             std::set<uint64> coldflameJets;
             uint32 teamInInstance;
-            uint8 coldflameJetsState;
-            uint8 frostwyrms;
-            uint8 spinestalkerTrash;
-            uint8 rimefangTrash;
+            uint16 coldflameJetsState;
+            uint16 frostwyrms;
+            uint16 spinestalkerTrash;
+            uint16 rimefangTrash;
             bool isBonedEligible;
             bool isOozeDanceEligible;
             bool isNauseaEligible;

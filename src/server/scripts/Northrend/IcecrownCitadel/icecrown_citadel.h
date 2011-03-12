@@ -73,6 +73,7 @@ enum DataTypes
     DATA_SPINESTALKER               = 23,
     DATA_RIMEFANG                   = 24,
     DATA_COLDFLAME_JETS             = 25,
+    DATA_TEAM_IN_INSTANCE           = 26,
 };
 
 #define MAX_ENCOUNTER 12
@@ -80,6 +81,9 @@ enum DataTypes
 enum CreaturesIds
 {
     // At Light's Hammer
+    NPC_HIGHLORD_TIRION_FORDRING_LH             = 37119,
+    NPC_THE_LICH_KING_LH                        = 37181,
+    NPC_HIGHLORD_BOLVAR_FORDRAGON_LH            = 37183,
     NPC_KOR_KRON_GENERAL                        = 37189,
     NPC_ALLIANCE_COMMANDER                      = 37190,
     NPC_TORTUNOK                                = 37992,    // Druid Armor H
