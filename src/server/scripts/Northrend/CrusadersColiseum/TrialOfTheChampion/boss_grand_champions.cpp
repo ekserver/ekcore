@@ -274,11 +274,15 @@ public:
                     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                     {
                         Player* pPlayer = itr->getSource();
-                        if (pPlayer && !pPlayer->isGameMaster() && me->IsInRange(pPlayer,8.0f,25.0f,false))
+                        if (pPlayer && !pPlayer->isGameMaster() && me->IsInRange(pPlayer,8.0f,25.0f,false) && pPlayer->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
                         {
-                            DoResetThreat();
-                            me->AddThreat(pPlayer,1.0f);
-                            DoCast(pPlayer, SPELL_CHARGE);
+                            Creature* pVehicle = pPlayer->GetVehicleBase()->ToCreature();
+                            if (pVehicle)
+                            {
+                                DoResetThreat();
+                                me->AddThreat(pVehicle,1.0f);
+                                DoCast(pVehicle, SPELL_CHARGE);
+                            }
                             break;
                         }
                     }
@@ -289,23 +293,22 @@ public:
             //dosen't work at all
             if (uiShieldBreakerTimer <= uiDiff)
             {
-                Vehicle *pVehicle = me->GetVehicleKit();
-                if (!pVehicle)
-                    return;
-
-                if (Unit* pPassenger = pVehicle->GetPassenger(SEAT_ID_0))
+                Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                if (me->GetMap()->IsDungeon() && !players.isEmpty())
                 {
-                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
-                    if (me->GetMap()->IsDungeon() && !players.isEmpty())
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                     {
-                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        Player* pPlayer = itr->getSource();
+                        if (pPlayer && !pPlayer->isGameMaster() && me->IsInRange(pPlayer,10.0f,30.0f,false) && pPlayer->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
                         {
-                            Player* pPlayer = itr->getSource();
-                            if (pPlayer && !pPlayer->isGameMaster() && me->IsInRange(pPlayer,10.0f,30.0f,false))
+                            Creature* pVehicle = pPlayer->GetVehicleBase()->ToCreature();
+                            if (pVehicle)
                             {
-                                pPassenger->CastSpell(pPlayer,SPELL_SHIELD_BREAKER,true);
-                                break;
+                                DoResetThreat();
+                                me->AddThreat(pVehicle,1.0f);
+                                DoCast(pVehicle,SPELL_SHIELD_BREAKER);
                             }
+                            break;
                         }
                     }
                 }
