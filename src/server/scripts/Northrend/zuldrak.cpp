@@ -1803,7 +1803,7 @@ public:
 ## npc_bloodrose_datura
 ######*/
 
-//TODO DB-Eintr�ge erstellen
+//TODO DB-Eintraege erstellen
 #define GOSSIP_BLOODROSE                 "Stefan told me you would demonstrate the purpose of this item."
 #define TEXT1                            "Indeed. Watch this, $R."
 #define TEXT2                            "Here, troll... a gift!"
@@ -1846,7 +1846,7 @@ public:
                     Creature* pScout = me->FindNearestCreature(NPC_CAPTURED_DRAKKARI_SCOUT, 10.0f);
                     Creature* pTroll = me->FindNearestCreature(NPC_WITHERED_TROLL, 2.0f);
 
-                    if(pScout || pTroll)
+                    if (pScout || pTroll)
                     {
                         switch (uiStep)
                         {
@@ -1969,15 +1969,16 @@ public:
             Creature* pTroll = me->GetCreature(*me, uiTrollGUID);
             Player* pOwner = me->GetCharmerOrOwnerPlayerOrPlayerItself();
 
-            if (pTroll && pOwner)
+            if (!pOwner)
+                return;
+
+            if (pTroll)
             {
                 pTroll->RemoveCorpse();
                 DoCast(pOwner, SPELL_NASS_KILL_CREDIT);
-                me->GetMotionMaster()->MoveFollow(pOwner, 0.0f, 0.0f);
             }
-            else if (pOwner)
-                me->GetMotionMaster()->MoveFollow(pOwner, 0.0f, 0.0f);
 
+            me->GetMotionMaster()->MoveFollow(pOwner, 0.0f, 0.0f);
             collecting = false;
             me->SetReactState(REACT_AGGRESSIVE);
         }
@@ -1994,6 +1995,46 @@ public:
     CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_nassAI(creature);
+    }
+};
+
+/*######
+## npc_commander_kunz
+######*/
+enum eCommanderKunz
+{
+    QUEST_PATROLL     = 12596,
+    QUEST_RUPERT_A    = 12598,
+    QUEST_RUPERT_B    = 12606,
+    SPELL_RUPERT      = 50634,
+    QUEST_GRONDEL     = 12599,
+    SPELL_GRONDEL     = 51233,
+    QUEST_FINKLESTEIN = 12557,
+    SPELL_FINKLESTEIN = 51232,
+    QUEST_BRANDON     = 12597,
+    CREDIT_BRANDON    = 28042
+};
+
+class npc_commander_kunz : public CreatureScript
+{
+public:
+    npc_commander_kunz() : CreatureScript("npc_commander_kunz") { }
+
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    {
+        if (quest->GetQuestId() == QUEST_PATROLL)
+        {
+            if (player->GetQuestRewardStatus(QUEST_RUPERT_A) || player->GetQuestRewardStatus(QUEST_RUPERT_B))
+                creature->CastSpell(player, SPELL_RUPERT, true);
+            if (player->GetQuestRewardStatus(QUEST_GRONDEL))
+                creature->CastSpell(player, SPELL_GRONDEL, true);
+            if (player->GetQuestRewardStatus(QUEST_FINKLESTEIN))
+                creature->CastSpell(player, SPELL_FINKLESTEIN, true);
+            if (player->GetQuestRewardStatus(QUEST_BRANDON))
+                player->KilledMonsterCredit(CREDIT_BRANDON, 0);
+        }
+
+        return true;
     }
 };
 
@@ -2017,4 +2058,5 @@ void AddSC_zuldrak()
     new go_scourge_enclosure();
     new npc_bloodrose_datura();
     new npc_nass();
+    new npc_commander_kunz();
 }
