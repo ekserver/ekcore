@@ -142,6 +142,10 @@ public:
                     if (TeamInInstance == ALLIANCE)
                         creature->UpdateEntry(NPC_ARELAS,ALLIANCE);
                     break;
+                case NPC_JAEREN_AN:
+                    if (TeamInInstance == ALLIANCE)
+                        creature->UpdateEntry(NPC_ARELAS_AN,ALLIANCE);
+                    break;
                 case VEHICLE_ARGENT_WARHORSE:
                 case VEHICLE_ARGENT_BATTLEWORG:
                     VehicleList.push_back(creature->GetGUID());
@@ -192,10 +196,11 @@ public:
                     }else if (uiData == DONE)
                     {
                         ++uiGrandChampionsDeaths;
-                        if (uiGrandChampionsDeaths == 3)
+                        if (uiGrandChampionsDeaths >= 3)
                         {
                             if (Creature* pAnnouncer =  instance->GetCreature(uiAnnouncerGUID))
                             {
+                                m_auiEncounter[0] = uiData;
                                 pAnnouncer->GetMotionMaster()->MovePoint(0,748.309f,619.487f,411.171f);
                                 pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                                 pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_CHAMPIONS_LOOT_H : GO_CHAMPIONS_LOOT,746.59f,618.49f,411.09f,1.42f,0, 0, 0, 0,90000000);

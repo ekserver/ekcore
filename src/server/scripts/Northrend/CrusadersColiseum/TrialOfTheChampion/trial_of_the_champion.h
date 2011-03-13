@@ -76,9 +76,14 @@ enum eNpcs
 
     NPC_RISEN_JAEREN            = 35545,
     NPC_RISEN_ARELAS            = 35564,
-
+    
+    // Announcer Start Event
     NPC_JAEREN                  = 35004,
-    NPC_ARELAS                  = 35005
+    NPC_ARELAS                  = 35005,
+    
+    // Announcer
+    NPC_JAEREN_AN               = 35591,
+    NPC_ARELAS_AN               = 35592
 };
 
 enum eGameObjects
