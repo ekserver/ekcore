@@ -223,20 +223,36 @@ public:
                     break;
                 case BOSS_ARGENT_CHALLENGE_E:
                     m_auiEncounter[1] = uiData;
-                    if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
+                    if (uiData == IN_PROGRESS)
                     {
-                        pAnnouncer->GetMotionMaster()->MovePoint(0,748.309f,619.487f,411.171f);
-                        pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                        pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_EADRIC_LOOT_H : GO_EADRIC_LOOT,746.59f,618.49f,411.09f,1.42f,0, 0, 0, 0,90000000);
+                    for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
+                        if (Creature* pSummon = instance->GetCreature(*itr))
+                            pSummon->RemoveFromWorld();
+                    }else if (uiData == DONE)
+                    {
+                        if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
+                        {
+                            pAnnouncer->GetMotionMaster()->MovePoint(0,748.309f,619.487f,411.171f);
+                            pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                            pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_EADRIC_LOOT_H : GO_EADRIC_LOOT,746.59f,618.49f,411.09f,1.42f,0, 0, 0, 0,90000000);
+                        }
                     }
                     break;
                 case BOSS_ARGENT_CHALLENGE_P:
                     m_auiEncounter[2] = uiData;
-                    if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
+                    if (uiData == IN_PROGRESS)
                     {
-                        pAnnouncer->GetMotionMaster()->MovePoint(0,748.309f,619.487f,411.171f);
-                        pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                        pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_PALETRESS_LOOT_H : GO_PALETRESS_LOOT,746.59f,618.49f,411.09f,1.42f,0, 0, 0, 0,90000000);
+                        for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
+                            if (Creature* pSummon = instance->GetCreature(*itr))
+                                pSummon->RemoveFromWorld();
+                    }else if (uiData == DONE)
+                    {
+                        if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
+                        {
+                            pAnnouncer->GetMotionMaster()->MovePoint(0,748.309f,619.487f,411.171f);
+                            pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                            pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_PALETRESS_LOOT_H : GO_PALETRESS_LOOT,746.59f,618.49f,411.09f,1.42f,0, 0, 0, 0,90000000);
+                        }
                     }
                     break;
             }

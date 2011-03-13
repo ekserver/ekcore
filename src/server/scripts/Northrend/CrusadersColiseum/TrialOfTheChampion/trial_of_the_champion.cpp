@@ -702,27 +702,21 @@ public:
         InstanceScript* pInstance = pCreature->GetInstanceScript();
 
         if (pInstance &&
-            ((pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE &&
+            pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE &&
             pInstance->GetData(BOSS_BLACK_KNIGHT) == DONE &&
-            pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE) ||
+            (pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE ||
             pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == DONE))
+
             return false;
 
-        if (pInstance)
-        {
-            if (pInstance->GetData(BOSS_GRAND_CHAMPIONS) == NOT_STARTED)
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_START_EVENT1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-
-            if (pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE && (
-                pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == NOT_STARTED || 
-                pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == NOT_STARTED ))
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_START_EVENT2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-            
-            if (pInstance->GetData(BOSS_BLACK_KNIGHT) == NOT_STARTED &&  (
-               pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE || 
-               pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == DONE ))
-               pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_START_EVENT2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-        }
+        if (pInstance &&
+            pInstance->GetData(BOSS_GRAND_CHAMPIONS) == NOT_STARTED &&
+            pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == NOT_STARTED &&
+            pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == NOT_STARTED &&
+            pInstance->GetData(BOSS_BLACK_KNIGHT) == NOT_STARTED)
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_START_EVENT1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        else if (pInstance)
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_START_EVENT2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
         pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
 

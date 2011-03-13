@@ -288,6 +288,9 @@ public:
                     pInstance->HandleGameObject(pGO->GetGUID(),true);
                 if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
                     pInstance->HandleGameObject(pGO->GetGUID(),true);
+                pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
+                if (IsHeroic())
+                    pInstance->DoCompleteAchievement(ACHIEV_CONF);
             }
         } 
 
@@ -307,12 +310,11 @@ public:
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
-                me->GetMotionMaster()->MovePoint(0,746.87f,665.87f,411.75f);
-                pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
-                if (IsHeroic())
-                    pInstance->DoCompleteAchievement(ACHIEV_CONF);
-                me->DisappearAndDie();
+                me->GetMotionMaster()->MovePoint(0,746.843f, 695.68f, 412.339f);                
                 bDone = false;
+                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
+                    pInstance->HandleGameObject(pGO->GetGUID(),true);
+                me->DisappearAndDie();
             } else uiResetTimer -= uiDiff; 
 
             if (!UpdateVictim())
