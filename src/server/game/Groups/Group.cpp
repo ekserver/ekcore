@@ -1161,33 +1161,6 @@ void Group::SetTargetIcon(uint8 id, uint64 whoGuid, uint64 targetGuid)
     BroadcastPacket(&data, true);
 }
 
-void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_level, Player* & member_with_max_level, Player* & not_gray_member_with_max_level, bool& withXPBoost)
-{
-    int32 boostItemCount = 0;
-    for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
-    {
-        Player* member = itr->getSource();
-        if (!member || !member->isAlive())                   // only for alive
-            continue;
-
-        if (!member->IsAtGroupRewardDistance(victim))        // at req. distance
-            continue;
-
-        if( member->HasItemOrGemWithIdEquipped(sWorld->getIntConfig(CONFIG_XP_BOOST_ITEMID), 1) )
-            boostItemCount ++;
-
-        ++count;
-        sum_level += member->getLevel();
-        if (!member_with_max_level || member_with_max_level->getLevel() < member->getLevel())
-            member_with_max_level = member;
-
-        uint32 gray_level = Trinity::XP::GetGrayLevel(member->getLevel());
-        if (victim->getLevel() > gray_level && (!not_gray_member_with_max_level || not_gray_member_with_max_level->getLevel() < member->getLevel()))
-            not_gray_member_with_max_level = member;
-    }
-    withXPBoost = boostItemCount > 0 && count > 1;      // we get the item xp boost only if more then one member is in kill range and one or more members are equipped with the item
-}
-
 void Group::SendTargetIconList(WorldSession *session)
 {
     if (!session)
