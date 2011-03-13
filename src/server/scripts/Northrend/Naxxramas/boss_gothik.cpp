@@ -248,60 +248,27 @@ public:
 
         void DoGothikSummon(uint32 entry)
         {
-            if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+            switch(entry)
             {
-                switch(entry)
+                case MOB_LIVE_TRAINEE:
                 {
-                    case MOB_LIVE_TRAINEE:
-                    {
-                        if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[0]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
-                        if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[1]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
-                        if (Creature *LiveTrigger2 = Unit::GetCreature(*me, LiveTriggerGUID[2]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger2, 1);
-                        break;
-                    }
-                    case MOB_LIVE_KNIGHT:
-                    {
-                        if (Creature *LiveTrigger3 = Unit::GetCreature(*me, LiveTriggerGUID[3]))
-                            DoSummon(MOB_LIVE_KNIGHT, LiveTrigger3, 1);
-                        if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[5]))
-                            DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
-                        break;
-                    }
-                    case MOB_LIVE_RIDER:
-                    {
-                        if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
-                        break;
-                    }
+                    if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                        DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
+                    if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                        DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
+                    break;
                 }
-            }
-            else
-            {
-                switch(entry)
+                case MOB_LIVE_KNIGHT:
                 {
-                    case MOB_LIVE_TRAINEE:
-                    {
-                        if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
-                        if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
-                        break;
-                    }
-                    case MOB_LIVE_KNIGHT:
-                    {
-                        if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
-                        break;
-                    }
-                    case MOB_LIVE_RIDER:
-                    {
-                        if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
-                        break;
-                    }
+                    if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                        DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
+                    break;
+                }
+                case MOB_LIVE_RIDER:
+                {
+                    if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                        DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
+                    break;
                 }
             }
         }
