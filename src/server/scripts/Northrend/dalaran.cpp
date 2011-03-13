@@ -213,47 +213,11 @@ public:
     }
 };
 
-/*######
-## npc_steampowered_auctioneer
-######*/
-
-#define GOSSIP_TEXT_ID_STEAM  14764
-
-class npc_steampowered_auctioneer : public CreatureScript
-{
-public:
-    npc_steampowered_auctioneer() : CreatureScript("npc_steampowered_auctioneer") { }
-
-    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
-    {
-        if (!pCreature->isAuctioner())
-            return false;
-
-        if (pPlayer->GetSkillValue(SKILL_ENGINERING) > 349)
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_AUCTION);
-
-        pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID_STEAM, pCreature->GetGUID());
-
-        return true;
-    }
-
-    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
-    {
-        pPlayer->PlayerTalkClass->ClearMenus();
-
-        if (uiAction == GOSSIP_ACTION_AUCTION)
-            pPlayer->GetSession()->SendAuctionHello(pCreature->GetGUID(), pCreature);
-
-        return true;
-    }
-};
-
 void AddSC_dalaran()
 {
     new npc_mageguard_dalaran();
     new npc_hira_snowdawn();
     new npc_archmage_vargoth();
-    new npc_steampowered_auctioneer();
 
     //INSERT INTO npc_text (ID,text0_0) VALUES 
     //(40000,'Amazing! There are passages in here that I have never seen before. This must have taken quite a while for you to track down. If you ever find anymore books like this, I would like to be notified immediately. $B$BPlease take one of my Kirin Tor Familiars with you just in case you stumble across anything.');
