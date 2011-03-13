@@ -1,0 +1,2 @@
+-- Template update of all Memories of boss "Argent Confessor Paletress"
+UPDATE `creature_template` SET `faction_A`=16, `faction_H`=16, `rank`=1, `minlevel`=82, `maxlevel`=82, `exp`=2 WHERE `name` LIKE 'Memory of %';

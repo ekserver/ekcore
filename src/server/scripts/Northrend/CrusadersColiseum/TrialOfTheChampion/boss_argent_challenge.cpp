@@ -17,8 +17,8 @@
 
 /* ScriptData
 SDName: Argent Challenge Encounter.
-SD%Complete: 50 %
-SDComment: AI for Argent Soldiers are not implemented. AI from bosses need more improvements.
+SD%Complete: 90 %
+SDComment: AI from bosses need more improvements. Need AI for lightwell
 SDCategory: Trial of the Champion
 EndScriptData */
 
@@ -67,13 +67,41 @@ enum eSpells
     SPELL_DOT_PAIN_H            = 34942,
     SPELL_HOLY_SMITE            = 36176,
     SPELL_DOT_PAIN              = 34941,
-    SPELL_FOUNTIN_OF_LIGHT      = 67194, //partially not work
+    SPELL_FOUNTAIN_OF_LIGHT     = 67194, //partially not work
 
     //Lightwielder
     SPELL_BLAZING_LIGHT_H       = 67290,
     SPELL_BLAZING_LIGHT         = 67247,
     SPELL_UNBALANCING_STRIKE    = 67237,
     SPELL_CLEAVE                = 15284
+};
+
+enum Misc
+{
+    ACHIEV_FACEROLLER           = 3803,
+    ACHIEV_CONF                 = 3802
+};
+
+enum eEnums
+{
+    SAY_MEM_DIE                             = -1999968,
+    SAY_DEATH_P                             = -1999967,
+    SAY_INTRO_P2                            = -1999966,
+    SAY_INTRO_P1                            = -1999965,
+    SAY_INTRO_E                             = -1999964,
+    SAY_HAMMER_E                            = -1999963,
+    SAY_DEATH_E                             = -1999962,
+    SAY_START_E                             = -1999961,
+    SAY_KILL1_P                             = -1999960,
+    SAY_KILL2_P                             = -1999959,
+    SAY_KILL1_E                             = -1999958,
+    SAY_KILL2_E                             = -1999957,
+    SAY_START_10                            = -1999956,
+    SAY_START_9                             = -1999955,
+    SAY_START_8                             = -1999941,
+    SAY_START_P                             = -1999955,
+    SAY_START_7                             = -1999954,
+    SAY_START_6                             = -1999951
 };
 
 class boss_eadric : public CreatureScript
@@ -116,7 +144,24 @@ public:
                 EnterEvadeMode();
                 me->setFaction(35);
                 bDone = true;
+                DoScriptText(SAY_DEATH_E, me);
+                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
+                    pInstance->HandleGameObject(pGO->GetGUID(),true);
+                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
+                    pInstance->HandleGameObject(pGO->GetGUID(),true);
             }
+        }
+
+        void EnterCombat(Unit* pWho)
+        {
+            DoScriptText(SAY_START_E, me);           
+        }
+
+        void KilledUnit(Unit* pVictim)
+        {
+            DoScriptText(urand(0, 1) ? SAY_KILL1_E : SAY_KILL2_E, me);
+            if (pInstance)
+                pInstance->SetData(BOSS_ARGENT_CHALLENGE_E,IN_PROGRESS);
         }
 
         void UpdateAI(const uint32 uiDiff)
@@ -126,6 +171,9 @@ public:
                 me->GetMotionMaster()->MovePoint(0,746.87f,665.87f,411.75f);
                 pInstance->SetData(BOSS_ARGENT_CHALLENGE_E, DONE);
                 me->DisappearAndDie();
+                bDone = false;
+                if (IsHeroic())
+                    pInstance->DoCompleteAchievement(ACHIEV_FACEROLLER);
             } else uiResetTimer -= uiDiff;
 
             if (!UpdateVictim())
@@ -221,7 +269,10 @@ public:
         void SetData(uint32 uiId, uint32 /*uiValue*/)
         {
             if (uiId == 1)
+            {
                 me->RemoveAura(SPELL_SHIELD);
+                DoScriptText(SAY_MEM_DIE, me);
+            }
         }
         
         void DamageTaken(Unit * /*done_by*/, uint32 &damage)
@@ -232,15 +283,37 @@ public:
                 EnterEvadeMode();
                 me->setFaction(35);
                 bDone = true;
+                DoScriptText(SAY_DEATH_P, me);
+                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
+                    pInstance->HandleGameObject(pGO->GetGUID(),true);
+                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
+                    pInstance->HandleGameObject(pGO->GetGUID(),true);
+                pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
+                if (IsHeroic())
+                    pInstance->DoCompleteAchievement(ACHIEV_CONF);
             }
         } 
+
+        void EnterCombat(Unit* pWho)
+        {
+            DoScriptText(SAY_START_P, me);           
+        }
+
+        void KilledUnit(Unit* pVictim)
+        {
+            DoScriptText(urand(0, 1) ? SAY_KILL1_P : SAY_KILL2_P, me);
+            if (pInstance)
+                pInstance->SetData(BOSS_ARGENT_CHALLENGE_P,IN_PROGRESS);
+        }
 
         void UpdateAI(const uint32 uiDiff)
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
-                me->GetMotionMaster()->MovePoint(0,746.87f,665.87f,411.75f);
-                pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
+                me->GetMotionMaster()->MovePoint(0,746.843f, 695.68f, 412.339f);                
+                bDone = false;
+                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
+                    pInstance->HandleGameObject(pGO->GetGUID(),true);
                 me->DisappearAndDie();
             } else uiResetTimer -= uiDiff; 
 
@@ -301,7 +374,6 @@ public:
                 DoCast(me, SPELL_SHIELD);
                 DoCastAOE(SPELL_SUMMON_MEMORY,false);
                 DoCastAOE(SPELL_CONFESS,false);
-
                 bHealth = true;
             }
 
@@ -606,7 +678,7 @@ public:
 
                     if (uiFountainTimer <= uiDiff)
                     {
-                         DoCast(me, SPELL_FOUNTIN_OF_LIGHT); 
+                         DoCastAOE(SPELL_FOUNTAIN_OF_LIGHT,false); 
                          uiFountainTimer = 60000;
                     }else 
                          uiFountainTimer -= uiDiff;
@@ -620,17 +692,7 @@ public:
         void JustDied(Unit* /*pKiller*/)
         {
             if (pInstance)
-            {
                 pInstance->SetData(DATA_ARGENT_SOLDIER_DEFEATED,pInstance->GetData(DATA_ARGENT_SOLDIER_DEFEATED) + 1);
-                if (pInstance->GetData(DATA_ARGENT_SOLDIER_DEFEATED) == 9)
-                {
-                        Creature* pArgentChampion = Unit::GetCreature(*me, pInstance->GetData(BOSS_ARGENT_CHAMPION_GUID));
-                        if (pArgentChampion) 
-                        {
-                            pArgentChampion->setFaction(16);
-                        }
-                }
-            }
         }
     };
 
