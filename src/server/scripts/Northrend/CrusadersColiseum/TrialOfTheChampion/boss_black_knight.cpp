@@ -17,8 +17,8 @@
 
 /* ScriptData
 SDName: Boss Black Knight
-SD%Complete: 80%
-SDComment: missing yells. not sure about timers.
+SD%Complete: 95%
+SDComment: not sure about timers.
 SDCategory: Trial of the Champion
 EndScriptData */
 
