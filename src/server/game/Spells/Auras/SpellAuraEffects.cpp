@@ -2535,7 +2535,7 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
             }
             // Arcane Overload
             case 56432:
-                target->CastCustomSpell(triggerSpellId, SPELLVALUE_RADIUS_MOD, (int32)((100 - (m_tickNumber + 5) * 2) * 100), NULL, true, NULL, this);
+                target->CastCustomSpell(triggerSpellId, SPELLVALUE_RADIUS_MOD, (100 - (m_tickNumber + 5) * 2) * 100, NULL, true, NULL, this);
                 return;
         }
     }

@@ -59,6 +59,7 @@ enum eYells
     SAY_OUTRO_2                              =  -1616032,
     SAY_OUTRO_3                              =  -1616033,
     SAY_OUTRO_4                              =  -1616034
+    // Malygos fixes his eyes on you.
 };
 
 enum eSpells
@@ -320,7 +321,8 @@ public:
             if (uiPhase != PHASE_GROUND || pWho->GetTypeId() != TYPEID_UNIT)
                 return;
 
-            if (pWho->GetEntry() == NPC_POWER_SPARK && me->GetDistance(pWho) < 5.0f && !pWho->HasAura(SPELL_POWER_SPARK_PLAYERS))
+            if (pWho->GetEntry() == NPC_POWER_SPARK && pWho->GetExactDist(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) < 8.0f
+                && !pWho->HasAura(SPELL_POWER_SPARK_PLAYERS))
             {
                 DoCast(SPELL_POWER_SPARK);
                 DoScriptText(SAY_SPARK_BUFFED, me);
@@ -371,9 +373,9 @@ public:
                     {
                         DoScriptText(SAY_SPARK_SUMMON, me);
                         pSpark->SetFlying(true);
+                        pSpark->SetSpeed(MOVE_FLIGHT, 0.8f);
                         pSpark->SetReactState(REACT_PASSIVE);
                         pSpark->SetInCombatWithZone();
-                        pSpark->GetMotionMaster()->MoveFollow(me, 0.0f, 0.0f);
                     }
                     break;
                 }
@@ -391,6 +393,7 @@ public:
                         pOverload->AddUnitState(UNIT_STAT_ROOT);
                         pOverload->SetReactState(REACT_PASSIVE);
                         pOverload->SetInCombatWithZone();
+                        pOverload->GetMotionMaster()->MoveIdle();
                         DoCast(pOverload, SPELL_ARCANE_BOMB, true);
                     }
                     break;
@@ -477,16 +480,16 @@ public:
                 return;
 
             for (std::set<uint64>::const_iterator itr = SparkList.begin(); itr != SparkList.end(); ++itr)
-                if (Unit* pSpark = me->GetUnit(*me, *itr))
+                if (Creature* pSpark = me->GetCreature(*me, *itr))
                 {
                     // spark already "dead"
                     if (pSpark->HasAura(SPELL_POWER_SPARK_PLAYERS))
                         continue;
 
                     if (move)
-                        pSpark->GetMotionMaster()->MoveFollow(me, 0.0f, 0.0f);
+                        pSpark->AI()->DoAction(1);
                     else
-                        pSpark->GetMotionMaster()->Clear();
+                        pSpark->AI()->DoAction(0);
 
                     // remove remaining free sparks
                     if (uiPhase == PHASE_ADDS)
@@ -582,6 +585,7 @@ public:
             {
                 target->CastSpell(target, SPELL_ARCANE_BOMB_KNOCKBACK, true);
                 target->CastSpell(target, SPELL_ARCANE_OVERLOAD, true);
+                target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             }
         }
 
@@ -1039,11 +1043,35 @@ public:
 
     struct npc_power_sparkAI : public ScriptedAI
     {
-        npc_power_sparkAI(Creature* pCreature) : ScriptedAI(pCreature) {}
+        npc_power_sparkAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* m_pInstance;
+
+        uint32 uiTimer;
+        bool canMove;
 
         void Reset()
         {
+            canMove = true;
+            uiTimer = 1*IN_MILLISECONDS;
             DoCast(me, SPELL_POWER_SPARK_VISUAL, true);
+        }
+
+        void DoAction(const int32 param)
+        {
+            if (param == 1)
+            {
+                canMove = true;
+            }
+            else
+            {
+                me->SetSpeed(MOVE_FLIGHT, 1.2f);
+                me->GetMotionMaster()->Clear();
+                canMove = false;
+            }
         }
 
         void DamageTaken(Unit * /* DoneBy */, uint32 &uiDamage)
@@ -1060,6 +1088,20 @@ public:
                 me->GetMotionMaster()->MoveFall(FLOOR_Z); // TODO: really remove fly state
                 me->ForcedDespawn(60*IN_MILLISECONDS);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            }
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (canMove && me->CanFreeMove())
+            {
+                if (uiTimer <= uiDiff)
+                {
+                    if (Creature* pMalygos = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_MALYGOS) : 0))
+                        me->GetMotionMaster()->MovePoint(0, pMalygos->GetPositionX(), pMalygos->GetPositionY(), pMalygos->GetPositionZ());
+                    
+                    uiTimer = 1*IN_MILLISECONDS;
+                } else uiTimer -= uiDiff;
             }
         }
     };
