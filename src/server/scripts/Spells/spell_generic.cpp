@@ -1072,6 +1072,34 @@ public:
     }
 };
 
+// Shield-Breaker 68504
+class spell_gen_npcshieldbreaker : public SpellScriptLoader
+{
+public:
+    spell_gen_npcshieldbreaker() : SpellScriptLoader("spell_gen_npcshieldbreaker") { }
+
+    class spell_gen_npcshieldbreaker_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_gen_npcshieldbreaker_SpellScript)
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit * target = GetHitUnit())
+                target->RemoveAuraFromStack(SPELL_DEFEND);
+        }
+
+        void Register()
+        {
+            OnEffect += SpellEffectFn(spell_gen_npcshieldbreaker_SpellScript::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_gen_npcshieldbreaker_SpellScript();
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -1098,4 +1126,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_biting_cold_dot();
     new spell_gen_shieldbreaker();
     new spell_gen_atcharge();
+    new spell_gen_npcshieldbreaker();
 }
