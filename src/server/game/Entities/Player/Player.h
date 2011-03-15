@@ -1022,7 +1022,6 @@ private:
 
     uint32 _xp;
 };
->>>>>>> 16e40cc8cf3e6af070d25421a2a109054e49f80e
 
 class Player : public Unit, public GridObject<Player>
 {
