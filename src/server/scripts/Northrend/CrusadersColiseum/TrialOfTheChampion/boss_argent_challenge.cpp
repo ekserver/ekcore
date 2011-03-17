@@ -755,10 +755,55 @@ public:
     }
 };
 
+enum ReflectiveShield
+{
+    SPELL_REFLECTIVE_SHIELD_TRIGGERED = 33619,
+};
+
+// Reflective Shield 66515
+class spell_gen_reflective_shield : public SpellScriptLoader
+{
+    public:
+        spell_gen_reflective_shield() : SpellScriptLoader("spell_gen_reflective_shield") { }
+
+        class spell_gen_reflective_shield_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_reflective_shield_AuraScript);
+
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                return sSpellStore.LookupEntry(SPELL_REFLECTIVE_SHIELD_TRIGGERED);
+            }
+
+            void Trigger(AuraEffect * aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            {
+                Unit * target = dmgInfo.GetAttacker();
+                if (!target)
+                    return;
+                Unit * caster = GetCaster();
+                if (!caster)
+                    return;
+                int32 bp = CalculatePctN(absorbAmount, 25);
+                target->CastCustomSpell(target, SPELL_REFLECTIVE_SHIELD_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
+            }
+
+            void Register()
+            {
+                 AfterEffectAbsorb += AuraEffectAbsorbFn(spell_gen_reflective_shield_AuraScript::Trigger, EFFECT_0);
+            }
+        };
+
+        AuraScript *GetAuraScript() const
+        {
+            return new spell_gen_reflective_shield_AuraScript();
+        }
+};
+
 void AddSC_boss_argent_challenge()
 {
     new boss_eadric();
     new boss_paletress();
     new npc_memory();
     new npc_argent_soldier();
+    new spell_gen_reflective_shield();
 }
