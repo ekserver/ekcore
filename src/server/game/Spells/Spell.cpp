@@ -2242,6 +2242,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
             }
 
             Position pos;
+            // Can't we always use GetFirstCollisionPosition()?
             switch (cur)
             {
                 case TARGET_DEST_CASTER_FRONT_LEAP:
@@ -2249,6 +2250,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                 case TARGET_DEST_CASTER_BACK_LEFT:
                 case TARGET_DEST_CASTER_BACK_RIGHT:
                 case TARGET_DEST_CASTER_FRONT_RIGHT:
+                case TARGET_DEST_CASTER_FRONT:
                     m_caster->GetFirstCollisionPosition(pos, dist, angle);
                     break;
                 default:
