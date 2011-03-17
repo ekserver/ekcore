@@ -59,7 +59,6 @@ enum eYells
     SAY_OUTRO_2                              =  -1616032,
     SAY_OUTRO_3                              =  -1616033,
     SAY_OUTRO_4                              =  -1616034
-    // Malygos fixes his eyes on you.
 };
 
 enum eSpells
@@ -125,7 +124,9 @@ enum eAction
     ACTION_OVERLOAD     = 3,
     ACTION_DEEP_BREATH  = 4,
     ACTION_SPAWN_ADDS   = 5,
-    ACTION_MOUNT_ALL    = 6
+    ACTION_MOUNT_ALL    = 6,
+    ACTION_CAST_SURGE   = 7,
+    ACTION_CLEAR_PLR    = 8
 };
 
 enum eMovePoints
@@ -167,6 +168,7 @@ static Position LordLocations[]=
 };
 
 #define FLOOR_Z           268.17f
+#define WHISPER_SURGE     "Malygos fixes his eyes on you."
 
 class boss_malygos : public CreatureScript
 {
@@ -248,6 +250,7 @@ public:
         void JustReachedHome()
         {
             Reset();
+            me->setActive(false); // needed?
         }
 
         void JustSummoned(Creature *summon)
@@ -255,6 +258,7 @@ public:
             switch (summon->GetEntry())
             {
                 case NPC_POWER_SPARK:
+                    summon->setActive(true);
                     SparkList.insert(summon->GetGUID());
                     break;
                 case NPC_STATIC_FIELD:
@@ -336,6 +340,7 @@ public:
             {
                 case ACTION_START:
                 {
+                    me->setActive(true);
                     me->SetInCombatWithZone();
                     me->GetMotionMaster()->MovePoint(POINT_START, Locations[0]);
 
@@ -469,6 +474,41 @@ public:
                     me->SetInCombatWithZone();
                     break;
                 }
+                case ACTION_CAST_SURGE:
+                {
+                    if (Unit* pTarget = SelectVehicleBaseOrPlayer())
+                    {
+                        if (!urand(0, 2))
+                            DoScriptText(SAY_SURGE_OF_POWER, me);
+
+                        if (Player* pPlayer = pTarget->GetCharmerOrOwnerPlayerOrPlayerItself())
+                            me->MonsterWhisper(WHISPER_SURGE, pPlayer->GetGUID(), true);
+                        DoCast(pTarget, RAID_MODE(SPELL_SURGE_OF_POWER_N, SPELL_SURGE_OF_POWER_H));
+                    }
+                    break;
+                }
+                case ACTION_CLEAR_PLR:
+                {
+                    /* workaround to prevent players from falling through map in alive state (once they got unmounted) */
+                    Map *map = me->GetMap();
+                    if (!map->IsDungeon())
+                        return;
+
+                    Map::PlayerList const &PlayerList = map->GetPlayers();
+                    for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    {
+                        Player* i_pl = i->getSource();
+                        if (i_pl && !i_pl->isGameMaster() && i_pl->isAlive())
+                        {
+                            if (!i_pl->GetVehicle())
+                            {
+                                i_pl->SetFlying(true);
+                                me->Kill(i_pl, false);
+                            }
+                        }
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -571,6 +611,7 @@ public:
                     DoCast(me, SPELL_ROOT, true);
                     uiSurgeOfPowerTimer = 10*IN_MILLISECONDS;
                     uiStormTimer = 15*IN_MILLISECONDS;
+                    uiWaitTimer = 1*IN_MILLISECONDS;
                     uiPhase = PHASE_DRAGONS;
                     break;
                 }
@@ -748,20 +789,14 @@ public:
                             if (!urand(0, 2))
                                 DoScriptText(RAND(SAY_PHASE3_CAST_1, SAY_PHASE3_CAST_2, SAY_PHASE3_CAST_3), me);
                             DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_N, SPELL_ARCANE_STORM_H));
-                            uiStormTimer = urand(8*IN_MILLISECONDS, 12*IN_MILLISECONDS);
+                            uiStormTimer = urand(6*IN_MILLISECONDS, 10*IN_MILLISECONDS);
                         }
                     } else uiStormTimer -= uiDiff;
 
-                    // TODO: check timer
                     if (uiSurgeOfPowerTimer <= uiDiff)
                     {
-                        if (Unit* pTarget = SelectVehicleBaseOrPlayer())
-                        {
-                            if (!urand(0, 2))
-                                DoScriptText(SAY_SURGE_OF_POWER, me);
-                            DoCast(pTarget, RAID_MODE(SPELL_SURGE_OF_POWER_N, SPELL_SURGE_OF_POWER_H));
-                        }
-                        uiSurgeOfPowerTimer = urand(12*IN_MILLISECONDS, 16*IN_MILLISECONDS);
+                        DoAction(ACTION_CAST_SURGE);
+                        uiSurgeOfPowerTimer = 10*IN_MILLISECONDS;
                     } else uiSurgeOfPowerTimer -= uiDiff;
 
                     if (uiArcanePulseTimer <= uiDiff)
@@ -783,6 +818,13 @@ public:
                             uiStaticFieldTimer = 25*IN_MILLISECONDS;
                         }
                     } else uiStaticFieldTimer -= uiDiff;
+
+                    if (uiWaitTimer <= uiDiff)
+                    {
+                        DoAction(ACTION_CLEAR_PLR);
+                        uiWaitTimer = 1*IN_MILLISECONDS;
+                    } else uiWaitTimer -= uiDiff;
+                    
                     break;
                 }
                 case PHASE_IDLE:
