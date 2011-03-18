@@ -480,8 +480,8 @@ inline void Battleground::_ProcessJoin(uint32 diff)
             PlaySoundToAll(SOUND_BG_START);
 
             uint64 dummy = 0;
-            if(GetPlayers().begin() != GetPlayers().end())
-                dummy =  GetPlayers().begin()->first;
+            if (GetPlayers().begin() != GetPlayers().end())
+                dummy = GetPlayers().begin()->first;
 
             for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if (Player* plr = sObjectMgr->GetPlayer(itr->first))
