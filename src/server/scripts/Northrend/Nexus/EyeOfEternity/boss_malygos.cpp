@@ -65,10 +65,10 @@ enum eSpells
 {
     // phase 1
     SPELL_IRIS_VISUAL                        = 61012,
-    SPELL_ARCANE_BREATH_N                    = 56272,
-    SPELL_ARCANE_BREATH_H                    = 60072,
-    SPELL_ARCANE_STORM_N                     = 61693,
-    SPELL_ARCANE_STORM_H                     = 61694,
+    SPELL_ARCANE_BREATH_10                   = 56272,
+    SPELL_ARCANE_BREATH_25                   = 60072,
+    SPELL_ARCANE_STORM_10                    = 61693,
+    SPELL_ARCANE_STORM_25                    = 61694,
     SPELL_VORTEX                             = 56105,
     SPELL_VORTEX_VISUAL                      = 55873,
     SPELL_VORTEX_PLAYER                      = 55853,
@@ -82,8 +82,8 @@ enum eSpells
     SPELL_ARCANE_OVERLOAD                    = 56432,
     SPELL_DEEP_BREATH                        = 56505,
 
-    SPELL_ARCANE_SHOCK_N                     = 57058,
-    SPELL_ARCANE_SHOCK_H                     = 60073,
+    SPELL_ARCANE_SHOCK_10                    = 57058,
+    SPELL_ARCANE_SHOCK_25                    = 60073,
     SPELL_HASTE                              = 57060,
     SPELL_ARCANE_BARRAGE                     = 56397,
     SPELL_ARCANE_BARRAGE_DMG                 = 63934,
@@ -91,14 +91,13 @@ enum eSpells
     SPELL_DESTROY_PLATFORM_CHANNEL           = 58842,
     SPELL_DESTROY_PLATFORM_BOOM              = 59084,
     SPELL_DESTROY_PLATFORM_EVENT             = 59099,
-    //SPELL_SUMMON_RED_DRAGON_BUDDY            = 56070,
 
     // phase 3
     SPELL_ARCANE_PULSE                       = 57432,
     SPELL_STATIC_FIELD                       = 57428,
     SPELL_STATIC_FIELD_MISSLE                = 57430,
-    SPELL_SURGE_OF_POWER_N                   = 57407,
-    SPELL_SURGE_OF_POWER_H                   = 60936,
+    SPELL_SURGE_OF_POWER_10                  = 57407,
+    SPELL_SURGE_OF_POWER_25                  = 60936,
 
     SPELL_ALEXSTRASZAS_GIFT_VISUAL           = 61023,
     SPELL_ALEXSTRASZAS_GIFT_BEAM             = 61028,
@@ -483,7 +482,7 @@ public:
 
                         if (Player* pPlayer = pTarget->GetCharmerOrOwnerPlayerOrPlayerItself())
                             me->MonsterWhisper(WHISPER_SURGE, pPlayer->GetGUID(), true);
-                        DoCast(pTarget, RAID_MODE(SPELL_SURGE_OF_POWER_N, SPELL_SURGE_OF_POWER_H));
+                        DoCast(pTarget, RAID_MODE(SPELL_SURGE_OF_POWER_10, SPELL_SURGE_OF_POWER_25));
                     }
                     break;
                 }
@@ -684,7 +683,7 @@ public:
  
                     if (uiStormTimer <= uiDiff)
                     {
-                        DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_N, SPELL_ARCANE_STORM_H), true);
+                        DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_10, SPELL_ARCANE_STORM_25), true);
                         uiStormTimer = urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS);
                     } else uiStormTimer -= uiDiff;
 
@@ -696,7 +695,7 @@ public:
 
                     if (uiArcaneBreathTimer <= uiDiff)
                     {
-                        DoCast(me->getVictim(), RAID_MODE(SPELL_ARCANE_BREATH_N, SPELL_ARCANE_BREATH_H));
+                        DoCast(me->getVictim(), RAID_MODE(SPELL_ARCANE_BREATH_10, SPELL_ARCANE_BREATH_25));
                         uiArcaneBreathTimer = 20*IN_MILLISECONDS;
                     } else uiArcaneBreathTimer -= uiDiff;
 
@@ -788,8 +787,8 @@ public:
                         {
                             if (!urand(0, 2))
                                 DoScriptText(RAND(SAY_PHASE3_CAST_1, SAY_PHASE3_CAST_2, SAY_PHASE3_CAST_3), me);
-                            DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_N, SPELL_ARCANE_STORM_H));
-                            uiStormTimer = urand(6*IN_MILLISECONDS, 10*IN_MILLISECONDS);
+                            DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_10, SPELL_ARCANE_STORM_25));
+                            uiStormTimer = urand(7*IN_MILLISECONDS, 10*IN_MILLISECONDS);
                         }
                     } else uiStormTimer -= uiDiff;
 
@@ -949,7 +948,7 @@ public:
 
             if (uiArcaneShockTimer <= uiDiff)
             {
-                DoCast(me->getVictim(), RAID_MODE(SPELL_ARCANE_SHOCK_N, SPELL_ARCANE_SHOCK_H));
+                DoCast(me->getVictim(), RAID_MODE(SPELL_ARCANE_SHOCK_10, SPELL_ARCANE_SHOCK_25));
                 uiArcaneShockTimer = urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS);
             } else uiArcaneShockTimer -= uiDiff;
 
@@ -1051,7 +1050,9 @@ public:
                     case 4:
                     {
                         DoScriptText(SAY_OUTRO_3, me);
-                        me->SummonGameObject(RAID_MODE(GO_ALEXSTRASZAS_GIFT, GO_ALEXSTRASZAS_GIFT_H), Locations[5].GetPositionX(),
+                        me->SummonGameObject(RAID_MODE(GO_ALEXSTRASZAS_GIFT_10, GO_ALEXSTRASZAS_GIFT_25), Locations[5].GetPositionX(),
+                            Locations[5].GetPositionY(), Locations[5].GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
+                        me->SummonGameObject(RAID_MODE(GO_HEART_OF_MAGIC_10, GO_HEART_OF_MAGIC_25), Locations[5].GetPositionX() + 15.0f,
                             Locations[5].GetPositionY(), Locations[5].GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
 
                         if (m_pInstance)
