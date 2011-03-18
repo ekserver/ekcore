@@ -239,7 +239,7 @@ public:
                     BridgePart[2] = go->GetGUID();
                     go->setActive(true);
                 break;
-                case GAMEOBJECT_FISHINGNODE_ENTRY://no way checking if fish is hooked, so we create a timed event
+                case 35591://no way checking if fish is hooked, so we create a timed event
                     if (LurkerSubEvent == LURKER_NOT_STARTED)
                     {
                         FishingTimer = 10000+rand()%30000;//random time before lurker emerges

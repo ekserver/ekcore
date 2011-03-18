@@ -1613,7 +1613,7 @@ public:
             if (TempSpell)
                 TempSpell->Effect[1] = 0;
         }
-        
+
         InstanceScript* m_pInstance;
         uint32 uiDarkVolley_Timer;
 

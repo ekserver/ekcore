@@ -306,6 +306,8 @@ public:
         uint32 Lifebinders_Gift_Timer;
         uint32 uiSunbeam_Timer;
 
+        uint32 uiElderAura_Timer;
+
         bool bIsElderBrightleafAlive;
         bool bIsElderIronbranchAlive;
         bool bIsElderStonebarkAlive;
@@ -327,7 +329,9 @@ public:
 
                 WaveCount = 0;
                 uiWave_Timer = 60000;
+                uiElderAura_Timer = 1000;
 
+                uiSunbeam_Timer = urand(20000,30000);
                 Berserk_Timer = 600000;
                 Lifebinders_Gift_Timer = 30000;
 
@@ -444,6 +448,16 @@ public:
             me->SetAuraStack(SPELL_ATTUNED_TO_NATURE,me,150);
         }
 
+        void CastElderEssenceAuras()
+        {
+            //if(bIsElderBrightleafAlive)
+            //    me->CastSpell(me,SPELL_BRIGHTLEAFS_ESSENCE_AURA,true);
+            //if(bIsElderIronbranchAlive)
+            //    me->CastSpell(me,SPELL_IRONBRANCHS_ESSENCE_AURA,true);
+            //if(bIsElderStonebarkAlive)
+            //    me->CastSpell(me,SPELL_STONEBARKS_ESSENCE_AURA,true);
+        }
+
         void EnterCombat(Unit* /*pWho*/)
         {
             DoScriptText(SAY_AGGRO, me);
@@ -457,6 +471,7 @@ public:
                     if(bIsElderBrightleafAlive = elder->isAlive())
                     {
                         me->AddAura(SPELL_BRIGHTLEAFS_ESSENCE_AURA,me);
+                        //me->CastSpell(me,SPELL_BRIGHTLEAFS_ESSENCE_AURA,true);
                         elder->CastSpell(elder,SPELL_DRAINED_OF_POWER,false);
                     }
                 }
@@ -465,6 +480,7 @@ public:
                     if(bIsElderIronbranchAlive = elder->isAlive())
                     {
                         me->AddAura(SPELL_IRONBRANCHS_ESSENCE_AURA,me);
+                        //me->CastSpell(me,SPELL_IRONBRANCHS_ESSENCE_AURA,true);
                         elder->CastSpell(elder,SPELL_DRAINED_OF_POWER,false);
                     }
                 }
@@ -473,6 +489,7 @@ public:
                     if(bIsElderStonebarkAlive = elder->isAlive())
                     {
                         me->AddAura(SPELL_STONEBARKS_ESSENCE_AURA,me);
+                        //me->CastSpell(me,SPELL_STONEBARKS_ESSENCE_AURA,true);
                         elder->CastSpell(elder,SPELL_DRAINED_OF_POWER,false);
                     }
                 }
@@ -500,6 +517,12 @@ public:
                     DoCast(me,SPELL_BERSERK,true);
             } else Berserk_Timer -= diff;
 
+            if(uiElderAura_Timer <= diff)
+            {
+                CastElderEssenceAuras();
+                uiElderAura_Timer = 1000;
+            } else uiElderAura_Timer -= diff;
+
             if(Lifebinders_Gift_Timer <= diff)
             {
                 DoCastAOE(RAID_MODE(SPELL_LIFEBINDERS_GIFT_TRIGGER_MISSILE_1,SPELL_LIFEBINDERS_GIFT_TRIGGER_MISSILE_2),true);
@@ -512,13 +535,15 @@ public:
                 {
                     if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM,1,500,true))
                         DoCast(target,RAID_MODE(SPELL_SUNBEAM_10,SPELL_SUNBEAM_25));
+                    else
+                        DoCast(me->getVictim(),RAID_MODE(SPELL_SUNBEAM_10,SPELL_SUNBEAM_25));
                 }
                 uiSunbeam_Timer = urand(20000,30000);
             } else uiSunbeam_Timer -= diff;
 
             DoMeleeAttackIfReady();
 
-            EnterEvadeIfOutOfCombatArea(diff);
+            //EnterEvadeIfOutOfCombatArea(diff);
         }
     };
 };
@@ -676,12 +701,18 @@ public:
 
     struct mob_detonating_lasherAI : public ScriptedAI
     {
-        mob_detonating_lasherAI(Creature *pCreature) : ScriptedAI(pCreature) { };
+        mob_detonating_lasherAI(Creature *pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        };
 
+        InstanceScript* m_pInstance;
         uint32 Flame_Lash_Timer;
 
         void Reset()
         {
+            if(Unit* target = me->SelectNearbyTarget(100))
+                me->AI()->AttackStart(target);
             Flame_Lash_Timer = 2000;
         }
 
@@ -702,9 +733,18 @@ public:
 
         void updateAI(const uint32 diff)
         {
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_FREYA) != IN_PROGRESS)
+            {
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
+            }
+
+            if (!UpdateVictim())
+                return;
+
             if(Flame_Lash_Timer <= diff)
             {
-                DoCast(me->getVictim(), RAID_MODE(SPELL_FLAME_LASH_10, SPELL_FLAME_LASH_25));		//Spell buggt	
+                DoCast(me->getVictim(), RAID_MODE(SPELL_FLAME_LASH_10, SPELL_FLAME_LASH_25));
                 Flame_Lash_Timer = 2000;
             }
             else Flame_Lash_Timer -= diff;
@@ -725,13 +765,20 @@ public:
 
     struct mob_ancient_water_spiritAI : public ScriptedAI
     {
-        mob_ancient_water_spiritAI(Creature *pCreature) : ScriptedAI(pCreature) { };
+        mob_ancient_water_spiritAI(Creature *pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        };
 
+        InstanceScript* m_pInstance;
         uint32 Tidal_Wave_Timer;
 
         void Reset()
         {
             Tidal_Wave_Timer = 20000;
+
+            if(Unit* target = me->SelectNearbyTarget(100))
+                me->AI()->AttackStart(target);
         }
 
         void JustDied(Unit* )
@@ -745,6 +792,15 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_FREYA) != IN_PROGRESS)
+            {
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
+            }
+
+            if (!UpdateVictim())
+                return;
+
             if(Tidal_Wave_Timer <= diff)
             {
                 DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_TIDAL_WAVE_10, SPELL_TIDAL_WAVE_25));
@@ -770,8 +826,12 @@ public:
     
     struct mob_storm_lasherAI : public ScriptedAI
     {
-        mob_storm_lasherAI(Creature *pCreature) : ScriptedAI(pCreature) { };
+        mob_storm_lasherAI(Creature *pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        };
 
+        InstanceScript* m_pInstance;
         uint32 Lightning_Lash_Timer;
         uint32 Stormbolt_Timer;
 
@@ -779,6 +839,9 @@ public:
         {
             Lightning_Lash_Timer  = 6000;
             Stormbolt_Timer       = 3000;
+
+            if(Unit* target = me->SelectNearbyTarget(100))
+                me->AI()->AttackStart(target);
         }
 
         void JustDied(Unit* )
@@ -797,6 +860,15 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_FREYA) != IN_PROGRESS)
+            {
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
+            }
+
+            if (!UpdateVictim())
+                return;
+
             if(Lightning_Lash_Timer <= diff)
             {
                 DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_LIGHTNING_LASH_10, SPELL_LIGHTNING_LASH_25));
@@ -811,6 +883,7 @@ public:
             }
             else { Stormbolt_Timer -= diff; }
 
+            DoMeleeAttackIfReady();
         }
     };
 };
@@ -827,7 +900,18 @@ public:
 
     struct mob_snaplasherAI : public ScriptedAI
     {
-        mob_snaplasherAI(Creature *pCreature) : ScriptedAI(pCreature) { };
+        mob_snaplasherAI(Creature *pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        };
+
+        InstanceScript* m_pInstance;
+
+        void Reset()
+        {
+            if(Unit* target = me->SelectNearbyTarget(100))
+                me->AI()->AttackStart(target);
+        }
 
         void EnterCombat(Unit* )
         {
@@ -847,6 +931,20 @@ public:
         {
             me->CombatStart(me->SelectNearestTarget(), true);
         }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_FREYA) != IN_PROGRESS)
+            {
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
+            }
+
+            if (!UpdateVictim())
+                return;
+
+            DoMeleeAttackIfReady();
+        }
     };
 };
 
@@ -862,8 +960,12 @@ public:
 
     struct mob_ancient_conservatorAI : public ScriptedAI
     {
-        mob_ancient_conservatorAI(Creature *pCreature) : ScriptedAI(pCreature) { };
+        mob_ancient_conservatorAI(Creature *pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        };
 
+        InstanceScript* m_pInstance;
         uint32 Natures_Fury_Timer;
         uint32 Healthy_Spore_Spawn_Timer;
         Position pos;
@@ -873,6 +975,9 @@ public:
         {
             Natures_Fury_Timer = 10000;
             Healthy_Spore_Spawn_Timer = 15000+(rand()%8000);
+
+            if(Unit* target = me->SelectNearbyTarget(100))
+                me->AI()->AttackStart(target);
         }
 
         void EnterCombat(Unit* )
@@ -902,6 +1007,14 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_FREYA) != IN_PROGRESS)
+            {
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
+            }
+
+            if (!UpdateVictim())
+                return;
 
             if(Natures_Fury_Timer <= diff)
             {
@@ -935,8 +1048,12 @@ public:
 
     struct mob_healthy_sporeAI : public ScriptedAI
     {
-        mob_healthy_sporeAI(Creature *pCreature) : ScriptedAI(pCreature) { };
+        mob_healthy_sporeAI(Creature *pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        };
 
+        InstanceScript* m_pInstance;
         uint8 Counter;
         uint16 Grow_Timer;
         uint16 Shrink_Timer;
@@ -958,6 +1075,12 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_FREYA) != IN_PROGRESS)
+            {
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
+            }
+
             if(Grow_Timer <= diff && Counter < 9 && Shrink == false)
             {
                 ++Counter;
@@ -1041,10 +1164,14 @@ public:
             if (Unstable_Sunbeam_Timer <= 0)
             {
                 // Das gefaellt mir nicht
-                Unit* target[2] = {SelectTarget(SELECT_TARGET_RANDOM, 0), SelectTarget(SELECT_TARGET_RANDOM, 0)};
+                Unit* target[2];
+                target[0] = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                target[1] = SelectTarget(SELECT_TARGET_RANDOM, 0);
 
-                me->SummonCreature(ENTRY_CREATURE_UNSTABLE_SUN_BEAM, target[1]->GetPositionX(), target[1]->GetPositionY(), target[1]->GetPositionZ());
-                me->SummonCreature(ENTRY_CREATURE_UNSTABLE_SUN_BEAM, target[2]->GetPositionX(), target[2]->GetPositionY(), target[2]->GetPositionZ());
+                if(target[0])
+                    me->SummonCreature(ENTRY_CREATURE_UNSTABLE_SUN_BEAM, target[0]->GetPositionX(), target[0]->GetPositionY(), target[0]->GetPositionZ());
+                if(target[1])
+                    me->SummonCreature(ENTRY_CREATURE_UNSTABLE_SUN_BEAM, target[1]->GetPositionX(), target[1]->GetPositionY(), target[1]->GetPositionZ());
                 Unstable_Sunbeam_Timer = 30000;
             }
             else {Unstable_Sunbeam_Timer -= diff;}
@@ -1327,7 +1454,12 @@ public:
 
     struct mob_eonars_giftAI : public ScriptedAI
     {
-        mob_eonars_giftAI(Creature *pCreature) : ScriptedAI(pCreature) {}
+        mob_eonars_giftAI(Creature *pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* m_pInstance;
 
         uint32 Grow_Timer;
         uint32 Lifebinders_Gift_Timer;
@@ -1337,21 +1469,27 @@ public:
         {
             me->setFaction(16);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-            Grow_Timer = 3000;
-            Lifebinders_Gift_Timer = 6000;
+            Grow_Timer = 100;
+            Lifebinders_Gift_Timer = 12000;
             GrowCount = 0;
         }
 
         void UpdateAI(const uint32 diff)
         {
-            if(Grow_Timer <= diff && GrowCount < 6)
+            if(m_pInstance && m_pInstance->GetBossState(TYPE_FREYA) != IN_PROGRESS)
             {
-                DoCast(me, SPELL_GROW);
-                Grow_Timer = 2500 + urand(1500,4000);
-                ++GrowCount;
+                me->DealDamage(me,me->GetMaxHealth());
+                me->RemoveCorpse();
             }
-            else if(Grow_Timer > diff && GrowCount < 6)
-                {Grow_Timer -= diff;}
+
+            if(GrowCount < 6)
+                if(Grow_Timer <= diff && GrowCount < 6)
+                {
+                    DoCast(me, SPELL_GROW);
+                    Grow_Timer = 2000;
+                    ++GrowCount;
+                }
+                else Grow_Timer -= diff;
 
             if(Lifebinders_Gift_Timer <= diff)
             {
