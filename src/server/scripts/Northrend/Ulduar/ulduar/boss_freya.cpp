@@ -21,31 +21,18 @@
 /*
 LandofLegends - Entwicklungsnotizen:
 
-Spells wurden bereits viele getestet und entsprechend gefixt .. Spellfixes findet man am Ende des Scripts
-
-Notizen:
-Spell natural bomb bereits gefixt
-
-TO DO:
-Prio 1:
-Freyas Spells testen und fixen 
-
-Prio 2:
-Hardmode fehlt
-Spawnen der richtigen Kiste am ende des Kampfes
-Scripten der NPCs
-Archievments Scripten
-
-
+DoTo:
+Freya:
+    Spawn Trunk at the End of the Fight
+Adds:
+    Elemental Adds Revive if not killed in the same timeframe
 
 Elders:
 Elder Brightleaf:
     Fix Unstable Sunbeam
-    Fix Solar Flare Targets
-    Fix Random Flux Buff
 Elder Ironbranch
     Fix Iron Roots
-Elder Stonebark - fertig (?)
+Elder Stonebark - finished (?)
 */
 
 enum Yells
@@ -306,8 +293,6 @@ public:
         uint32 Lifebinders_Gift_Timer;
         uint32 uiSunbeam_Timer;
 
-        uint32 uiElderAura_Timer;
-
         bool bIsElderBrightleafAlive;
         bool bIsElderIronbranchAlive;
         bool bIsElderStonebarkAlive;
@@ -329,7 +314,6 @@ public:
 
                 WaveCount = 0;
                 uiWave_Timer = 60000;
-                uiElderAura_Timer = 1000;
 
                 uiSunbeam_Timer = urand(20000,30000);
                 Berserk_Timer = 600000;
@@ -448,16 +432,6 @@ public:
             me->SetAuraStack(SPELL_ATTUNED_TO_NATURE,me,150);
         }
 
-        void CastElderEssenceAuras()
-        {
-            //if(bIsElderBrightleafAlive)
-            //    me->CastSpell(me,SPELL_BRIGHTLEAFS_ESSENCE_AURA,true);
-            //if(bIsElderIronbranchAlive)
-            //    me->CastSpell(me,SPELL_IRONBRANCHS_ESSENCE_AURA,true);
-            //if(bIsElderStonebarkAlive)
-            //    me->CastSpell(me,SPELL_STONEBARKS_ESSENCE_AURA,true);
-        }
-
         void EnterCombat(Unit* /*pWho*/)
         {
             DoScriptText(SAY_AGGRO, me);
@@ -466,12 +440,14 @@ public:
 
             if(pInstance)
             {
+                pInstance->SetBossState(TYPE_FREYA,IN_PROGRESS);
+
                 if(Creature* elder = Creature::GetCreature(*me,pInstance->GetData64(TYPE_ELDER_BRIGHTLEAF)))
                 {
                     if(bIsElderBrightleafAlive = elder->isAlive())
                     {
-                        me->AddAura(SPELL_BRIGHTLEAFS_ESSENCE_AURA,me);
-                        //me->CastSpell(me,SPELL_BRIGHTLEAFS_ESSENCE_AURA,true);
+                        //me->AddAura(SPELL_BRIGHTLEAFS_ESSENCE_AURA,me);
+                        me->CastSpell(me,SPELL_BRIGHTLEAFS_ESSENCE_AURA,true);
                         elder->CastSpell(elder,SPELL_DRAINED_OF_POWER,false);
                     }
                 }
@@ -479,8 +455,8 @@ public:
                 {
                     if(bIsElderIronbranchAlive = elder->isAlive())
                     {
-                        me->AddAura(SPELL_IRONBRANCHS_ESSENCE_AURA,me);
-                        //me->CastSpell(me,SPELL_IRONBRANCHS_ESSENCE_AURA,true);
+                        //me->AddAura(SPELL_IRONBRANCHS_ESSENCE_AURA,me);
+                        me->CastSpell(me,SPELL_IRONBRANCHS_ESSENCE_AURA,true);
                         elder->CastSpell(elder,SPELL_DRAINED_OF_POWER,false);
                     }
                 }
@@ -516,12 +492,6 @@ public:
                 if(!me->HasAura(SPELL_BERSERK))
                     DoCast(me,SPELL_BERSERK,true);
             } else Berserk_Timer -= diff;
-
-            if(uiElderAura_Timer <= diff)
-            {
-                CastElderEssenceAuras();
-                uiElderAura_Timer = 1000;
-            } else uiElderAura_Timer -= diff;
 
             if(Lifebinders_Gift_Timer <= diff)
             {
@@ -720,10 +690,7 @@ public:
         {
             DoCast(me,RAID_MODE(SPELL_DETONATE_10, SPELL_DETONATE_25),true);
             if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
-            {
-                //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 2; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_2,true);
-            }
         }
 
         void JustSummoned(Unit* )
@@ -784,10 +751,7 @@ public:
         void JustDied(Unit* )
         {
             if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
-            {
-                //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 10; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
-            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -847,15 +811,7 @@ public:
         void JustDied(Unit* )
         {
             if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
-            {
-                //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 10; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
-            }
-        }
-
-        void JustSummoned(Unit* )
-        {
-            me->CombatStart(me->SelectNearestTarget(), true);
         }
 
         void UpdateAI(const uint32 diff)
@@ -921,10 +877,7 @@ public:
         void JustDied(Unit* )
         {
             if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
-            {
-                //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 10; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
-            }
         }
 
         void JustSummoned(Unit* )
@@ -994,10 +947,7 @@ public:
         void JustDied(Unit* )
         {
             if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
-            {
-                //CAST_AI(boss_freya::boss_freyaAI, freya->AI())->AuraCount = 25; 
                 DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_25,true);
-            }
         }
 
         void JustSummoned(Unit* )
@@ -1156,7 +1106,9 @@ public:
 
             if(Solar_Flare_Timer <= diff)
             {
-                DoCastAOE(RAID_MODE(SPELL_SOLAR_FLARE_10, SPELL_SOLAR_FLARE_25),true);
+                uint32 target_count = me->GetAuraCount(SPELL_BRIGHTLEAF_FLUX_BUFF);
+                me->CastCustomSpell(RAID_MODE(SPELL_SOLAR_FLARE_10, SPELL_SOLAR_FLARE_25),SPELLVALUE_MAX_TARGETS,target_count,me,true);
+                //DoCastAOE(RAID_MODE(SPELL_SOLAR_FLARE_10, SPELL_SOLAR_FLARE_25),true);
                 Solar_Flare_Timer = 10000 + urand(1500, 6000);
             }
             else { Solar_Flare_Timer -= diff; }
@@ -1176,16 +1128,23 @@ public:
             }
             else {Unstable_Sunbeam_Timer -= diff;}
 
-            // Need Rework
-            //if(Flux_Timer <= diff)
-            //{
-            //    uint8 flux = rand() %2;
-            //    if(flux == 1)
-            //        me->AddAura(SPELL_FLUX_PLUS, me);
-            //    else
-            //        me->AddAura(SPELL_FLUX_MINUS, me);
-            //    Flux_Timer = 5000;
-            //}else Flux_Timer -= diff;
+            // Workaround for Spellscript
+            if(Flux_Timer <= diff)
+            {
+                me->RemoveAurasDueToSpell(SPELL_FLUX_PLUS);
+                me->RemoveAurasDueToSpell(SPELL_FLUX_MINUS);
+
+                me->CastSpell(me,SPELL_BRIGHTLEAF_FLUX,true);
+                if(!me->HasAura(SPELL_BRIGHTLEAF_FLUX_BUFF))
+                    me->CastSpell(me,SPELL_BRIGHTLEAF_FLUX_BUFF,true);
+                me->SetAuraStack(SPELL_BRIGHTLEAF_FLUX_BUFF,me,urand(1,10));
+                uint8 flux = rand() %2;
+                if(flux == 1)
+                    me->AddAura(SPELL_FLUX_PLUS, me);
+                else
+                    me->AddAura(SPELL_FLUX_MINUS, me);
+                Flux_Timer = 4000;
+            }else Flux_Timer -= diff;
 
             DoMeleeAttackIfReady();
         }
