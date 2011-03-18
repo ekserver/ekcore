@@ -243,11 +243,8 @@ public:
             
             if (instance)
                 instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_DISARMED_START_EVENT);
-        
-            if (Unit* LeftArm = me->SummonCreature(NPC_LEFT_ARM, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
-                LeftArm->_EnterVehicle(vehicle, 0);
-            if (Unit* RightArm = me->SummonCreature(NPC_RIGHT_ARM, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
-                RightArm->_EnterVehicle(vehicle, 1);
+
+            vehicle->Reset();
         }
 
         void UpdateAI(const uint32 diff)
