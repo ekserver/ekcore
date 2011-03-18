@@ -273,6 +273,10 @@ bool CharacterDatabaseConnection::Open()
     PREPARE_STATEMENT(CHAR_ADD_INSTANCE_SAVE, "INSERT INTO instance (id,map,resettime,difficulty,completedEncounters,data) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_UPDATE_INSTANCE_DATA, "UPDATE instance SET completedEncounters=?, data=? WHERE id=?", CONNECTION_ASYNC)
 
+    // Game event saves
+    PREPARE_STATEMENT(CHAR_DEL_GAME_EVENT_SAVE, "DELETE FROM game_event_save WHERE eventEntry = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_ADD_GAME_EVENT_SAVE, "INSERT INTO game_event_save (eventEntry, state, next_start) VALUES (?, ? , ?)", CONNECTION_ASYNC)
+    
     ////Anticheat
     //PREPARE_STATEMENT(CHAR_ANTICHEAT_SET_CHEATERS, "INSERT INTO cheat_reports (`guid`,`name`,`mapid`,`position_x`,`position_y`,`position_z`,`report`,`time`) VALUES (?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
     //PREPARE_STATEMENT(CHAR_ANTICHEAT_SET_CHEATERS_TEMP, "INSERT INTO cheat_temp_reports (`guid`,`name`,`mapid`,`position_x`,`position_y`,`position_z`,`report`,`time`) VALUES (?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
@@ -294,10 +298,14 @@ bool CharacterDatabaseConnection::Open()
 
     //LOL-Custom
     PREPARE_STATEMENT(CHAR_ADD_CHATTICKER_MESSAGE, "INSERT INTO chatticker (name, race, text) VALUES (?, ?, ?)", CONNECTION_ASYNC);
-
     PREPARE_STATEMENT(CHAR_GET_CODEBOX_ITEM, "SELECT `item_id`, `quantity`, `uses`, `account_id`, `char_guid`, `new_level`, `code`  FROM `codes` WHERE `npc_id` = ? AND `account_id` = ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_GET_CODEBOX_ITEMGROUP, "SELECT `item_id` FROM `codes_item_loot` WHERE `group_id` = ? ORDER BY RAND() LIMIT 1", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SET_CODEBOX_CODE_USED, "UPDATE `codes` SET `uses` = (`uses` - 1) WHERE  `npc_id` = ? AND `account_id` = ?", CONNECTION_ASYNC);
+    
+    // Game event condition saves
+    PREPARE_STATEMENT(CHAR_DEL_ALL_GAME_EVENT_CONDITION_SAVE, "DELETE FROM game_event_condition_save WHERE eventEntry = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_DEL_GAME_EVENT_CONDITION_SAVE, "DELETE FROM game_event_condition_save WHERE eventEntry = ? AND condition_id = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_ADD_GAME_EVENT_CONDITION_SAVE, "INSERT INTO game_event_condition_save (eventEntry, condition_id, done) VALUES (?, ?, ?)", CONNECTION_ASYNC)
 
     for (PreparedStatementMap::const_iterator itr = m_queries.begin(); itr != m_queries.end(); ++itr)
         PrepareStatement(itr->first, itr->second.first, itr->second.second);

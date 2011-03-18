@@ -314,7 +314,10 @@ public:
                     break;
                 case GO_LEVIATHAN_GATE:
                     uiLeviathanGateGUID = go->GetGUID();
-                    HandleGameObject(NULL, false, go);
+                    if (GetBossState(TYPE_LEVIATHAN) == DONE)
+                        go->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+                    else
+                        HandleGameObject(NULL, false, go);
                     break;
                 case GO_MIMIRON_TRAIN:
                     go->setActive(true);
