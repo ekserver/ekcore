@@ -479,9 +479,9 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         {
             PlaySoundToAll(SOUND_BG_START);
 
-                uint64 dummy = 0;
-                if(GetPlayers().begin() != GetPlayers().end())
-                    dummy =  GetPlayers().begin()->first;
+            uint64 dummy = 0;
+            if (GetPlayers().begin() != GetPlayers().end())
+                dummy = GetPlayers().begin()->first;
 
             for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if (Player* plr = sObjectMgr->GetPlayer(itr->first))
@@ -492,20 +492,20 @@ inline void Battleground::_ProcessJoin(uint32 diff)
             // Announce BG starting
             if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
                 sWorld->SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName(), GetMinLevel(), GetMaxLevel());
+
+            // Announce to bgannounce Channel
+            if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_CHANNEL) && dummy > 0)
+            {
+                ChannelMgr* cMgr = channelMgr(HORDE);
+                Channel* chBg = cMgr->GetJoinChannel("bgannounce", HORDE);
+
+                char fText[128];
+                sprintf(fText, "%s -- [%d-%d] hat begonnen.", GetName(), GetMinLevel(), GetMaxLevel() );
+
+                // Announce to channel
+                chBg->Say(dummy, fText, 0);
+            }
         }
-
-                // Announce to bgannounce Channel
-                if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_CHANNEL) && dummy > 0)
-                {
-                    ChannelMgr* cMgr = channelMgr(HORDE);
-                    Channel* chBg = cMgr->GetJoinChannel("bgannounce", HORDE);
-
-                    char fText[128];
-                    sprintf(fText, "%s -- [%d-%d] hat begonnen.", GetName(), GetMinLevel(), GetMaxLevel() );
-
-                    // Announce to channel
-                    chBg->Say(dummy, fText, 0);
-                }
     }
 }
 
