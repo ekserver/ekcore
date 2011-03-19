@@ -290,9 +290,9 @@ public:
             Summons.Despawn(summon);
         }
 
-        void KilledUnit(Unit *pVictim)
+        void KilledUnit(Unit* pVictim)
         {
-            if (pVictim == me)
+            if (pVictim == me || (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->GetEntry() == NPC_POWER_SPARK))
                 return;
 
             switch (uiPhase)
@@ -1160,7 +1160,7 @@ public:
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (canMove && me->CanFreeMove())
+            if (canMove && me->CanFreeMove() && !me->HasAura(SPELL_POWER_SPARK_PLAYERS))
             {
                 if (uiTimer <= uiDiff)
                 {
