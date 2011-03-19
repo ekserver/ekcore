@@ -110,7 +110,7 @@ class boss_kologarn : public CreatureScript
 
                 DoCast(SPELL_KOLOGARN_REDUCE_PARRY);
                 SetCombatMovement(false);
-                Reset();
+                //Reset();
             }
 
             Vehicle *vehicle;
@@ -138,6 +138,9 @@ class boss_kologarn : public CreatureScript
             void Reset()
             {
                 _Reset();
+
+                if (me->GetVehicleKit())
+                    me->GetVehicleKit()->Reset();
 
                 eyebeamTarget = 0;
             }
@@ -626,7 +629,11 @@ class spell_ulduar_stone_grip : public SpellScriptLoader
             return new spell_ulduar_stone_grip_AuraScript();
         }
 };
-
+/*
+DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` IN (32930);
+INSERT INTO `npc_spellclick_spells` (`npc_entry`,`spell_id`,`quest_start`,`quest_start_active`,`quest_end`,`cast_flags`,`aura_required`,`aura_forbidden`,`user_type`) VALUES
+(32930,46598,0,0,0,1,0,0,0); -- Kologarn - Arm - Ride Vehicle Hardcoded
+*/
 void AddSC_boss_kologarn()
 {
     new boss_kologarn();

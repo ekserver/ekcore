@@ -68,6 +68,7 @@ public:
         uint64 uiRightArmGUID;
         uint64 uiAuriayaGUID;
 
+        uint64 uiMimironTrainGUID;
         uint64 uiMimironGUID;
         uint64 uiLeviathanMKIIGUID;
         uint64 uiVX001GUID;
@@ -122,14 +123,16 @@ public:
             uiLeftArmGUID           = 0;
             uiRightArmGUID          = 0;
             uiAuriayaGUID           = 0;
+            uiMimironTrainGUID      = 0;
             uiMimironGUID           = 0;
+            uiLeviathanMKIIGUID     = 0;
             uiHodirGUID             = 0;
             uiThorimGUID            = 0;
             uiFreyaGUID             = 0;
             uiVezaxGUID             = 0;
             uiYoggSaronGUID         = 0;
             uiAlgalonGUID           = 0;
-            uiSaraGUID            = 0;
+            uiSaraGUID              = 0;
             uiKologarnChestGUID     = 0;
             uiKologarnBridgeGUID    = 0;
             uiKologarnChestGUID     = 0;
@@ -138,7 +141,7 @@ public:
             uiFreyaChestGUID        = 0;
             uiLeviathanGateGUID     = 0;
             uiVezaxDoorGUID         = 0;
-            uiYoggSaronDoorGUID   = 0;
+            uiYoggSaronDoorGUID     = 0;
             uiYoggSaronBrainDoor1GUID = 0;
             uiYoggSaronBrainDoor2GUID = 0;
             uiYoggSaronBrainDoor3GUID = 0;
@@ -321,6 +324,7 @@ public:
                     break;
                 case GO_MIMIRON_TRAIN:
                     go->setActive(true);
+                    uiMimironTrainGUID = go->GetGUID();
                     break;
                 case GO_YOGGSARON_DOOR:
                     uiYoggSaronDoorGUID = go->GetGUID();
@@ -458,6 +462,10 @@ public:
                             pGate->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
                         SaveToDB();
                     }
+                    break;
+                case DATA_CALL_TRAM:
+                    if (GameObject* go = instance->GetGameObject(uiMimironTrainGUID))
+                        go->UseDoorOrButton();
                     break;
                 default:
                     break;

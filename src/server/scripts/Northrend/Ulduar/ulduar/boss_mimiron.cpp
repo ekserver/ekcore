@@ -162,6 +162,11 @@ enum Npcs
     NPC_FROST_BOMB                              = 34149
 };
 
+enum Objects
+{
+    GAMEOBJECT_DO_NOT_THIS_BUTTON               = 194739,
+};
+
 bool MimironHardMode;
 
 // Achievements
@@ -223,11 +228,23 @@ public:
         bool Enraged;
 
         Phases phase;
-        
+
+        void DespawnCreatures(uint32 entry, float distance, bool discs = false)
+        {
+            std::list<Creature*> m_pCreatures;
+            GetCreatureListWithEntryInGrid(m_pCreatures, me, entry, distance);
+     
+            if (m_pCreatures.empty())
+                return;
+     
+            for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
+                (*iter)->ForcedDespawn();
+        }
+
         void Reset()
         {
             _Reset();
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
             me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
             me->SetVisible(true);
             me->ExitVehicle();
@@ -236,7 +253,7 @@ public:
             {
                 instance->SetData(DATA_MIMIRON_ELEVATOR, GO_STATE_ACTIVE);
                 instance->SetBossState(TYPE_MIMIRON, FAIL);
-                
+
                 for (uint8 data = DATA_LEVIATHAN_MK_II; data <= DATA_AERIAL_UNIT; ++data)
                 {
                     if (Creature *pCreature = me->GetCreature(*me, instance->GetData64(data)))
@@ -258,6 +275,12 @@ public:
             Enraged = false;
             DespawnCreatures(34362, 100);
             DespawnCreatures(NPC_ROCKET, 100);
+
+            if(GameObject *pGo = me->FindNearestGameObject(GAMEOBJECT_DO_NOT_THIS_BUTTON,200))
+            {
+                pGo->SetGoState(GO_STATE_READY);
+                pGo->SetLootState(GO_JUST_DEACTIVATED);
+            }
         }
         
         void JustDied(Unit *victim)
@@ -284,7 +307,7 @@ public:
         void EnterCombat(Unit *who)
         {
             _EnterCombat();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
             phase = PHASE_INTRO;
             FlameTimer = 30000;
             if (MimironHardMode)
@@ -656,19 +679,6 @@ public:
                     break;
             }
         }
-        
-        void DespawnCreatures(uint32 entry, float distance, bool discs = false)
-        {
-            std::list<Creature*> m_pCreatures;
-            GetCreatureListWithEntryInGrid(m_pCreatures, me, entry, distance);
-     
-            if (m_pCreatures.empty())
-                return;
-     
-            for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
-                (*iter)->ForcedDespawn();
-        }
-        
     };
 
 };
@@ -690,13 +700,14 @@ public:
 
     struct boss_leviathan_mkAI : public BossAI
     {
-        boss_leviathan_mkAI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON), vehicle(me->GetVehicleKit()), phase(PHASE_NULL)
+        boss_leviathan_mkAI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON), phase(PHASE_NULL), vehicle(pCreature->GetVehicleKit())
         {
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_ROCKET_STRIKE_DMG, true);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
-        
+
         Vehicle* vehicle;
         Phases phase;
         EventMap events;
@@ -704,15 +715,19 @@ public:
         void Reset()
         {
             events.Reset();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
             me->SetStandState(UNIT_STAND_STATE_STAND);
             me->SetReactState(REACT_PASSIVE);
             me->RemoveAllAuras();
             phase = PHASE_NULL;
             events.SetPhase(PHASE_NULL);
+
+            if (me->GetVehicleKit())
+                me->GetVehicleKit()->Reset();
+
             if (Creature *turret = CAST_CRE(me->GetVehicleKit()->GetPassenger(3)))
             {
-                turret->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                turret->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                 turret->SetReactState(REACT_PASSIVE);
                 turret->AI()->EnterEvadeMode();
             }
@@ -737,7 +752,7 @@ public:
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
                     me->RemoveAllAuras();
@@ -756,7 +771,7 @@ public:
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
                     me->RemoveAllAuras();
@@ -779,7 +794,7 @@ public:
             
             if (Creature *turret = CAST_CRE(me->GetVehicleKit()->GetPassenger(3)))
             {
-                turret->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                turret->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                 turret->SetReactState(REACT_AGGRESSIVE);
                 turret->AI()->DoZoneInCombat();
             }
@@ -793,7 +808,7 @@ public:
             switch(action)
             {
                 case DO_START_ENCOUNTER:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_OOC_NOT_ATTACKABLE);
                     me->SetReactState(REACT_AGGRESSIVE);
                     phase = PHASE_LEVIATHAN_SOLO;
                     events.SetPhase(PHASE_LEVIATHAN_SOLO);
@@ -802,7 +817,7 @@ public:
                 case DO_LEVIATHAN_ASSEMBLED:
                     if (MimironHardMode)
                         DoCast(me, SPELL_EMERGENCY_MODE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->SetReactState(REACT_AGGRESSIVE);
                     me->SetHealth(int32(me->GetMaxHealth() / 2));
                     me->SetSpeed(MOVE_RUN, 1.0f, true);
@@ -892,6 +907,7 @@ public:
         {
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            me->SetReactState(REACT_PASSIVE);
             uiNapalmShell = urand(4000, 8000);
         }
 
@@ -980,21 +996,21 @@ public:
 
     struct boss_vx_001AI : public BossAI
     {
-        boss_vx_001AI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON), vehicle(me->GetVehicleKit()), phase(PHASE_NULL)
+        boss_vx_001AI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON), phase(PHASE_NULL)
         {
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_ROCKET_STRIKE_DMG, true);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
-        
-        Vehicle* vehicle;
+
         Phases phase;
         EventMap events;
         
         void Reset()
         {
             events.Reset();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_DISABLE_MOVE);
             me->SetReactState(REACT_PASSIVE);
             me->SetStandState(UNIT_STAND_STATE_STAND);
             //me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
@@ -1037,13 +1053,13 @@ public:
             switch(action)
             {
                 case DO_START_VX001:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_OOC_NOT_ATTACKABLE);
                     phase = PHASE_VX001_SOLO;
                     events.SetPhase(PHASE_VX001_SOLO);
                     DoZoneInCombat();
                     break;
                 case DO_VX001_ASSEMBLED:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->SetHealth(int32(me->GetMaxHealth() / 2));
                     me->SetStandState(UNIT_STAND_STATE_STAND);
                     phase = PHASE_VX001_ASSEMBLED;
@@ -1069,7 +1085,7 @@ public:
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
                     me->GetMotionMaster()->Initialize();
                     me->RemoveAllAuras();
@@ -1085,7 +1101,7 @@ public:
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
                     me->RemoveAllAuras();
                     me->SetHealth(me->GetMaxHealth());
@@ -1175,7 +1191,7 @@ public:
     {
         npc_rocket_strikeAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
             me->ForcedDespawn(10000);
             DoCast(me, SPELL_ROCKET_STRIKE_AURA);
         }
@@ -1199,14 +1215,14 @@ public:
 
     struct boss_aerial_unitAI : public BossAI
     {
-        boss_aerial_unitAI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON), vehicle(me->GetVehicleKit()), phase(PHASE_NULL)
+        boss_aerial_unitAI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON), phase(PHASE_NULL)
         {
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_ROCKET_STRIKE_DMG, true);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
-        
-        Vehicle* vehicle;
+
         Phases phase;
         EventMap events;
         uint8 spawnedAdds;
@@ -1214,7 +1230,7 @@ public:
         void Reset()
         {
             events.Reset();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_DISABLE_MOVE);
             me->SetReactState(REACT_PASSIVE);
             me->SetStandState(UNIT_STAND_STATE_STAND);
             me->SetVisible(false);
@@ -1253,7 +1269,7 @@ public:
             switch(action)
             {
                 case DO_START_AERIAL:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_OOC_NOT_ATTACKABLE);
                     me->SetReactState(REACT_AGGRESSIVE);
                     phase = PHASE_AERIAL_SOLO;
                     events.SetPhase(PHASE_AERIAL_SOLO);
@@ -1275,7 +1291,7 @@ public:
                 case DO_AERIAL_ASSEMBLED:
                     if (MimironHardMode)
                         DoCast(me, SPELL_EMERGENCY_MODE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->SetReactState(REACT_AGGRESSIVE);
                     me->SetHealth(int32(me->GetMaxHealth() / 2));
                     me->SetStandState(UNIT_STAND_STATE_STAND);
@@ -1390,7 +1406,7 @@ public:
                 {
                     damage = 0;
                     me->GetMotionMaster()->Clear(true);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
                     me->RemoveAllAuras();
@@ -1406,7 +1422,7 @@ public:
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
                     me->RemoveAllAuras();
@@ -1509,6 +1525,7 @@ public:
     {
         npc_emergency_botAI(Creature *pCreature) : ScriptedAI(pCreature)
         {
+            me->setFaction(14);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             me->SetReactState(REACT_PASSIVE);
@@ -1564,6 +1581,8 @@ public:
         if ((pInstance->GetBossState(TYPE_MIMIRON) != IN_PROGRESS || pInstance->GetBossState(TYPE_MIMIRON) != DONE) && pPlayer)
             if (Creature *pMimiron = pPlayer->GetCreature((*pPlayer), pInstance->GetData64(TYPE_MIMIRON)))
                 pMimiron->AI()->DoAction(DO_ACTIVATE_HARD_MODE);
+
+        pGo->UseDoorOrButton();
 
         return true;
     }
@@ -1701,8 +1720,8 @@ UPDATE `creature_template` SET `mechanic_immune_mask` = 650854235, `ScriptName` 
 UPDATE `creature_template` SET `vehicleid` = 370, `mechanic_immune_mask` = 650854235, `ScriptName` = 'boss_leviathan_mk' WHERE `entry` = 33432;
 UPDATE `creature_template` SET `minlevel` = 83, `maxlevel` = 83, `mechanic_immune_mask` = 650854235, `flags_extra` = 1 WHERE `entry` = 34106;
 UPDATE `creature_template` SET `mechanic_immune_mask` = 650854235, `ScriptName` = 'boss_leviathan_mk_turret' WHERE `entry` = 34071;
-DELETE FROM vehicle_accessory WHERE entry = 33432;
-INSERT INTO vehicle_accessory VALUE (33432, 34071, 3, 1, 'Leviathan Mk II turret', 0, 0);
+DELETE FROM vehicle_template_accessory WHERE entry = 33432;
+INSERT INTO vehicle_template_accessory VALUE (33432, 34071, 3, 1, 'Leviathan Mk II turret', 0, 0);
 UPDATE creature_template SET ScriptName = 'npc_proximity_mine' WHERE entry = 34362;
 DELETE FROM `creature_model_info` WHERE `modelid`=28831;
 INSERT INTO `creature_model_info` (`modelid`, `bounding_radius`, `combat_reach`, `gender`, `modelid_other_gender`) VALUES
