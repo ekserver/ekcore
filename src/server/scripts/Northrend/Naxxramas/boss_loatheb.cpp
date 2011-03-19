@@ -135,12 +135,46 @@ public:
             DoCastAOE(SPELL_FUNGAL_CREEP, true); //A Little bit hacky ... but it works now (without triggered no cast on death)
         }
     };
-
 };
 
+class spell_fungal_creep_targeting : public SpellScriptLoader
+{
+    public:
+        spell_fungal_creep_targeting() : SpellScriptLoader("spell_fungal_creep_targeting") { }
+
+        class spell_fungal_creep_targeting_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_fungal_creep_targeting_SpellScript);
+
+            void FilterTargetsInitial(std::list<Unit*>& unitList)
+            {
+                sharedUnitList = unitList;
+            }
+
+            void FilterTargetsSubsequent(std::list<Unit*>& unitList)
+            {
+                unitList = sharedUnitList;
+            }
+
+            void Register()
+            {
+                OnUnitTargetSelect += SpellUnitTargetFn(spell_fungal_creep_targeting_SpellScript::FilterTargetsInitial, EFFECT_0, TARGET_UNIT_AREA_ENEMY_SRC);
+                OnUnitTargetSelect += SpellUnitTargetFn(spell_fungal_creep_targeting_SpellScript::FilterTargetsSubsequent, EFFECT_1, TARGET_UNIT_AREA_ENEMY_SRC);
+                OnUnitTargetSelect += SpellUnitTargetFn(spell_fungal_creep_targeting_SpellScript::FilterTargetsSubsequent, EFFECT_2, TARGET_UNIT_AREA_ENEMY_SRC);
+            }
+
+            std::list<Unit*> sharedUnitList;
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_fungal_creep_targeting_SpellScript();
+        }
+};
 
 void AddSC_boss_loatheb()
 {
     new boss_loatheb();
     new mob_loatheb_spore();
+    new spell_fungal_creep_targeting();
 }
