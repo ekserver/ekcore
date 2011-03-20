@@ -33,6 +33,10 @@ enum eGameObjects
     GO_LEVIATHAN_DOOR       = 194905,
     GO_LEVIATHAN_GATE       = 194630,
     GO_MIMIRON_TRAIN        = 194675,
+    GO_MIMIRON_ELEVATOR     = 194749,
+    GO_MIMIRON_DOOR_1       = 194776,
+    GO_MIMIRON_DOOR_2       = 194774,
+    GO_MIMIRON_DOOR_3       = 194775,
     GO_YOGGSARON_DOOR       = 194773,
     GO_YOGGBRAIN_DOOR_1     = 194635,
     GO_YOGGBRAIN_DOOR_2     = 194636,
@@ -54,6 +58,7 @@ public:
         instance_ulduar_InstanceMapScript(Map* pMap) : InstanceScript(pMap) { Initialize(); };
 
         uint32 uiEncounter[MAX_ENCOUNTER];
+
         std::string m_strInstData;
         uint8  flag;
 
@@ -74,6 +79,8 @@ public:
         uint64 uiVX001GUID;
         uint64 uiAerialUnitGUID;
         uint64 uiMagneticCoreGUID;
+        uint64 uiMimironElevatorGUID;
+        std::list<uint64> uiMimironDoorGUIDList;
 
         uint64 uiHodirGUID;
 
@@ -124,6 +131,7 @@ public:
             uiRightArmGUID          = 0;
             uiAuriayaGUID           = 0;
             uiMimironTrainGUID      = 0;
+            uiMimironElevatorGUID   = 0;
             uiMimironGUID           = 0;
             uiLeviathanMKIIGUID     = 0;
             uiHodirGUID             = 0;
@@ -326,6 +334,16 @@ public:
                     go->setActive(true);
                     uiMimironTrainGUID = go->GetGUID();
                     break;
+                case GO_MIMIRON_ELEVATOR:
+                    go->setActive(true);
+                    uiMimironElevatorGUID = go->GetGUID();
+                    break;
+                case GO_MIMIRON_DOOR_1:
+                case GO_MIMIRON_DOOR_2:
+                case GO_MIMIRON_DOOR_3:
+                    go->setActive(true);
+                    uiMimironDoorGUIDList.push_back(go->GetGUID());
+                    break;
                 case GO_YOGGSARON_DOOR:
                     uiYoggSaronDoorGUID = go->GetGUID();
                     HandleGameObject(NULL, true, go);
@@ -397,7 +415,14 @@ public:
                 case TYPE_XT002:
                 case TYPE_ASSEMBLY:
                 case TYPE_AURIAYA:
+                    break;
                 case TYPE_MIMIRON:
+                    for(std::list<uint64>::iterator i = uiMimironDoorGUIDList.begin(); i != uiMimironDoorGUIDList.end(); i++)
+                    {
+                        if(GameObject* obj = instance->GetGameObject(*i))
+                            obj->SetGoState(state == IN_PROGRESS ? GO_STATE_READY : GO_STATE_ACTIVE );
+                    }
+                    break;
                 case TYPE_VEZAX:
                     if (state == DONE)
                         HandleGameObject(uiYoggSaronDoorGUID, true);
@@ -466,6 +491,10 @@ public:
                 case DATA_CALL_TRAM:
                     if (GameObject* go = instance->GetGameObject(uiMimironTrainGUID))
                         go->UseDoorOrButton();
+                    break;
+                case DATA_MIMIRON_ELEVATOR:
+                    if (GameObject* go = instance->GetGameObject(uiMimironElevatorGUID))
+                        go->SetGoState(GOState(data));
                     break;
                 default:
                     break;

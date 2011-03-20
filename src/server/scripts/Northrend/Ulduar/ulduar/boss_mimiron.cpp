@@ -23,6 +23,7 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include "ulduar.h"
+#include "Unit.h"
 
 enum Yells
 {
@@ -159,7 +160,8 @@ enum Npcs
     NPC_EMERGENCY_BOT                           = 34147,
     NPC_FLAME                                   = 34363,
     NPC_FLAME_SPREAD                            = 34121,
-    NPC_FROST_BOMB                              = 34149
+    NPC_FROST_BOMB                              = 34149,
+    NPC_MKII_TURRET                             = 34071,
 };
 
 enum Objects
@@ -243,14 +245,16 @@ public:
 
         void Reset()
         {
-            _Reset();
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
-            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
-            me->SetVisible(true);
-            me->ExitVehicle();
-            me->GetMotionMaster()->MoveTargetedHome();
-            if (instance)
+            //if(instance && instance->GetBossState(TYPE_MIMIRON) != DONE)
+            //if(me->getFaction() != 35)
             {
+                _Reset();
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
+                me->SetVisible(true);
+                me->ExitVehicle();
+                me->GetMotionMaster()->MoveTargetedHome();
+
                 instance->SetData(DATA_MIMIRON_ELEVATOR, GO_STATE_ACTIVE);
                 instance->SetBossState(TYPE_MIMIRON, FAIL);
 
@@ -265,33 +269,35 @@ public:
                         }
                     }
                 }
-            }
-            phase = PHASE_NULL;
-            uiStep = 0;
-            uiPhase_timer = -1;
-            uiBotTimer = 0;
-            MimironHardMode = false;
-            checkBotAlive = true;
-            Enraged = false;
-            DespawnCreatures(34362, 100);
-            DespawnCreatures(NPC_ROCKET, 100);
 
-            if(GameObject *pGo = me->FindNearestGameObject(GAMEOBJECT_DO_NOT_THIS_BUTTON,200))
-            {
-                pGo->SetGoState(GO_STATE_READY);
-                pGo->SetLootState(GO_JUST_DEACTIVATED);
+                phase = PHASE_NULL;
+                uiStep = 0;
+                uiPhase_timer = -1;
+                uiBotTimer = 0;
+                MimironHardMode = false;
+                checkBotAlive = true;
+                Enraged = false;
+                DespawnCreatures(34362, 100);
+                DespawnCreatures(NPC_ROCKET, 100);
+
+                if(GameObject *pGo = me->FindNearestGameObject(GAMEOBJECT_DO_NOT_THIS_BUTTON,200))
+                {
+                    pGo->SetGoState(GO_STATE_READY);
+                    pGo->SetLootState(GO_JUST_DEACTIVATED);
+                }
             }
         }
         
-        void JustDied(Unit *victim)
+        void EndEncounter(/*Unit *victim*/)
         {
             DoScriptText(SAY_V07TRON_DEATH, me);
-            _JustDied();
+            //_JustDied();
             
             me->setFaction(35);
             
             if (instance)
             {
+                instance->SetBossState(TYPE_MIMIRON,DONE);
                 if (MimironHardMode)
                 {
                     instance->DoCompleteAchievement(ACHIEVEMENT_FIREFIGHTER);
@@ -302,6 +308,9 @@ public:
                     me->SummonGameObject(RAID_MODE(CACHE_OF_INNOVATION_10, CACHE_OF_INNOVATION_25), 2744.65f, 2569.46f, 364.314f, 3.14159f, 0, 0, 0.7f, 0.7f, 604800);
                 }
             }
+
+            EnterEvadeMode();
+            me->ForcedDespawn(5000);
         }
 
         void EnterCombat(Unit *who)
@@ -383,7 +392,9 @@ public:
                                             pVX_001->DisappearAndDie();
                                             pAerialUnit->DisappearAndDie();
                                             DespawnCreatures(NPC_ROCKET, 100);
-                                            me->Kill(me, false);
+                                            //me->Kill(me, false);
+                                            me->ExitVehicle();
+                                            EndEncounter();
                                             checkBotAlive = true;
                                         }
                 }
@@ -555,7 +566,9 @@ public:
                             break;
                         case 4:
                             me->ExitVehicle();
-                            me->GetMotionMaster()->MoveJump(2745.06f, 2569.36f, 379.90f, 10, 15);
+                            //me->GetMotionMaster()->MoveJump(2745.06f, 2569.36f, 379.90f, 10, 15);
+                            if (Creature *pAerialUnit = me->GetCreature(*me, instance->GetData64(DATA_AERIAL_UNIT)))
+                                 me->EnterVehicle(pAerialUnit, 0);
                             JumpToNextStep(2000);
                             break;
                         case 5:
@@ -565,7 +578,7 @@ public:
                             break;
                         case 6:
                             me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
-                            me->SetVisible(false);
+                            //me->SetVisible(false);
                             if (instance)
                             {
                                 if (Creature *pAerialUnit = me->GetCreature(*me, instance->GetData64(DATA_AERIAL_UNIT)))
@@ -711,25 +724,66 @@ public:
         Vehicle* vehicle;
         Phases phase;
         EventMap events;
-        
+
+        void RemoveAllAurasButNotPassenger()
+        {
+            while (!me->GetAppliedAuras().empty() || !me->GetOwnedAuras().empty())
+            {
+                uint8 aurasremoved = 0; // Brauche wir nun um Schleife zu beenden
+
+                Unit::AuraApplicationMap::iterator aurAppIter;
+                for (aurAppIter = me->GetAppliedAuras().begin(); aurAppIter != me->GetAppliedAuras().end(); aurAppIter++)
+                {
+                    Aura const * aura = aurAppIter->second->GetBase();
+                    if(aura && aura->GetId() == VEHICLE_SPELL_RIDE_HARDCODED)
+                        continue;
+
+                    me->_UnapplyAura(aurAppIter, AURA_REMOVE_BY_DEFAULT);
+                    aurasremoved++;
+                }
+
+                Unit::AuraMap::iterator aurIter;
+                for (aurIter = me->GetOwnedAuras().begin(); aurIter != me->GetOwnedAuras().end(); aurIter++)
+                {
+                    Aura const * aura = aurIter->second;
+                    if(aura && aura->GetId() == VEHICLE_SPELL_RIDE_HARDCODED)
+                        continue;
+
+                    me->RemoveOwnedAura(aurIter);
+                    aurasremoved++;
+                }
+                if(aurasremoved == 0) break; // Beende Schleife wenn keine Auren mehr entfernt wurden 
+            }
+        }
+
         void Reset()
         {
             events.Reset();
+            //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
             me->SetStandState(UNIT_STAND_STATE_STAND);
             me->SetReactState(REACT_PASSIVE);
-            me->RemoveAllAuras();
+            //me->RemoveAllAuras();
+            RemoveAllAurasButNotPassenger();
             phase = PHASE_NULL;
             events.SetPhase(PHASE_NULL);
 
-            if (me->GetVehicleKit())
-                me->GetVehicleKit()->Reset();
+            //if (me->GetVehicleKit())
+            //    me->GetVehicleKit()->Reset();
 
             if (Creature *turret = CAST_CRE(me->GetVehicleKit()->GetPassenger(3)))
             {
                 turret->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                 turret->SetReactState(REACT_PASSIVE);
                 turret->AI()->EnterEvadeMode();
+            //}else
+            //{
+            //    if(Creature *turret = DoSummon(NPC_MKII_TURRET,me->GetHomePosition(),0,TEMPSUMMON_DEAD_DESPAWN))
+            //    {
+            //        turret->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
+            //        turret->SetReactState(REACT_PASSIVE);
+            //        turret->AI()->EnterEvadeMode();
+            //    }
             }
         }
 
@@ -755,7 +809,8 @@ public:
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
-                    me->RemoveAllAuras();
+                    RemoveAllAurasButNotPassenger();
+                    //me->RemoveAllAuras();
                     me->SetHealth(me->GetMaxHealth());
                     events.SetPhase(PHASE_NULL);
                     phase = PHASE_NULL;
@@ -774,7 +829,8 @@ public:
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
-                    me->RemoveAllAuras();
+                    RemoveAllAurasButNotPassenger();
+                    //me->RemoveAllAuras();
                     me->SetHealth(me->GetMaxHealth());
                     me->SetStandState(UNIT_STAND_STATE_DEAD);
                     events.SetPhase(PHASE_NULL);
@@ -1006,7 +1062,38 @@ public:
 
         Phases phase;
         EventMap events;
-        
+
+        void RemoveAllAurasButNotPassenger()
+        {
+            while (!me->GetAppliedAuras().empty() || !me->GetOwnedAuras().empty())
+            {
+                uint8 aurasremoved = 0; // Brauche wir nun um Schleife zu beenden
+
+                Unit::AuraApplicationMap::iterator aurAppIter;
+                for (aurAppIter = me->GetAppliedAuras().begin(); aurAppIter != me->GetAppliedAuras().end(); aurAppIter++)
+                {
+                    Aura const * aura = aurAppIter->second->GetBase();
+                    if(aura && aura->GetId() == VEHICLE_SPELL_RIDE_HARDCODED)
+                        continue;
+
+                    me->_UnapplyAura(aurAppIter, AURA_REMOVE_BY_DEFAULT);
+                    aurasremoved++;
+                }
+
+                Unit::AuraMap::iterator aurIter;
+                for (aurIter = me->GetOwnedAuras().begin(); aurIter != me->GetOwnedAuras().end(); aurIter++)
+                {
+                    Aura const * aura = aurIter->second;
+                    if(aura && aura->GetId() == VEHICLE_SPELL_RIDE_HARDCODED)
+                        continue;
+
+                    me->RemoveOwnedAura(aurIter);
+                    aurasremoved++;
+                }
+                if(aurasremoved == 0) break; // Beende Schleife wenn keine Auren mehr entfernt wurden 
+            }
+        }
+
         void Reset()
         {
             events.Reset();
@@ -1088,7 +1175,8 @@ public:
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
                     me->GetMotionMaster()->Initialize();
-                    me->RemoveAllAuras();
+                    RemoveAllAurasButNotPassenger();
+                    //me->RemoveAllAuras();
                     me->SetHealth(me->GetMaxHealth());
                     me->SetStandState(UNIT_STAND_STATE_DEAD);
                     phase = PHASE_NULL;
@@ -1103,7 +1191,8 @@ public:
                     damage = 0;
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
-                    me->RemoveAllAuras();
+                    RemoveAllAurasButNotPassenger();
+                    //me->RemoveAllAuras();
                     me->SetHealth(me->GetMaxHealth());
                     me->SetStandState(UNIT_STAND_STATE_DEAD);
                     events.SetPhase(PHASE_NULL);
@@ -1226,7 +1315,38 @@ public:
         Phases phase;
         EventMap events;
         uint8 spawnedAdds;
-        
+
+        void RemoveAllAurasButNotPassenger()
+        {
+            while (!me->GetAppliedAuras().empty() || !me->GetOwnedAuras().empty())
+            {
+                uint8 aurasremoved = 0; // Brauche wir nun um Schleife zu beenden
+
+                Unit::AuraApplicationMap::iterator aurAppIter;
+                for (aurAppIter = me->GetAppliedAuras().begin(); aurAppIter != me->GetAppliedAuras().end(); aurAppIter++)
+                {
+                    Aura const * aura = aurAppIter->second->GetBase();
+                    if(aura && aura->GetId() == VEHICLE_SPELL_RIDE_HARDCODED)
+                        continue;
+
+                    me->_UnapplyAura(aurAppIter, AURA_REMOVE_BY_DEFAULT);
+                    aurasremoved++;
+                }
+
+                Unit::AuraMap::iterator aurIter;
+                for (aurIter = me->GetOwnedAuras().begin(); aurIter != me->GetOwnedAuras().end(); aurIter++)
+                {
+                    Aura const * aura = aurIter->second;
+                    if(aura && aura->GetId() == VEHICLE_SPELL_RIDE_HARDCODED)
+                        continue;
+
+                    me->RemoveOwnedAura(aurIter);
+                    aurasremoved++;
+                }
+                if(aurasremoved == 0) break; // Beende Schleife wenn keine Auren mehr entfernt wurden 
+            }
+        }
+
         void Reset()
         {
             events.Reset();
@@ -1409,7 +1529,8 @@ public:
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
-                    me->RemoveAllAuras();
+                    RemoveAllAurasButNotPassenger();
+                    //me->RemoveAllAuras();
                     me->SetHealth(me->GetMaxHealth());
                     events.CancelEvent(EVENT_SUMMON_BOTS);
                     phase = PHASE_NULL;
@@ -1425,7 +1546,8 @@ public:
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
-                    me->RemoveAllAuras();
+                    RemoveAllAurasButNotPassenger();
+                    //me->RemoveAllAuras();
                     me->SetHealth(me->GetMaxHealth());
                     me->SetStandState(UNIT_STAND_STATE_DEAD);
                     events.SetPhase(PHASE_NULL);
@@ -1484,7 +1606,6 @@ public:
         {
             uiFieldTimer = urand(4000, 6000);
         }
-        
 
         void UpdateAI(const uint32 uiDiff)
         {
@@ -1721,11 +1842,15 @@ UPDATE `creature_template` SET `vehicleid` = 370, `mechanic_immune_mask` = 65085
 UPDATE `creature_template` SET `minlevel` = 83, `maxlevel` = 83, `mechanic_immune_mask` = 650854235, `flags_extra` = 1 WHERE `entry` = 34106;
 UPDATE `creature_template` SET `mechanic_immune_mask` = 650854235, `ScriptName` = 'boss_leviathan_mk_turret' WHERE `entry` = 34071;
 DELETE FROM vehicle_template_accessory WHERE entry = 33432;
-INSERT INTO vehicle_template_accessory VALUE (33432, 34071, 3, 1, 'Leviathan Mk II turret', 0, 0);
+INSERT INTO vehicle_template_accessory VALUE (33432, 34071, 3, 1, 'Leviathan Mk II turret', 8, 0);
 UPDATE creature_template SET ScriptName = 'npc_proximity_mine' WHERE entry = 34362;
 DELETE FROM `creature_model_info` WHERE `modelid`=28831;
 INSERT INTO `creature_model_info` (`modelid`, `bounding_radius`, `combat_reach`, `gender`, `modelid_other_gender`) VALUES
 (28831, 0.5, 7, 2, 0);
+DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` IN (33432,33651);
+INSERT INTO `npc_spellclick_spells` (`npc_entry`,`spell_id`,`quest_start`,`quest_start_active`,`quest_end`,`cast_flags`,`aura_required`,`aura_forbidden`,`user_type`) VALUES
+(33432,46598,0,0,0,1,0,0,0), -- Leviatan MKII - Ride Vehicle Hardcoded
+(33651,46598,0,0,0,1,0,0,0); -- VX 001 - Ride Vehicle Hardcoded
 
 -- VX-001
 UPDATE `creature_template` SET `mechanic_immune_mask` = 650854235, `flags_extra` = 1, `vehicleid` = 371, `ScriptName` = 'boss_vx_001' WHERE `entry` = 33651;
@@ -1735,7 +1860,7 @@ UPDATE `creature_template` SET `unit_flags` = 33686020, `flags_extra` = 2 WHERE 
 UPDATE `creature_template` SET `ScriptName` = 'npc_rocket_strike' WHERE `entry` = 34047;
 
 -- Aerial Command Unit
-UPDATE `creature_template` SET `mechanic_immune_mask` = 650854235, `flags_extra` = 1, `ScriptName` = 'boss_aerial_unit' WHERE `entry` = 33670;
+UPDATE `creature_template` SET `mechanic_immune_mask` = 650854235, `flags_extra` = 1, `ScriptName` = 'boss_aerial_unit', `vehicleid` = 372 WHERE `entry` = 33670;
 UPDATE `creature_template` SET `minlevel` = 83, `maxlevel` = 83, `mechanic_immune_mask` = 650854235, `flags_extra` = 1 WHERE `entry` = 34109;
 UPDATE `creature_template` SET `ScriptName` = 'npc_magnetic_core' WHERE `entry` = 34068;
 UPDATE `creature_template` SET `ScriptName` = 'npc_assault_bot' WHERE `entry` = 34057;
