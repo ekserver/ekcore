@@ -9990,12 +9990,10 @@ Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo)
         for (Unit::AuraEffectList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
             if (Unit* magnet = (*itr)->GetBase()->GetUnitOwner())
                 if (magnet->isAlive())
-                    if (Spell* spell = FindCurrentSpellBySpellId(spellInfo->Id))
-                    {
-                        // Store magnet aura to drop charge on hit
-                        spell->SetMagnetingAura((*itr)->GetBase());
-                        return magnet;
-                    }
+                {
+                    (*itr)->GetBase()->DropCharge();
+                    return magnet;
+                }
     }
     // Melee && ranged case
     else
