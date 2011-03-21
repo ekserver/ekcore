@@ -2478,6 +2478,7 @@ private:
 #define GOSSIP_ULDUAR_WALKWAY       "Teleportiere mich zum Shattered Walkway (hinter Kologarn)"
 #define GOSSIP_ULDUAR_CONSERVATORY  "Teleportiere mich zum the Conservatory of Life (Freya)"
 #define GOSSIP_ULDUAR_SPARK         "Teleportiere mich zum the Spark of Imagination (Mimiron)"
+#define GOSSIP_ULDUAR_VEZAX         "Teleportiere mich zum General Vezax (Vezax)"
 #define GOSSIP_ULDUAR_MADNESS       "Teleportiere mich zur the Descent into Madness (YoggSaron)"
 
 enum GOSSIP_REPAIRBOT
@@ -2504,8 +2505,9 @@ enum GOSSIP_REPAIRBOT
     TELE_ULDUAR_WALKWAY = 26,
     TELE_ULDUAR_CONSERVATORY = 27,
     TELE_ULDUAR_SPARK = 28,
-    TELE_ULDUAR_MADNESS = 29,
-    TELE_ULDUAR_MAX = 30,
+    TELE_ULDUAR_VEZAX   = 29,
+    TELE_ULDUAR_MADNESS = 30,
+    TELE_ULDUAR_MAX = 31,
 };
 
 enum MAPS
@@ -2524,7 +2526,7 @@ float TeleportPointsSunwell[6][3] =
     {1649,  553, 34},// KilJaden
 };
 
-float TeleportPointsUlduar[9][3] =
+float TeleportPointsUlduar[10][3] =
 {
     {-706.122f, -92.6024f, 429.876f}, // Base Camp
     {131.248f, -35.3802f, 409.804f}, // Grounds
@@ -2534,6 +2536,7 @@ float TeleportPointsUlduar[9][3] =
     {1859.45f, -24.1f, 448.9f}, // Walkway
     {2086.27f, -24.3134f, 421.239f}, // Conservatory
     {2518.13f, 2569.34f, 421.382f}, // Spark
+    {1824.34f, 202.16f, 358.0f}, // General Vezax
     {1855.03f, -11.629f, 334.58f}, //Descent into Madness
 };
 
@@ -2595,6 +2598,7 @@ public:
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_WALKWAY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_WALKWAY);
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_CONSERVATORY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_CONSERVATORY);
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_SPARK, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SPARK);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_VEZAX, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_VEZAX);
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ULDUAR_MADNESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_MADNESS);
                 }
             }
@@ -2664,7 +2668,8 @@ public:
                 case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_WALKWAY: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[5][0],TeleportPointsUlduar[5][1],TeleportPointsUlduar[5][2], 0.0f); break;
                 case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_CONSERVATORY: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[6][0],TeleportPointsUlduar[6][1],TeleportPointsUlduar[6][2], 0.0f); break;
                 case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_SPARK: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[7][0],TeleportPointsUlduar[7][1],TeleportPointsUlduar[7][2], 0.0f); break;
-                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_MADNESS: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[8][0],TeleportPointsUlduar[8][1],TeleportPointsUlduar[8][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_VEZAX: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[8][0],TeleportPointsUlduar[8][1],TeleportPointsUlduar[8][2], 0.0f); break;
+                case GOSSIP_ACTION_INFO_DEF + TELE_ULDUAR_MADNESS: player->TeleportTo(MAP_ULDUAR, TeleportPointsUlduar[9][0],TeleportPointsUlduar[9][1],TeleportPointsUlduar[9][2], 0.0f); break;
             }
 
         return true;

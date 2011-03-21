@@ -284,7 +284,7 @@ public:
             HardMode = false;
             PreAddsCount = 0;
             spawnedAdds = 0;
-        
+
             // Respawn Mini Bosses
             for (uint8 i = DATA_RUNIC_COLOSSUS; i <= DATA_RUNE_GIANT; i++)
                 if (Creature* pMiniBoss = me->GetCreature(*me, instance->GetData64(i)))
@@ -293,6 +293,12 @@ public:
             // Spawn Pre-Phase Adds
             for (uint8 i = 0; i < 6; i++)
                 me->SummonCreature(preAddLocations[i].entry,preAddLocations[i].x,preAddLocations[i].y,preAddLocations[i].z,preAddLocations[i].o,TEMPSUMMON_CORPSE_TIMED_DESPAWN,3000);
+
+            if(GameObject *pGo = me->FindNearestGameObject(194265,200))
+            {
+                pGo->SetGoState(GO_STATE_READY);
+                pGo->SetLootState(GO_JUST_DEACTIVATED);
+            }
         }
 
         void KilledUnit(Unit * /*victim*/)

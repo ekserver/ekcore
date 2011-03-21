@@ -776,14 +776,6 @@ public:
                 turret->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                 turret->SetReactState(REACT_PASSIVE);
                 turret->AI()->EnterEvadeMode();
-            //}else
-            //{
-            //    if(Creature *turret = DoSummon(NPC_MKII_TURRET,me->GetHomePosition(),0,TEMPSUMMON_DEAD_DESPAWN))
-            //    {
-            //        turret->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
-            //        turret->SetReactState(REACT_PASSIVE);
-            //        turret->AI()->EnterEvadeMode();
-            //    }
             }
         }
 
