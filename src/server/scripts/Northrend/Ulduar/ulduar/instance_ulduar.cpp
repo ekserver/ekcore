@@ -163,7 +163,7 @@ public:
             uiYoggSaronBrainDoor2GUID = 0;
             uiYoggSaronBrainDoor3GUID = 0;
             flag                    = 0;
-            uiSupportKeeperFlag     = FREYA_SUPPORT|HODIR_SUPPORT|MIMIRON_SUPPORT|THORIM_SUPPORT;
+            uiSupportKeeperFlag     = 0;
 
             memset(&uiEncounter, 0, sizeof(uiEncounter));
             memset(&uiAssemblyGUIDs, 0, sizeof(uiAssemblyGUIDs));
@@ -519,6 +519,9 @@ public:
                 case DATA_RUNIC_DOOR:
                     if (GameObject* go = instance->GetGameObject(uiRunicDoorGUID))
                         go->SetGoState(GOState(data));
+                    break;
+                case DATA_ADD_HELP_FLAG:
+                    uiSupportKeeperFlag |= eKeeperSupport(data);
                     break;
                 default:
                     break;

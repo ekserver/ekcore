@@ -74,6 +74,9 @@ enum eTypes
     DATA_AERIAL_UNIT,
     DATA_VX_001,
     DATA_MAGNETIC_CORE,
+
+    //Pre YoggSaron
+    DATA_ADD_HELP_FLAG,
 };
 
 enum eNPCs

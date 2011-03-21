@@ -54,6 +54,14 @@ enum Sara_Yells
     SAY_SARA_PHASE2_2                           = -1603319,
 };
 
+enum KeepersHelpSays
+{
+    SAY_FREYA_HELP                              = -1603189,
+    SAY_MIMIRON_HELP                            = -1603259,
+    SAY_THORIM_HELP                             = -1603287,
+    SAY_HODIR_HELP                              = -1603217,
+};
+
 enum YoggSaron_Yells
 {
     SAY_PHASE2_1                                = -1603330,
@@ -122,6 +130,10 @@ enum Achievments
 
 enum Entrys
 {
+    NPC_HELP_KEEPER_FREYA                       = 33241,
+    NPC_HELP_KEEPER_MIMIRON                     = 33244,
+    NPC_HELP_KEEPER_THORIM                      = 33242,
+    NPC_HELP_KEEPER_HODIR                       = 33213,
     // All Phases
     ENTRY_KEEPER_FREYA                          = 33410,
     ENTRY_KEEPER_HODIR                          = 33411,
@@ -2863,6 +2875,134 @@ class spell_empowering_shadows : public SpellScriptLoader
             return new spell_empowering_shadows_SpellScript();
         }
 };
+
+#define GOSSIP_KEEPER_HELP                  "[PH] Please help us fight against Yogg-Saron."
+
+class npc_keeper_help : public CreatureScript
+{
+public:
+    npc_keeper_help() : CreatureScript("npc_keeper_help") { }
+
+    bool OnGossipHello(Player* player, Creature* _Creature)
+    {
+        if(InstanceScript* m_pInstance = _Creature->GetInstanceScript())
+        {
+            uint32 supportFlag = m_pInstance->GetData(DATA_KEEPER_SUPPORT_YOGG);
+            switch(_Creature->GetEntry())
+            {
+            case NPC_HELP_KEEPER_FREYA:
+                if((supportFlag & FREYA_SUPPORT) == FREYA_SUPPORT)
+                    return false;
+                break;
+            case NPC_HELP_KEEPER_MIMIRON:
+                if((supportFlag & MIMIRON_SUPPORT) == MIMIRON_SUPPORT)
+                    return false;
+                break;
+            case NPC_HELP_KEEPER_THORIM:
+                if((supportFlag & THORIM_SUPPORT) == THORIM_SUPPORT)
+                    return false;
+                break;
+            case NPC_HELP_KEEPER_HODIR:
+                if((supportFlag & HODIR_SUPPORT) == HODIR_SUPPORT)
+                    return false;
+                break;
+            }
+
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_KEEPER_HELP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->SEND_GOSSIP_MENU(player->GetGossipTextId(_Creature), _Creature->GetGUID());
+        }
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+    {
+        player->CLOSE_GOSSIP_MENU();
+
+        InstanceScript* instance = _Creature->GetInstanceScript();
+
+        if(!instance) return false;
+
+        if( action == GOSSIP_ACTION_INFO_DEF + 1)
+        {
+            switch(_Creature->GetEntry())
+            {
+            case NPC_HELP_KEEPER_FREYA:
+                DoScriptText(SAY_FREYA_HELP,_Creature,player);
+                instance->SetData(DATA_ADD_HELP_FLAG,FREYA_SUPPORT);
+                break;
+            case NPC_HELP_KEEPER_MIMIRON:
+                DoScriptText(SAY_MIMIRON_HELP,_Creature,player);
+                instance->SetData(DATA_ADD_HELP_FLAG,MIMIRON_SUPPORT);
+                break;
+            case NPC_HELP_KEEPER_THORIM:
+                DoScriptText(SAY_THORIM_HELP,_Creature,player);
+                instance->SetData(DATA_ADD_HELP_FLAG,THORIM_SUPPORT);
+                break;
+            case NPC_HELP_KEEPER_HODIR:
+                DoScriptText(SAY_HODIR_HELP,_Creature,player);
+                instance->SetData(DATA_ADD_HELP_FLAG,HODIR_SUPPORT);
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_keeper_helpAI (pCreature);
+    }
+
+    struct npc_keeper_helpAI : public Scripted_NoMovementAI
+    {
+        npc_keeper_helpAI(Creature *c) : Scripted_NoMovementAI(c)
+        {
+            m_pInstance = c->GetInstanceScript();
+            debug = true;
+        }
+
+        InstanceScript* m_pInstance;
+        bool debug;
+
+        void AttackStart(Unit *who) {}
+
+        void UpdateAI(const uint32 diff)
+        {
+            if(m_pInstance)
+            {
+                if(debug)
+                {
+                    if(!me->IsVisible())
+                        me->SetVisible(true);
+                    return;
+                }
+
+                if(m_pInstance->GetBossState(TYPE_YOGGSARON) == IN_PROGRESS)
+                {
+                    me->SetVisible(false);
+                    return;
+                }
+
+                switch(me->GetEntry())
+                {
+                case NPC_HELP_KEEPER_FREYA:
+                    me->SetVisible(m_pInstance->GetBossState(TYPE_FREYA) == DONE);
+                    break;
+                case NPC_HELP_KEEPER_MIMIRON:
+                    me->SetVisible(m_pInstance->GetBossState(TYPE_MIMIRON) == DONE);
+                    break;
+                case NPC_HELP_KEEPER_THORIM:
+                    me->SetVisible(m_pInstance->GetBossState(TYPE_THORIM) == DONE);
+                    break;
+                case NPC_HELP_KEEPER_HODIR:
+                    me->SetVisible(m_pInstance->GetBossState(TYPE_HODIR) == DONE);
+                    break;
+                }
+            }
+        }
+    };
+};
+
 /*
 UPDATE creature_template SET scriptname = 'boss_sara' WHERE entry = 33134;
 UPDATE script_texts SET npc_entry = 33134 WHERE npc_entry = 33288 AND entry IN (-1603330,-1603331,-1603332,-1603333);
@@ -2886,6 +3026,8 @@ UPDATE creature_template SET scriptname = 'npc_death_ray' WHERE entry = 33881;
 UPDATE creature_template SET modelid1 = 17612, modelid2 = 17612 WHERE entry = 33881;
 UPDATE creature_template SET minlevel = 80, maxlevel = 80, scriptname = 'npc_laughting_skull' WHERE entry = 33990;
 UPDATE creature_template SET modelid1 = 15880, modelid2 = 15880 WHERE entry = 33990;
+UPDATE creature_template SET scriptname = 'npc_keeper_help' WHERE entry in(33241,33244,33242,33213;
+
 UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 194625;
 
 UPDATE creature_template SET RegenHealth = 0 WHERE entry IN (33134,34332,33890,33954);
@@ -3010,6 +3152,7 @@ void AddSC_boss_yoggsaron()
     new npc_laughting_skull();
     new npc_death_orb();
     new npc_death_ray();
+    new npc_keeper_help();
     new go_flee_to_surface();
 
     new spell_keeper_support_aura_targeting();

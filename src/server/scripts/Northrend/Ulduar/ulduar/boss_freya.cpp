@@ -259,6 +259,11 @@ const uint32 WaveSpells[3] =
     SPELL_SUMMON_WAVE_1
 };
 
+enum Actions
+{
+    ACTION_ELEMENTAL_DEAD,
+};
+
 class boss_freya : public CreatureScript
 {
 public:
@@ -493,7 +498,7 @@ public:
             {
                 if(uiNaturalBomb_Timer <= diff)
                 {
-                    std::list<Player*> plrList = me->GetNearestPlayersList(10);
+                    std::list<Player*> plrList = me->GetNearestPlayersList(500);
                     int max = urand(10,15);
                     for (std::list<Player*>::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
                     {
@@ -791,10 +796,12 @@ public:
         mob_ancient_water_spiritAI(Creature *pCreature) : ScriptedAI(pCreature)
         {
             m_pInstance = pCreature->GetInstanceScript();
+            alreadyKilled = false;
         };
 
         InstanceScript* m_pInstance;
         uint32 Tidal_Wave_Timer;
+        bool alreadyKilled;
 
         void Reset()
         {
@@ -806,8 +813,12 @@ public:
 
         void JustDied(Unit* )
         {
-            if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
-                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
+            if (Creature* Freya = me->GetCreature(*me, m_pInstance->GetData64(TYPE_FREYA)))
+            {
+                if(!alreadyKilled) DoCast(Freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
+                alreadyKilled = true;
+                Freya->AI()->DoAction(ACTION_ELEMENTAL_DEAD);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -849,11 +860,13 @@ public:
         mob_storm_lasherAI(Creature *pCreature) : ScriptedAI(pCreature)
         {
             m_pInstance = pCreature->GetInstanceScript();
+            alreadyKilled = false;
         };
 
         InstanceScript* m_pInstance;
         uint32 Lightning_Lash_Timer;
         uint32 Stormbolt_Timer;
+        bool alreadyKilled;
 
         void Reset()
         {
@@ -866,8 +879,12 @@ public:
 
         void JustDied(Unit* )
         {
-            if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
-                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
+            if (Creature* Freya = me->GetCreature(*me, m_pInstance->GetData64(TYPE_FREYA)))
+            {
+                if(!alreadyKilled) DoCast(Freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
+                alreadyKilled = true;
+                Freya->AI()->DoAction(ACTION_ELEMENTAL_DEAD);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -915,9 +932,11 @@ public:
         mob_snaplasherAI(Creature *pCreature) : ScriptedAI(pCreature)
         {
             m_pInstance = pCreature->GetInstanceScript();
+            alreadyKilled = false;
         };
 
         InstanceScript* m_pInstance;
+        bool alreadyKilled;
 
         void Reset()
         {
@@ -932,8 +951,12 @@ public:
 
         void JustDied(Unit* )
         {
-            if (Creature* freya = me->FindNearestCreature(ENTRY_CREATURE_FREYA, 10000))
-                DoCast(freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
+            if (Creature* Freya = me->GetCreature(*me, m_pInstance->GetData64(TYPE_FREYA)))
+            {
+                if(!alreadyKilled) DoCast(Freya, SPELL_ATTUNED_TO_NATURE_REMOVE_10,true);
+                alreadyKilled = true;
+                Freya->AI()->DoAction(ACTION_ELEMENTAL_DEAD);
+            }
         }
 
         void JustSummoned(Unit* )
