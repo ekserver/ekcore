@@ -138,6 +138,8 @@ enum eGameObjects
     GO_MIMIRON_DOOR_1       = 194776,
     GO_MIMIRON_DOOR_2       = 194774,
     GO_MIMIRON_DOOR_3       = 194775,
+    GO_WAY_TO_YOGG          = 194255,
+    GO_VEZAX_DOOR           = 194750,
     GO_YOGGSARON_DOOR       = 194773,
     GO_YOGGBRAIN_DOOR_1     = 194635,
     GO_YOGGBRAIN_DOOR_2     = 194636,

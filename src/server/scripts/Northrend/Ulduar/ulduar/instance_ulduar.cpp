@@ -71,6 +71,7 @@ public:
         uint64 uiElderIronbranchGUID;
         uint64 uiElderStonebarkGUID;
 
+        uint64 uiWayToYoggGUID;
         uint64 uiVezaxGUID;
 
         uint64 uiYoggSaronGUID;
@@ -130,6 +131,7 @@ public:
             uiFreyaChestGUID        = 0;
             uiLeviathanGateGUID     = 0;
             uiVezaxDoorGUID         = 0;
+            uiWayToYoggGUID         = 0;
             uiYoggSaronDoorGUID     = 0;
             uiYoggSaronBrainDoor1GUID = 0;
             uiYoggSaronBrainDoor2GUID = 0;
@@ -334,6 +336,19 @@ public:
                     go->setActive(true);
                     uiMimironDoorGUIDList.push_back(go->GetGUID());
                     break;
+                case GO_WAY_TO_YOGG:
+                    uiWayToYoggGUID = go->GetGUID();
+                    // DEBUG
+                    //if(GetBossState(TYPE_FREYA) == DONE &&
+                    //    GetBossState(TYPE_MIMIRON) == DONE &&
+                    //    GetBossState(TYPE_HODIR) == DONE &&
+                    //    GetBossState(TYPE_THORIM) == DONE)
+                        go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
+                    break;
+                case GO_VEZAX_DOOR:
+                    uiVezaxDoorGUID = go->GetGUID();
+                    HandleGameObject(NULL, GetBossState(TYPE_VEZAX) == DONE, go);
+                    break;
                 case GO_YOGGSARON_DOOR:
                     uiYoggSaronDoorGUID = go->GetGUID();
                     HandleGameObject(NULL, true, go);
@@ -415,7 +430,7 @@ public:
                     break;
                 case TYPE_VEZAX:
                     if (state == DONE)
-                        HandleGameObject(uiYoggSaronDoorGUID, true);
+                        HandleGameObject(uiVezaxDoorGUID, true);
                     break;
                 case TYPE_YOGGSARON:
                 if(state == IN_PROGRESS)
@@ -454,6 +469,12 @@ public:
                     break;
              }
 
+             if(GetBossState(TYPE_FREYA) == DONE &&
+                 GetBossState(TYPE_MIMIRON) == DONE &&
+                 GetBossState(TYPE_HODIR) == DONE &&
+                 GetBossState(TYPE_THORIM) == DONE)
+                if (GameObject* go = instance->GetGameObject(uiWayToYoggGUID))
+                        go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
              return true;
         }
 

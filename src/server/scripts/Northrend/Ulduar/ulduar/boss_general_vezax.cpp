@@ -129,6 +129,9 @@ public:
             uiShadowCrash_Timer = 10000;
             uiSearingFlames_Timer = urand(5000,10000);
             uiMarkOfTheFaceless = urand(15000,25000);
+
+            if(m_pInstance)
+                m_pInstance->SetBossState(TYPE_VEZAX,NOT_STARTED);
         }
 
         void DespawnVarpors()
@@ -160,6 +163,9 @@ public:
             //DoCast(me,SPELL_CORRUPTED_RAGE,true);
             DoCast(SPELL_AURA_OF_DESPAIR);
             DoScriptText(SAY_AGGRO,me);
+
+            if(m_pInstance)
+                m_pInstance->SetBossState(TYPE_VEZAX,IN_PROGRESS);
         }
 
         void SpellHitTarget(Unit* target, const SpellEntry* spell)
@@ -219,6 +225,9 @@ public:
                 if(m_pInstance)
                     m_pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVEMENTS_SHADOWDODGER_10,ACHIEVEMENTS_SHADOWDODGER_25));
             }
+
+            if(m_pInstance)
+                m_pInstance->SetBossState(TYPE_VEZAX,DONE);
         }
 
         void DoAction(const int32 action)
