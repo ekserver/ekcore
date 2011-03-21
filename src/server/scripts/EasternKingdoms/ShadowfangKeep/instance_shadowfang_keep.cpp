@@ -299,7 +299,6 @@ public:
 
 };
 
-
 void AddSC_instance_shadowfang_keep()
 {
     new instance_shadowfang_keep();

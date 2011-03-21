@@ -1139,7 +1139,6 @@ void SpellMgr::LoadSpellTargetPositions()
     {
         Field *fields = result->Fetch();
 
-
         uint32 Spell_ID = fields[0].GetUInt32();
 
         SpellTargetPosition st;
@@ -1278,7 +1277,6 @@ void SpellMgr::LoadSpellProcEvents()
     do
     {
         Field *fields = result->Fetch();
-
 
         uint32 entry = fields[0].GetUInt32();
 
@@ -1509,19 +1507,16 @@ void SpellMgr::LoadSpellGroups()
     {
 
 
-
         sLog->outString();
         sLog->outString(">> Loaded %u spell group definitions", count);
         return;
     }
-
 
     std::set<uint32> groups;
 
     do
     {
         Field *fields = result->Fetch();
-
 
         uint32 group_id = fields[0].GetUInt32();
         if (group_id <= SPELL_GROUP_DB_RANGE_MIN && group_id >= SPELL_GROUP_CORE_RANGE_MAX)
@@ -1596,17 +1591,14 @@ void SpellMgr::LoadSpellGroupStackRules()
     if (!result)
     {
 
-
         sLog->outString(">> Loaded 0 spell group stack rules");
         sLog->outString();
         return;
     }
 
-
     do
     {
         Field *fields = result->Fetch();
-
 
         uint32 group_id = fields[0].GetUInt32();
         uint8 stack_rule = fields[1].GetUInt32();
@@ -1647,17 +1639,14 @@ void SpellMgr::LoadSpellThreats()
     {
 
 
-
         sLog->outString(">> Loaded %u aggro generating spells", count);
         sLog->outString();
         return;
     }
 
-
     do
     {
         Field *fields = result->Fetch();
-
 
         uint32 entry = fields[0].GetUInt32();
         uint16 Threat = fields[1].GetUInt16();
@@ -2114,7 +2103,6 @@ void SpellMgr::LoadSpellPetAuras()
     {
         Field *fields = result->Fetch();
 
-
         uint32 spell = fields[0].GetUInt32();
         uint8 eff = fields[1].GetUInt8();
         uint32 pet = fields[2].GetUInt32();
@@ -2165,7 +2153,6 @@ void SpellMgr::LoadPetLevelupSpellMap()
 
     uint32 count = 0;
     uint32 family_count = 0;
-
 
     for (uint32 i = 0; i < sCreatureFamilyStore.GetNumRows(); ++i)
     {
@@ -2273,7 +2260,6 @@ void SpellMgr::LoadPetDefaultSpells()
     uint32 countCreature = 0;
     uint32 countData = 0;
 
-
     for (uint32 i = 0; i < sCreatureStorage.MaxEntry; ++i)
     {
 
@@ -2306,7 +2292,6 @@ void SpellMgr::LoadPetDefaultSpells()
 
     sLog->outString("Loading summonable creature templates...");
     oldMSTime = getMSTime();
-
 
     // different summon spells
     for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
@@ -2346,7 +2331,6 @@ void SpellMgr::LoadPetDefaultSpells()
             }
         }
     }
-
 
     sLog->outString(">> Loaded %u summonable creature templates in %u ms", countCreature, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
@@ -2470,7 +2454,6 @@ void SpellMgr::LoadSpellAreas()
     do
     {
         Field *fields = result->Fetch();
-
 
         uint32 spell = fields[0].GetUInt32();
         SpellArea spellArea;
@@ -3300,7 +3283,6 @@ void SpellMgr::LoadSpellEnchantProcData()
     if (!result)
     {
 
-
         sLog->outString(">> Loaded %u spell enchant proc event conditions", count);
         sLog->outString();
         return;
@@ -3309,7 +3291,6 @@ void SpellMgr::LoadSpellEnchantProcData()
     do
     {
         Field *fields = result->Fetch();
-
 
         uint32 enchantId = fields[0].GetUInt32();
 
@@ -3409,7 +3390,6 @@ void SpellMgr::LoadSpellRanks()
         sLog->outErrorDb("`spell_ranks` table is empty!");
         return;
     }
-
 
     uint32 rows = 0;
     bool finished = false;
@@ -4282,7 +4262,6 @@ void SpellMgr::LoadEnchantCustomAttr()
     uint32 size = sSpellItemEnchantmentStore.GetNumRows();
     mEnchantCustomAttr.resize(size);
 
-
     uint32 count = 0;
 
     for (uint32 i = 0; i < size; ++i)
@@ -4338,7 +4317,6 @@ void SpellMgr::LoadSpellLinked()
     do
     {
         Field *fields = result->Fetch();
-
 
         int32 trigger = fields[0].GetInt32();
         int32 effect =  fields[1].GetInt32();
