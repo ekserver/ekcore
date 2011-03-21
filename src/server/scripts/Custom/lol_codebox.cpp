@@ -241,12 +241,16 @@ DROP TABLE IF EXISTS `codes`;
 CREATE TABLE `codes` (
   `npc_id` mediumint(10) NOT NULL DEFAULT '0' COMMENT 'The NPC ID',
   `code` varchar(25) NOT NULL COMMENT 'The code you have to enter',
-  `uses` int(3) NOT NULL DEFAULT '1' COMMENT 'Number of uses left for this code',
+  `uses` tinyint(3) NOT NULL DEFAULT '1' COMMENT 'Number of uses left for this code',
   `item_id` mediumint(10) NOT NULL DEFAULT '0' COMMENT 'The gift (item)',
   `account_id` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'Account ID',
-  `quantity` tinyint(3) unsigned NOT NULL DEFAULT '1' COMMENT 'The quantity of ITEMS',
-  PRIMARY KEY (`npc_id`,`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC
+  `quantity` int(20) NOT NULL DEFAULT '1' COMMENT 'The quantity of ITEMS',
+  `char_guid` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `new_level` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`npc_id`,`code`),
+  KEY `acc_idx` (`npc_id`,`account_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;
+
 
 
 -- Data for the table `codes`
