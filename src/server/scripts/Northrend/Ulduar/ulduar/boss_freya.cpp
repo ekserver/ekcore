@@ -291,6 +291,8 @@ public:
         uint32 Ground_Tremor_Timer;
         uint32 Iron_Roots_Timer;
 
+        uint32 uiNaturalBomb_Timer;
+
 
         bool bIsElderBrightleafAlive;
         bool bIsElderIronbranchAlive;
@@ -318,6 +320,7 @@ public:
                 uiSunbeam_Timer = urand(20000,30000);
                 Berserk_Timer = 600000;
                 Lifebinders_Gift_Timer = 30000;
+                uiNaturalBomb_Timer = 30000;
 
                 bIsElderBrightleafAlive = bIsElderIronbranchAlive = bIsElderStonebarkAlive = false;
             }
@@ -486,6 +489,26 @@ public:
                         uiWave_Timer = 60000;
                     }
                 }else uiWave_Timer -= diff;
+            else
+            {
+                if(uiNaturalBomb_Timer <= diff)
+                {
+                    std::list<Player*> plrList = me->GetNearestPlayersList(10);
+                    int max = urand(10,15);
+                    for (std::list<Player*>::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+                    {
+                        if((*itr))
+                        {
+                            me->CastSpell((*itr),SPELL_NATURE_BOMB_VISUAL,true);
+                            if(max <= 0)
+                                break;
+                            else
+                                max--;
+                        }
+                    }
+                    uiNaturalBomb_Timer = urand(20000,30000);
+                }else uiNaturalBomb_Timer -= diff;
+            }
 
             if(Berserk_Timer <= diff)
             {

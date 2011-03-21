@@ -38,7 +38,7 @@ enum Spells
     SPELL_LIGHTNING_DESTRUCTION                 = 62393,
     SPELL_LIGHTNING_RELEASE                     = 62466,
     SPELL_UNBALANCING_STRIKE                    = 62130,
-    SPELL_BERSERK                               = 62560
+    SPELL_BERSERK                               = 62560,
 };
 
 enum Phases
@@ -127,7 +127,9 @@ enum ArenaAdds
 #define NPC_SIF                                 33196
 
 const uint32 ARENA_PHASE_ADD[]                  = {32876, 32904, 32878, 32877, 32874, 32875, 33110};
+
 #define SPELL_ARENA_PRIMARY(i)                  RAID_MODE(SPELL_ARENA_PRIMARY_N[i],SPELL_ARENA_PRIMARY_H[i])
+
 const uint32 SPELL_ARENA_PRIMARY_N[]            = {35054, 62326, 62327, 62322, 64151, 42724, 62333};
 const uint32 SPELL_ARENA_PRIMARY_H[]            = {35054, 62326, 62445, 62322, 64151, 42724, 62441};
 #define SPELL_ARENA_SECONDARY(i)                RAID_MODE(SPELL_ARENA_SECONDARY_N[i],SPELL_ARENA_SECONDARY_H[i])
@@ -136,6 +138,8 @@ const uint32 SPELL_ARENA_SECONDARY_H[]          = {15578, 38313, 62529, 0, 62418
 #define SPELL_AURA_OF_CELERITY                  62320
 #define SPELL_CHARGE                            32323
 #define SPELL_RUNIC_MENDING                     RAID_MODE(62328, 62446)
+
+#define GO_LEVER                                194264
 
 // Runic Colossus (Mini Boss) Spells
 enum RunicSpells
@@ -294,10 +298,10 @@ public:
             for (uint8 i = 0; i < 6; i++)
                 me->SummonCreature(preAddLocations[i].entry,preAddLocations[i].x,preAddLocations[i].y,preAddLocations[i].z,preAddLocations[i].o,TEMPSUMMON_CORPSE_TIMED_DESPAWN,3000);
 
-            if(GameObject *pGo = me->FindNearestGameObject(194265,200))
+            if(GameObject *pGo = me->FindNearestGameObject(GO_LEVER,500))
             {
-                pGo->SetGoState(GO_STATE_READY);
-                pGo->SetLootState(GO_JUST_DEACTIVATED);
+                //pGo->SetGoState(GO_STATE_ACTIVE);
+                pGo->SetLootState(GO_NOT_READY);
             }
         }
 
@@ -349,6 +353,13 @@ public:
             events.ScheduleEvent(EVENT_CHARGE_ORB, 30000, 0, PHASE_1);
             events.ScheduleEvent(EVENT_SUMMON_ADDS, 20000, 0, PHASE_1);
             events.ScheduleEvent(EVENT_BERSERK, 300000, 0, PHASE_1);
+
+            
+            if(GameObject *pGo = me->FindNearestGameObject(GO_LEVER,500))
+            {
+                //pGo->SetGoState(GO_STATE_READY);
+                pGo->SetLootState(GO_JUST_DEACTIVATED);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -979,7 +990,7 @@ INSERT INTO `gameobject_scripts` (`id`, `delay`, `command`, `datalong`, `datalon
 (55194, 0, 11, 34155, 15, '0', 0, 0, 0, 0);
 DELETE FROM `gameobject_template` WHERE `entry`=194265;
 INSERT INTO `gameobject_template` (`entry`, `type`, `displayId`, `name`, `IconName`, `castBarCaption`, `unk1`, `faction`, `flags`, `size`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `data0`, `data1`, `data2`, `data3`, `data4`, `data5`, `data6`, `data7`, `data8`, `data9`, `data10`, `data11`, `data12`, `data13`, `data14`, `data15`, `data16`, `data17`, `data18`, `data19`, `data20`, `data21`, `data22`, `data23`, `ScriptName`, `WDBVerified`) VALUES
-('194265','1','295','Lever','','','','0','16','3','0','0','0','0','0','0','0','0','6000','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','','0');
+('194265','1','295','Lever','','','','35','32','3','0','0','0','0','0','0','0','0','6000','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','','0');
 UPDATE `gameobject` SET `id` = 194265, `rotation2` = 1, `rotation3` = 0, `spawntimesecs` = 7200, `animprogress` = 100 WHERE `guid` = 55194;
 
 -- Cleanup

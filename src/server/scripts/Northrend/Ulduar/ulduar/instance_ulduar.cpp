@@ -26,6 +26,9 @@ enum eGameObjects
     GO_KOLOGARN_DOOR        = 194553,
     GO_THORIM_CHEST_HERO    = 194315,
     GO_THORIM_CHEST         = 194314,
+    GO_THORIM_ENCOUNTER_DOOR= 194559,
+    GO_THORIM_STONE_DOOR    = 194558,
+    GO_THORIM_RUNIC_DOOR    = 194557,
     GO_HODIR_CHEST_HERO     = 194308,
     GO_HODIR_CHEST          = 194307,
     GO_FREYA_CHEST_HERO     = 194325,
@@ -85,8 +88,11 @@ public:
         uint64 uiHodirGUID;
 
         uint64 uiThorimGUID;
+        uint64 uiThorimDoorGUID;
         uint64 uiRunicColossusGUID;
         uint64 uiRuneGiantGUID;
+        uint64 uiRunicDoorGUID;
+        uint64 uiStoneDoorGUID;
 
         uint64 uiFreyaGUID;
         uint64 uiElderBrightleafGUID;
@@ -136,6 +142,9 @@ public:
             uiLeviathanMKIIGUID     = 0;
             uiHodirGUID             = 0;
             uiThorimGUID            = 0;
+            uiThorimDoorGUID        = 0;
+            uiRunicDoorGUID         = 0;
+            uiStoneDoorGUID         = 0;
             uiFreyaGUID             = 0;
             uiVezaxGUID             = 0;
             uiYoggSaronGUID         = 0;
@@ -308,6 +317,15 @@ public:
                 case GO_THORIM_CHEST:
                     uiThorimChestGUID = go->GetGUID();
                     break;
+                case GO_THORIM_ENCOUNTER_DOOR:
+                    uiThorimDoorGUID = go->GetGUID();
+                    break;
+                case GO_THORIM_STONE_DOOR:
+                    uiStoneDoorGUID = go->GetGUID();
+                    break;
+                case GO_THORIM_RUNIC_DOOR:
+                    uiRunicDoorGUID = go->GetGUID();
+                    break;
                 case GO_HODIR_CHEST_HERO:
                 case GO_HODIR_CHEST:
                     uiHodirChestGUID = go->GetGUID();
@@ -440,10 +458,8 @@ public:
                             go->SetRespawnTime(go->GetRespawnDelay());
                         HandleGameObject(uiKologarnBridgeGUID, false);
                     }
-                    if (state == IN_PROGRESS)
-                        HandleGameObject(uiKologarnDoorGUID, false);
-                    else
-                        HandleGameObject(uiKologarnDoorGUID, true);
+
+                    HandleGameObject(uiKologarnDoorGUID, state != IN_PROGRESS);
                     break;
                 case TYPE_HODIR:
                     if (state == DONE)
@@ -454,6 +470,10 @@ public:
                     if (state == DONE)
                         if (GameObject* go = instance->GetGameObject(uiThorimChestGUID))
                             go->SetRespawnTime(go->GetRespawnDelay());
+
+                    if(GameObject* obj = instance->GetGameObject(uiThorimDoorGUID))
+                        obj->SetGoState(state == IN_PROGRESS ? GO_STATE_READY : GO_STATE_ACTIVE );
+
                     break;
                 case TYPE_FREYA:
                     if (state == DONE)
@@ -494,6 +514,10 @@ public:
                     break;
                 case DATA_MIMIRON_ELEVATOR:
                     if (GameObject* go = instance->GetGameObject(uiMimironElevatorGUID))
+                        go->SetGoState(GOState(data));
+                    break;
+                case DATA_RUNIC_DOOR:
+                    if (GameObject* go = instance->GetGameObject(uiRunicDoorGUID))
                         go->SetGoState(GOState(data));
                     break;
                 default:
