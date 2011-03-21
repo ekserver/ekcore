@@ -18,34 +18,6 @@
 #include "ScriptPCH.h"
 #include "ulduar.h"
 
-enum eGameObjects
-{
-    GO_KOLOGARN_CHEST_HERO  = 195047,
-    GO_KOLOGARN_CHEST       = 195046,
-    GO_KOLOGARN_BRIDGE      = 194232,
-    GO_KOLOGARN_DOOR        = 194553,
-    GO_THORIM_CHEST_HERO    = 194315,
-    GO_THORIM_CHEST         = 194314,
-    GO_THORIM_ENCOUNTER_DOOR= 194559,
-    GO_THORIM_STONE_DOOR    = 194558,
-    GO_THORIM_RUNIC_DOOR    = 194557,
-    GO_HODIR_CHEST_HERO     = 194308,
-    GO_HODIR_CHEST          = 194307,
-    GO_FREYA_CHEST_HERO     = 194325,
-    GO_FREYA_CHEST          = 194324,
-    GO_LEVIATHAN_DOOR       = 194905,
-    GO_LEVIATHAN_GATE       = 194630,
-    GO_MIMIRON_TRAIN        = 194675,
-    GO_MIMIRON_ELEVATOR     = 194749,
-    GO_MIMIRON_DOOR_1       = 194776,
-    GO_MIMIRON_DOOR_2       = 194774,
-    GO_MIMIRON_DOOR_3       = 194775,
-    GO_YOGGSARON_DOOR       = 194773,
-    GO_YOGGBRAIN_DOOR_1     = 194635,
-    GO_YOGGBRAIN_DOOR_2     = 194636,
-    GO_YOGGBRAIN_DOOR_3     = 194637
-};
-
 class instance_ulduar : public InstanceMapScript
 {
 public:

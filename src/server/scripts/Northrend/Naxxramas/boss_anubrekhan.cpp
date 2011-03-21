@@ -84,7 +84,7 @@ public:
             pos.m_positionY -= 10.0f;
             me->SummonCreature(MOB_CRYPT_GUARD, pos, TEMPSUMMON_CORPSE_DESPAWN);
 
-            if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+            if (GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
             {
                 pos = me->GetHomePosition();
                 pos.m_positionY += 10.0f;
@@ -181,7 +181,7 @@ public:
                         DoSummon(MOB_CRYPT_GUARD, GuardSummonPos, 0, TEMPSUMMON_CORPSE_DESPAWN);
                         break;
                     case EVENT_BERSERK:
-                        if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+                        if (GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
                             DoCast(me, SPELL_BERSERK, true);
                         events.ScheduleEvent(EVENT_BERSERK, 600000);
                         break;

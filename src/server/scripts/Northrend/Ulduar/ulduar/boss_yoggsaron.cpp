@@ -1490,7 +1490,7 @@ public:
                         }
                     }else uiLunaticGaze_Timer -= diff;
 
-                    if(getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL && uiAmountKeeperActive < 4)
+                    if(GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL && uiAmountKeeperActive < 4)
                         if(uiDeafeningRoar_Timer <= diff)
                         {
                             if(Creature* yogg = me->GetCreature(*me,guidYogg))
