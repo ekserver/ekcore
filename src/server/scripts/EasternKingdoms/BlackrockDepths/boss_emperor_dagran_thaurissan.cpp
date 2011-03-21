@@ -125,7 +125,6 @@ public:
 
 };
 
-
 void AddSC_boss_draganthaurissan()
 {
     new boss_emperor_dagran_thaurissan();

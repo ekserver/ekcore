@@ -345,7 +345,6 @@ public:
             if (spell->Id == DUNGEON_MODE(SPELL_POISONED_SPEAR, H_SPELL_POISONED_SPEAR))
                 pTarget->CastSpell(pTarget, DUNGEON_MODE(SPELL_POISONED_SPEAR_DOT, H_SPELL_POISONED_SPEAR_DOT), true);
         }
-
         void UpdateAI(const uint32 diff)
         {
             switch(Phase)
@@ -607,7 +606,6 @@ public:
     }
 
 };
-
 
 void AddSC_boss_skadi()
 {

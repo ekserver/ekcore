@@ -114,9 +114,6 @@ public:
 
 };
 
-
-
-
 /*######
 # npc_salsalabim
 ######*/
@@ -193,7 +190,6 @@ public:
 
 };
 
-
 /*
 ##################################################
 Shattrath City Flask Vendors provides flasks to people exalted with 3 factions:
@@ -254,7 +250,6 @@ public:
 
 };
 
-
 /*######
 # npc_zephyr
 ######*/
@@ -286,7 +281,6 @@ public:
     }
 
 };
-
 
 /*######
 # npc_kservant
@@ -579,8 +573,6 @@ public:
 
 };
 
-
-
 /*######
 # npc_ishanah
 ######*/
@@ -618,7 +610,6 @@ public:
     }
 
 };
-
 
 /*######
 # npc_khadgar
@@ -687,7 +678,6 @@ public:
     }
 
 };
-
 
 void AddSC_shattrath_city()
 {

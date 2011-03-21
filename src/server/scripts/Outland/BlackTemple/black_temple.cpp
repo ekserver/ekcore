@@ -4100,7 +4100,6 @@ public:
         }
     };
 };
-
 void AddSC_black_temple()
 {
     new npc_black_temple();

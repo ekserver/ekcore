@@ -1389,7 +1389,6 @@ class spell_surge_of_power_targeting : public SpellScriptLoader
             return new spell_surge_of_power_targeting_SpellScript();
         }
 };
-
 void AddSC_boss_malygos()
 {
     new boss_malygos();

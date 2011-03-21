@@ -18,7 +18,10 @@
 #ifndef ICECROWN_CITADEL_H_
 #define ICECROWN_CITADEL_H_
 
+#include "SpellScript.h"
+
 #define ICCScriptName "instance_icecrown_citadel"
+
 uint32 const EncounterCount = 12;
 uint32 const WeeklyNPCs = 7;
 uint32 const MaxHeroicAttempts = 50;
@@ -324,6 +327,47 @@ enum WorldStatesICC
     WORLDSTATE_SHOW_ATTEMPTS        = 4940,
     WORLDSTATE_ATTEMPTS_REMAINING   = 4941,
     WORLDSTATE_ATTEMPTS_MAX         = 4942,
+};
+
+class spell_trigger_spell_from_caster : public SpellScriptLoader
+{
+    public:
+        spell_trigger_spell_from_caster(char const* scriptName, uint32 triggerId) : SpellScriptLoader(scriptName), _triggerId(triggerId) { }
+
+        class spell_trigger_spell_from_caster_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_trigger_spell_from_caster_SpellScript);
+
+        public:
+            spell_trigger_spell_from_caster_SpellScript(uint32 triggerId) : SpellScript(), _triggerId(triggerId) { }
+
+            bool Validate(SpellEntry const* /*spell*/)
+            {
+                if (!sSpellStore.LookupEntry(_triggerId))
+                    return false;
+                return true;
+            }
+
+            void HandleTrigger()
+            {
+                GetCaster()->CastSpell(GetHitUnit(), _triggerId, true);
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_trigger_spell_from_caster_SpellScript::HandleTrigger);
+            }
+
+            uint32 _triggerId;
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_trigger_spell_from_caster_SpellScript(_triggerId);
+        }
+
+    private:
+        uint32 _triggerId;
 };
 
 #endif // ICECROWN_CITADEL_H_

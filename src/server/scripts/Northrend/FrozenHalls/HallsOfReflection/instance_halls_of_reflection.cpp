@@ -150,7 +150,6 @@ public:
                       pPlayer->CastSpell(pPlayer, ALLIANCE_CONTROL_PHASE_SHIFT_2, false);
                       break;
             };
-
         };
 
         void OnGameObjectCreate(GameObject* go)

@@ -249,7 +249,6 @@ public:
     }
 
 };
-
 void AddSC_utgarde_keep()
 {
     new npc_dark_ranger_marrah();

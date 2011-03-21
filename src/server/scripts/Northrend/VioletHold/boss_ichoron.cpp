@@ -336,7 +336,6 @@ public:
             }
         }
 
-
         void SummonedCreatureDespawn(Creature *pSummoned)
         {
             if (pSummoned)
@@ -355,7 +354,6 @@ public:
     };
 
 };
-
 
 class mob_ichor_globule : public CreatureScript
 {
@@ -420,7 +418,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_ichoron()
 {

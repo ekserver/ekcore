@@ -896,7 +896,6 @@ public:
 
         return true;
     }
-
     bool OnGossipHello (Player *player, Creature *_Creature)
     {
         InstanceScript* pInstance = _Creature->GetInstanceScript();
@@ -909,7 +908,6 @@ public:
         return true;
     }
 };
-
 void AddSC_boss_shade_of_akama()
 {
     new boss_shade_of_akama();

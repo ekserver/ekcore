@@ -73,7 +73,6 @@ public:
 
 };
 
-
 /*######
 # npc_gilthares
 ######*/
@@ -176,8 +175,6 @@ public:
 
 };
 
-
-
 /*######
 ## npc_sputtervalve
 ######*/
@@ -213,7 +210,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_taskmaster_fizzule
@@ -315,7 +311,6 @@ public:
     };
 
 };
-
 
 /*#####
 ## npc_twiggy_flathead
@@ -546,7 +541,6 @@ public:
 
 };
 
-
 /*#####
 ## npc_wizzlecrank_shredder
 #####*/
@@ -714,7 +708,6 @@ public:
     }
 
 };
-
 
 void AddSC_the_barrens()
 {

@@ -222,7 +222,6 @@ int Master::Run()
     ///- Initialize the World
     sWorld->SetInitialWorldSettings();
 
-
     // Initialise the signal handlers
     CoredSignalHandler SignalINT, SignalTERM;
     
@@ -251,7 +250,6 @@ int Master::Run()
     #ifdef _WIN32
     Handler.register_handler(SIGBREAK, &SignalBREAK);
     #endif /* _WIN32 */
-
 
     ///- Launch WorldRunnable thread
     ACE_Based::Thread world_thread(new WorldRunnable);

@@ -153,7 +153,6 @@ public:
 
 };
 
-
 /*######
 ## mob_infested_root_walker
 ######*/
@@ -433,9 +432,6 @@ public:
 
 };
 
-
-
-
 /*######
 ## npc_isla_starmane
 ######*/
@@ -528,7 +524,6 @@ public:
     }
 
 };
-
 
 /*######
 ## go_skull_pile
@@ -624,7 +619,6 @@ public:
     }
 
 };
-
 
 /*########
 ####npc_akuno

@@ -456,7 +456,6 @@ public:
 
 };
 
-
 void AddSC_instance_stratholme()
 {
     new instance_stratholme();

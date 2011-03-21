@@ -141,7 +141,6 @@ public:
 
 };
 
-
 /*######
 ## npc_koltira_deathweaver
 ######*/
@@ -350,8 +349,6 @@ public:
 
 };
 
-
-
 //Scarlet courier
 enum ScarletCourierEnum
 {
@@ -440,7 +437,6 @@ public:
 
 };
 
-
 //Koltira & Valroth- Breakout
 
 enum valroth
@@ -528,7 +524,6 @@ public:
     };
 
 };
-
 
 /*######
 ## npc_a_special_surprise
@@ -993,7 +988,6 @@ public:
     };
 
 };
-
 
 void AddSC_the_scarlet_enclave_c2()
 {

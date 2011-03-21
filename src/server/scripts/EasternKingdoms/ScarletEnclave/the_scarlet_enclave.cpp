@@ -175,7 +175,6 @@ private:
         }
     };
 };
-
 void AddSC_the_scarlet_enclave()
 {
     new npc_valkyr_battle_maiden();

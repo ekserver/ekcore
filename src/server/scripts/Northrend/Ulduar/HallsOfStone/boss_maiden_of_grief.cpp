@@ -185,7 +185,6 @@ public:
 
 };
 
-
 void AddSC_boss_maiden_of_grief()
 {
     new boss_maiden_of_grief();

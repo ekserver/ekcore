@@ -212,7 +212,6 @@ public:
 
 };
 
-
 class boss_dalronn_the_controller : public CreatureScript
 {
 public:
@@ -402,7 +401,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_skarvald_dalronn()
 {

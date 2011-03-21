@@ -772,7 +772,6 @@ public:
 
                 if (!map->IsDungeon())
                     return;
-
                 Map::PlayerList const &PlayerList = map->GetPlayers();
                 for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 {
@@ -783,13 +782,11 @@ public:
                             SpellHitTarget(i_pl,spellinfo);
                         }
                 }
-
                 fogtrigger_timer = 1000;
             }else fogtrigger_timer -= diff;
         }
     };
 };
-
 void AddSC_boss_felmyst()
 {
     new boss_felmyst();

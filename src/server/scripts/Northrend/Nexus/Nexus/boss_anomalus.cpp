@@ -182,7 +182,6 @@ public:
                 }
             }
 
-
             if (uiSparkTimer <= diff)
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
@@ -195,7 +194,6 @@ public:
     };
 
 };
-
 
 enum RiftSpells
 {
@@ -278,7 +276,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_anomalus()
 {

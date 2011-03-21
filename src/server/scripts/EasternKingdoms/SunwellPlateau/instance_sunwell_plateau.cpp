@@ -352,7 +352,6 @@ public:
     };
 };
 
-
 void AddSC_instance_sunwell_plateau()
 {
     new instance_sunwell_plateau();

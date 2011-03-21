@@ -889,7 +889,6 @@ UPDATE `gameobject_template` SET `flags` = 4 WHERE `entry` = 194173;
 -- Cleanup
 DELETE FROM `creature` WHERE `id` IN (32950, 32941, 32948, 32946, 32938);
 */
-
 void AddSC_boss_hodir()
 {
     new boss_hodir();

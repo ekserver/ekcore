@@ -299,7 +299,6 @@ public:
 
 };
 
-
 class mob_stalagg : public CreatureScript
 {
 public:
@@ -391,7 +390,6 @@ public:
 
 };
 
-
 class mob_feugen : public CreatureScript
 {
 public:
@@ -451,7 +449,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_thaddius()
 {

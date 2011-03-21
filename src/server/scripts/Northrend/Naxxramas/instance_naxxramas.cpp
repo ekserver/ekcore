@@ -723,7 +723,6 @@ class AreaTrigger_at_naxxramas_frostwyrm_wing : public AreaTriggerScript
 //DELETE FROM areatrigger_scripts WHERE `entry`=4156;
 //INSERT INTO areatrigger_scripts VALUES
 //   (4156,'at_naxxramas_frostwyrm_wing');
-
 void AddSC_instance_naxxramas()
 {
     new instance_naxxramas();

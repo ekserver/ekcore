@@ -235,7 +235,6 @@ public:
 
 };
 
-
 class containment_sphere : public GameObjectScript
 {
 public:

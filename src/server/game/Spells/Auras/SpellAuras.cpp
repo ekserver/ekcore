@@ -789,7 +789,6 @@ bool Aura::ModStackAmount(int32 num)
     return false;
 }
 
-
 bool Aura::IsPassive() const
 {
     return IsPassiveSpell(GetSpellProto());
@@ -1872,7 +1871,6 @@ void Aura::CallScriptEffectAfterAbsorbHandlers(AuraEffect * aurEff, AuraApplicat
         (*scritr)->_FinishScriptCall();
     }
 }
-
 
 void Aura::CallScriptEffectManaShieldHandlers(AuraEffect * aurEff, AuraApplication const * aurApp, DamageInfo & dmgInfo, uint32 & absorbAmount, bool & defaultPrevented)
 {

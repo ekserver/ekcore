@@ -127,7 +127,6 @@ public:
 
 };
 
-
 /*######
 ## npc_ancestral_wolf
 ######*/
@@ -202,7 +201,6 @@ public:
 
 };
 
-
 /*######
 ## go_haaleshi_altar
 ######*/
@@ -256,7 +254,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_tracy_proudwell
@@ -314,7 +311,6 @@ public:
 
 };
 
-
 /*######
 ## npc_trollbane
 ######*/
@@ -367,7 +363,6 @@ public:
     }
 
 };
-
 
 /*######
 ## npc_wounded_blood_elf
@@ -506,12 +501,10 @@ public:
         {
             if (!UpdateVictim())
                 return;
-
             DoMeleeAttackIfReady();
         }
     };
 };
-
 /*######
 ## npc_fel_guard_hound
 ######*/
@@ -646,7 +639,6 @@ public:
         return new npc_shattered_hand_berserkerAI(creature);
     }
 };
-
 void AddSC_hellfire_peninsula()
 {
     new npc_aeranas();

@@ -174,7 +174,6 @@ public:
 
 };
 
-
 void AddSC_boss_moragg()
 {
     new boss_moragg();

@@ -424,7 +424,6 @@ public:
 
 };
 
-
 void AddSC_instance_serpentshrine_cavern()
 {
     new instance_serpent_shrine();

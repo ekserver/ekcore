@@ -284,7 +284,6 @@ public:
 
 };
 
-
 enum eSpells
 {
 //we don't have that text in db so comment it until we get this text
@@ -404,7 +403,6 @@ public:
     };
 };
 
-
 enum eShadowAxe
 {
     SPELL_SHADOW_AXE_DAMAGE                     = 42750,
@@ -458,7 +456,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_ingvar_the_plunderer()
 {

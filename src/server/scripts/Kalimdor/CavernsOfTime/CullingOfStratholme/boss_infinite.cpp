@@ -35,7 +35,6 @@ enum Achievements
 {
     ACHIEV_CULLING_OF_TIME                      = 1817
 };
-
 class boss_infinite_corruptor : public CreatureScript
 {
 public:
@@ -137,7 +136,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_infinite_corruptor()
 {

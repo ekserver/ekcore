@@ -197,8 +197,6 @@ public:
 
 };
 
-
-
 void AddSC_boss_maexxna()
 {
     new boss_maexxna();

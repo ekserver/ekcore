@@ -922,12 +922,10 @@ class mob_dark_matter : public CreatureScript
 {
 public:
     mob_dark_matter() : CreatureScript("mob_dark_matter") { }
-
     CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_dark_matterAI(pCreature);
     }
-
     struct mob_dark_matterAI : public ScriptedAI
     {
         mob_dark_matterAI(Creature *pCreature) : ScriptedAI(pCreature) { }
@@ -1010,8 +1008,6 @@ public:
         }
     };
 };
-
-
 void AddSC_halls_of_stone()
 {
     new npc_brann_hos();

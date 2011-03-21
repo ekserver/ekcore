@@ -786,7 +786,6 @@ public:
         return true;
     }
 };
-
 void AddSC_boss_kalecgos()
 {
     new boss_kalecgos();

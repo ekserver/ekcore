@@ -1664,8 +1664,6 @@ public:
 
 };
 
-
-
 /*######
 ## npc the lich king in dawn of light
 ######*/
@@ -1689,8 +1687,6 @@ public:
     };
 
 };
-
-
 
 void AddSC_the_scarlet_enclave_c5()
 {

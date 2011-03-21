@@ -2461,7 +2461,6 @@ void AchievementGlobalMgr::LoadRewardLocales()
         return;
     }
 
-
     do
     {
         Field *fields = result->Fetch();

@@ -193,8 +193,6 @@ public:
 
 };
 
-
-
 void AddSC_boss_grobbulus()
 {
     new boss_grobbulus();

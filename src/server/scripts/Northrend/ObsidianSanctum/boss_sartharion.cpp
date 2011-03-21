@@ -121,7 +121,6 @@ enum eEnums
     SPELL_FLAME_TSUNAMI_DMG_AURA                = 57491,    // periodic damage, npc has this aura
     SPELL_FLAME_TSUNAMI_BUFF                    = 60430,
 
-
     NPC_FLAME_TSUNAMI                           = 30616,    // for the flame waves
     NPC_LAVA_BLAZE                              = 30643,    // adds spawning from flame strike
 
@@ -765,7 +764,6 @@ public:
 
 };
 
-
 enum TeneText
 {
     SAY_TENEBRON_AGGRO                      = -1615009,
@@ -1255,7 +1253,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Shadron
 ######*/
@@ -1382,7 +1379,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Vesperon
 ######*/
@@ -1500,7 +1496,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Acolyte of Shadron
 ######*/
@@ -1611,7 +1606,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Acolyte of Vesperon
 ######*/
@@ -1706,7 +1700,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Twilight Eggs
 ######*/
@@ -1774,13 +1767,11 @@ public:
                 m_uiHatchEggTimer -= uiDiff;
         }
 
-
         void AttackStart(Unit* /*pWho*/) {}
         void MoveInLineOfSight(Unit* /*pWho*/) {}
     };
 
 };
-
 
 /*######
 ## Mob Flame Tsunami
@@ -2015,7 +2006,6 @@ public:
         return false;
     }
 };
-
 void AddSC_boss_sartharion()
 {
     new boss_sartharion();

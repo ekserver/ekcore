@@ -180,7 +180,6 @@ public:
 
             char dataHead1, dataHead2;
             uint16 data0, data1, data2, data3;
-
             std::istringstream loadStream(in);
             loadStream >> dataHead1 >> dataHead2 >> data0 >> data1 >> data2 >> data3;
 
@@ -202,7 +201,6 @@ public:
     };
 
 };
-
 
 void AddSC_instance_oculus()
 {

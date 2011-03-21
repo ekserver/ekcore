@@ -263,7 +263,6 @@ public:
 
 };
 
-
 void AddSC_boss_ormorok()
 {
     new boss_ormorok();

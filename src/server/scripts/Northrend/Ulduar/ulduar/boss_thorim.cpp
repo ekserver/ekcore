@@ -709,7 +709,6 @@ public:
 
 };
 
-
 class npc_runic_colossus : public CreatureScript
 {
 public:

@@ -339,7 +339,6 @@ public:
 
 };
 
-
 void AddSC_boss_gal_darah()
 {
     new boss_gal_darah();

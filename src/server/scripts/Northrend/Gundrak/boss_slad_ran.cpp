@@ -375,9 +375,7 @@ public:
     struct mob_snake_wrapAI : public ScriptedAI
     {
         mob_snake_wrapAI(Creature *c) : ScriptedAI(c) {}
-
         uint64 WrapTargetGUID;
-
         void Reset()
         { 
             WrapTargetGUID = 0; 
@@ -410,7 +408,6 @@ public:
     };
 
 };
-
 void AddSC_boss_slad_ran()
 {
     new boss_slad_ran();

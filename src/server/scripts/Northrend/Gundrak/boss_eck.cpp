@@ -156,7 +156,6 @@ public:
 
 };
 
-
 class npc_ruins_dweller : public CreatureScript
 {
 public:

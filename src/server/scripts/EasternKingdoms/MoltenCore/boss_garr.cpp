@@ -161,7 +161,6 @@ public:
 
 };
 
-
 void AddSC_boss_garr()
 {
     new boss_garr();

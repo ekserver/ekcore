@@ -131,11 +131,9 @@ enum SpellFamilyFlag
     SPELLFAMILYFLAG_DK_DEATH_COIL           = 0x00002000,
     SPELLFAMILYFLAG1_DK_HUNGERING_COLD      = 0x00001000,
 
-
     // TODO: Figure out a more accurate name for the following familyflag(s)
     SPELLFAMILYFLAG_SHAMAN_TOTEM_EFFECTS    = 0x04000000,  // Seems to be linked to most totems and some totem effects
 };
-
 
 // Spell clasification
 enum SpellSpecific
@@ -903,7 +901,6 @@ enum SpellCustomAttributes
 
     SPELL_ATTR0_CU_IGNORE_LOS       = 0x10000000,
 };
-
 
 typedef std::vector<uint32> SpellCustomAttribute;
 typedef std::vector<bool> EnchantCustomAttribute;

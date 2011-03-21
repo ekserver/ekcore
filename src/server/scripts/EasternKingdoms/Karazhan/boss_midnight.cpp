@@ -311,7 +311,6 @@ void boss_attumen::boss_attumenAI::UpdateAI(const uint32 diff)
     DoMeleeAttackIfReady();
 }
 
-
 void AddSC_boss_attumen()
 {
     new boss_attumen();

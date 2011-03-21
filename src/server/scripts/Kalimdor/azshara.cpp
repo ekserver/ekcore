@@ -519,7 +519,6 @@ public:
 
 };
 
-
 /*####
 # npc_duke_hydraxis
 ####*/

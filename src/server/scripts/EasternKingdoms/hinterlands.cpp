@@ -138,8 +138,6 @@ public:
 
 };
 
-
-
 /*######
 ## npc_rinji
 ######*/
@@ -338,8 +336,6 @@ public:
     };
 
 };
-
-
 
 void AddSC_hinterlands()
 {

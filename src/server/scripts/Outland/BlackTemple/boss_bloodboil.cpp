@@ -487,7 +487,6 @@ public:
 
     };
 };
-
 void AddSC_boss_gurtogg_bloodboil()
 {
     new boss_gurtogg_bloodboil();
