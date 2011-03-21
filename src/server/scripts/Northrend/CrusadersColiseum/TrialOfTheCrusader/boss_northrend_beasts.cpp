@@ -226,7 +226,6 @@ public:
 
 };
 
-
 class mob_snobold_vassal : public CreatureScript
 {
 public:
@@ -359,7 +358,6 @@ public:
     };
 
 };
-
 
 struct boss_jormungarAI : public ScriptedAI
 {
@@ -575,7 +573,6 @@ struct boss_jormungarAI : public ScriptedAI
     bool   enraged;
 };
 
-
 class boss_acidmaw : public CreatureScript
 {
     public:
@@ -608,7 +605,6 @@ class boss_acidmaw : public CreatureScript
     }
 };
 
-
 class boss_dreadscale : public CreatureScript
 {
 public:
@@ -639,7 +635,6 @@ public:
         return new boss_dreadscaleAI(pCreature);
     }
 };
-
 
 class mob_slime_pool : public CreatureScript
 {
@@ -914,7 +909,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_northrend_beasts()
 {

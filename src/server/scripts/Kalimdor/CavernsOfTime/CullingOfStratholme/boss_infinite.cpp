@@ -31,7 +31,6 @@ enum Yells
     SAY_DEATH                                   = -1595047
 };
 
-
 class boss_infinite_corruptor : public CreatureScript
 {
 public:
@@ -80,7 +79,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_infinite_corruptor()
 {

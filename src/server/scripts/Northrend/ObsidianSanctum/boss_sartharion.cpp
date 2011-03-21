@@ -117,7 +117,6 @@ enum eEnums
     SPELL_FLAME_TSUNAMI_DMG_AURA                = 57492,    // periodic damage, npc has this aura
     SPELL_FLAME_TSUNAMI_BUFF                    = 60430,
 
-
     NPC_FLAME_TSUNAMI                           = 30616,    // for the flame waves
     NPC_LAVA_BLAZE                              = 30643,    // adds spawning from flame strike
 
@@ -1024,7 +1023,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Shadron
 ######*/
@@ -1176,7 +1174,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Vesperon
 ######*/
@@ -1302,7 +1299,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Acolyte of Shadron
 ######*/
@@ -1403,7 +1399,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Acolyte of Vesperon
 ######*/
@@ -1499,7 +1494,6 @@ public:
 
 };
 
-
 /*######
 ## Mob Twilight Eggs
 ######*/
@@ -1571,7 +1565,6 @@ public:
     };
 
 };
-
 
 /*######
 ## Mob Flame Tsunami
@@ -1664,9 +1657,6 @@ public:
 
 };
 
-
-
-
 /*######
 ## Mob Twilight Whelps
 ######*/
@@ -1718,7 +1708,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_sartharion()
 {

@@ -107,7 +107,6 @@ enum Actions
     ACTION_PACT
 };
 
-
 /*######
 ## boss_twin_base
 ######*/
@@ -495,7 +494,6 @@ public:
 
 };
 
-
 /*######
 ## boss_eydis
 ######*/
@@ -541,7 +539,6 @@ public:
 
 };
 
-
 class mob_essence_of_twin : public CreatureScript
 {
 public:
@@ -566,7 +563,6 @@ public:
         return true;
     }
 };
-
 
 struct mob_unleashed_ballAI : public ScriptedAI
 {
@@ -665,7 +661,6 @@ public:
     };
 
 };
-
 
 class mob_unleashed_light : public CreatureScript
 {
@@ -845,7 +840,6 @@ public:
         return new spell_powering_up_SpellScript();
     }
 };
-
 void AddSC_boss_twin_valkyr()
 {
     new boss_fjola();

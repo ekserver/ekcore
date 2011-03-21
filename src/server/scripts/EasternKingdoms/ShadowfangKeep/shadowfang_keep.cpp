@@ -141,9 +141,6 @@ public:
 
 };
 
-
-
-
 class npc_arugal_voidwalker : public CreatureScript
 {
 public:
@@ -588,7 +585,6 @@ public:
     };
 
 };
-
 void AddSC_shadowfang_keep()
 {
     new npc_shadowfang_prisoner();

@@ -549,8 +549,6 @@ public:
 
 };
 
-
-
 void AddSC_boss_gothik()
 {
     new boss_gothik();

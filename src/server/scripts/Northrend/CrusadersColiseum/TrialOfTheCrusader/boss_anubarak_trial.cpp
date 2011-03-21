@@ -407,7 +407,6 @@ public:
 
 };
 
-
 class mob_swarm_scarab : public CreatureScript
 {
 public:
@@ -474,7 +473,6 @@ public:
     };
 
 };
-
 
 class mob_nerubian_burrower : public CreatureScript
 {
@@ -552,7 +550,6 @@ public:
     };
 
 };
-
 
 class mob_frost_sphere : public CreatureScript
 {
@@ -633,7 +630,6 @@ public:
     };
 
 };
-
 
 class mob_anubarak_spike : public CreatureScript
 {

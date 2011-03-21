@@ -405,7 +405,6 @@ public:
 
 };
 
-
 void AddSC_instance_naxxramas()
 {
     new instance_naxxramas();
