@@ -17,11 +17,14 @@
 
 /*
     TODO:
-        Add achievments
+        Achievments:
+            Nerf Scrapbots - in Scrapbot script
+            Nerf Gravity Bombs - (?) - Spellscript
+            Must Deconstruct Faster - in XT-002 script / core
+
         Boombot explosion only hurt allies to the npc at the moment
         Boombot explosion visual
-        Test the enrage timer
-        Fix gravity bomb - tractor beam.
+
         Fix void zone spell
         If the boss is to close to a scrap pile -> no summon
         make the life sparks visible...
@@ -44,6 +47,8 @@ enum Spells
     SPELL_HEARTBREAK_10                         = 65737,
     SPELL_HEARTBREAK_25                         = 64193,
 
+    SPELL_HEART_EXPOSED                         = 62789, //a little useless
+
     SPELL_ENRAGE                                = 26662,
 
     //------------------VOID ZONE--------------------
@@ -57,6 +62,7 @@ enum Spells
 
     //----------------XT-002 HEART-------------------
     SPELL_EXPOSED_HEART                         = 63849,
+    SPELL_HEART_RIDE_XT002                      = 63852,
 
     //---------------XM-024 PUMMELLER----------------
     SPELL_ARCING_SMASH                          = 8374,
@@ -65,6 +71,10 @@ enum Spells
 
     //------------------BOOMBOT-----------------------
     SPELL_BOOM                                  = 62834,
+    SPELL_EXPLOSION_VISUAL                      = 62987, // dont know if right
+
+    //-----------------SCRAPBOT-----------------------
+    SPELL_HEAL_XT002                            = 62832,
 };
 
 enum Timers
@@ -104,7 +114,8 @@ enum Creatures
 
 enum Actions
 {
-    ACTION_ENTER_HARD_MODE                      = 0,
+    ACTION_ENTER_HARD_MODE,
+    ACTION_XT002_REACHED,
 };
 
 enum XT002Data
@@ -127,7 +138,13 @@ enum Yells
 
 enum
 {
-    ACHIEV_TIMED_START_EVENT                      = 21027,
+    ACHIEV_TIMED_START_EVENT                    = 21027,
+};
+
+enum Achievments
+{
+    ACHIEVMENT_NERF_ENGINEERING_10              = 2931,
+    ACHIEVMENT_NERF_ENGINEERING_25              = 2932,
 };
 
 //#define GRAVITY_BOMB_DMG_MIN_10                11700
@@ -202,9 +219,12 @@ public:
         bool enterHardMode;
         bool hardMode;
 
+        bool nerfEngineering;
+
         void Reset()
         {
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
+            me->SetStandState(UNIT_STAND_STATE_STAND);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
 
             //Makes XT-002 to cast a light bomb 10 seconds after aggro.
             uiSearingLightTimer = TIMER_SEARING_LIGHT/2;
@@ -224,6 +244,8 @@ public:
             hardMode = false;
             enterHardMode = false;
 
+            nerfEngineering = true;
+
             phase = 1;
             heart_exposed = 0;
 
@@ -238,6 +260,11 @@ public:
 
             if (instance)
                 instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
+        }
+
+        void JustSummoned(Creature* pSummoned)
+        {
+            summons.Summon(pSummoned);
         }
 
         void DoAction(const int32 action)
@@ -258,6 +285,9 @@ public:
                         // Get his heartbreak buff
                         me->CastSpell(me, RAID_MODE(SPELL_HEARTBREAK_10, SPELL_HEARTBREAK_25), true);
                     }
+                    break;
+                case ACTION_XT002_REACHED:
+                    nerfEngineering = false;
                     break;
             }
         }
@@ -281,6 +311,9 @@ public:
         {
             DoScriptText(SAY_DEATH, me);
             _JustDied();
+
+            if(nerfEngineering)
+                instance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_NERF_ENGINEERING_10,ACHIEVMENT_NERF_ENGINEERING_25));
         }
 
         void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
@@ -363,7 +396,7 @@ public:
                 else
                 {
                     //Stop moving
-                    me->StopMoving();
+                    //me->StopMoving();
 
                     //Start summoning adds
                     if (uiSpawnAddTimer <= diff)
@@ -454,17 +487,28 @@ public:
                     DoCast(me, SPELL_ENRAGE);
                     enraged = true;
                 } else uiEnrageTimer -= diff;
+            }else
+            {
+                if(!me->HasAura(SPELL_ENRAGE))
+                    DoCast(me,SPELL_ENRAGE);
             }
         }
 
+        // NOT BLIZZLIKE ... Heart is Spawned the whole Encounter ... VX - 002 is a vehicle
         void exposeHeart()
         {
+            me->GetMotionMaster()->MoveIdle();
+            me->SetStandState(UNIT_STAND_STATE_SUBMERGED);
+
             //Make untargetable
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_NOT_SELECTABLE);
 
             //Summon the heart npc
-            Creature* heart = me->SummonCreature(NPC_XT002_HEART, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7, 0, TEMPSUMMON_TIMED_DESPAWN, TIMER_HEART_PHASE);
-            heart->SetFlying(true);
+            if(Creature* heart = me->SummonCreature(NPC_XT002_HEART, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() , 0, TEMPSUMMON_TIMED_DESPAWN, TIMER_HEART_PHASE))
+            {
+                heart->EnterVehicle(me,1);
+                heart->CastSpell(heart,SPELL_EXPOSED_HEART,false);
+            }
 
             // Start "end of phase 2 timer"
             uiHeartPhaseTimer = TIMER_HEART_PHASE;
@@ -481,6 +525,9 @@ public:
 
         void SetPhaseOne()
         {
+            me->SetStandState(UNIT_STAND_STATE_STAND);
+            me->GetMotionMaster()->MoveChase(me->getVictim());
+
             uiSearingLightTimer = TIMER_SEARING_LIGHT / 2;
             uiGravityBombTimer = TIMER_GRAVITY_BOMB;
             uiTympanicTantrumTimer = urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX);
@@ -489,7 +536,7 @@ public:
             if (!hardMode)
                 me->ModifyHealth(-((int32)transferHealth));
 
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_NOT_SELECTABLE);
             phase = 1;
         }
     };
@@ -510,14 +557,14 @@ public:
         return new mob_xt002_heartAI(pCreature);
     }
 
-    struct mob_xt002_heartAI : public ScriptedAI
+    struct mob_xt002_heartAI : public Scripted_NoMovementAI
     {
-        mob_xt002_heartAI(Creature* pCreature) : ScriptedAI(pCreature)
+        mob_xt002_heartAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
         {
             m_pInstance = pCreature->GetInstanceScript();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED);
+            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            DoCast(me, SPELL_EXPOSED_HEART);
+            //DoCast(me, SPELL_EXPOSED_HEART);
         }
 
         InstanceScript* m_pInstance;
@@ -546,8 +593,10 @@ public:
                     pXT002->AI()->SetData(DATA_TRANSFERED_HEALTH, me->GetMaxHealth() - health);
                 }
         }
+        void UpdateAI(const uint32 diff)
+        {
+        }
     };
-
 };
 
 /*-------------------------------------------------------
@@ -570,32 +619,36 @@ public:
         mob_scrapbotAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             m_pInstance = me->GetInstanceScript();
+            casted = false;
         }
 
         InstanceScript* m_pInstance;
+        bool casted;
 
         void Reset()
         {
             me->SetReactState(REACT_PASSIVE);
 
             if (Creature* pXT002 = me->GetCreature(*me, m_pInstance->GetData64(TYPE_XT002)))
-                me->GetMotionMaster()->MoveChase(pXT002);
+                me->GetMotionMaster()->MoveFollow(pXT002,1,float(2*M_PI*rand_norm()));
         }
 
         void UpdateAI(const uint32 /*diff*/)
         {
             if (Creature* pXT002 = me->GetCreature(*me, m_pInstance->GetData64(TYPE_XT002)))
             {
-                if (me->GetDistance2d(pXT002) <= 0.5)
-                {
-                    // TODO Send raid message
-
-                    // Increase health with 1 percent
-                    pXT002->ModifyHealth(int32(pXT002->CountPctFromMaxHealth(1)));
-
-                    // Despawns the scrapbot
-                    me->DespawnOrUnsummon();
-                }
+                if(!casted)
+                    if (me->GetDistance2d(pXT002) <= 2)
+                    {
+                        // TODO Send raid message
+                        casted = true;
+                        // Increase health with 1 percent
+                        pXT002->CastSpell(me,SPELL_HEAL_XT002,true);
+                        //pXT002->ModifyHealth(int32(pXT002->CountPctFromMaxHealth(1)));
+                        pXT002->AI()->DoAction(ACTION_XT002_REACHED);
+                        // Despawns the scrapbot
+                        me->DespawnOrUnsummon(5000);
+                    }
             }
         }
     };
@@ -634,6 +687,19 @@ public:
             uiArcingSmashTimer = TIMER_ARCING_SMASH;
             uiTrampleTimer = TIMER_TRAMPLE;
             uiUppercutTimer = TIMER_UPPERCUT;
+
+            if(Unit* target = SelectPlayerTargetInRange(100.0f))
+                me->AI()->AttackStart(target);
+        }
+
+
+        Unit* SelectPlayerTargetInRange(float range)
+        {
+            Player *target = NULL;
+            Trinity::AnyPlayerInObjectRangeCheck u_check(me, range, true);
+            Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, target, u_check);
+            me->VisitNearbyObject(range, searcher);
+            return target;
         }
 
         void UpdateAI(const uint32 diff)
@@ -690,34 +756,36 @@ public:
             m_pInstance = pCreature->GetInstanceScript();
         }
 
-        InstanceScript* m_pInstance;
+   
+        Unit* SelectPlayerTargetInRange(float range)
+        {
+            Player *target = NULL;
+            Trinity::AnyPlayerInObjectRangeCheck u_check(me, range, true);
+            Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, target, u_check);
+            me->VisitNearbyObject(range, searcher);
+            return target;
+        }     InstanceScript* m_pInstance;
 
         void Reset()
         {
-            me->SetReactState(REACT_PASSIVE);
-
-            if (Creature* pXT002 = me->GetCreature(*me, m_pInstance->GetData64(TYPE_XT002)))
-                me->GetMotionMaster()->MoveChase(pXT002);
+            if(Unit* target = SelectPlayerTargetInRange(100.0f))
+                me->AI()->AttackStart(target);
         }
 
-        void JustDied(Unit * /*killer*/)
+        void DamageTaken(Unit* attacker, uint32 &amount)
         {
-            DoCast(SPELL_BOOM);
+            if((me->GetHealth() - amount) < (me->GetMaxHealth()/2))
+            {
+                DoCast(SPELL_BOOM);
+            }
         }
 
         void UpdateAI(const uint32 /*diff*/)
         {
-            if (Creature* pXT002 = me->GetCreature(*me, m_pInstance->GetData64(TYPE_XT002)))
-            {
-                if (me->GetDistance2d(pXT002) <= 0.5)
-                {
-                    //Explosion
-                    DoCast(me, SPELL_BOOM);
+            if (!UpdateVictim())
+                return;
 
-                    //Despawns the boombot
-                    me->DespawnOrUnsummon();
-                }
-            }
+            //DoMeleeAttackIfReady();
         }
     };
 

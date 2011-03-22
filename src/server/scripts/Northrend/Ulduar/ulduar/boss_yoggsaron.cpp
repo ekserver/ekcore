@@ -2876,7 +2876,7 @@ class spell_empowering_shadows : public SpellScriptLoader
         }
 };
 
-#define GOSSIP_KEEPER_HELP                  "[PH] Please help us fight against Yogg-Saron."
+#define GOSSIP_KEEPER_HELP                  "Lend us your aid, keeper. Together we shall defeat Yogg-Saron."
 
 class npc_keeper_help : public CreatureScript
 {
@@ -3026,7 +3026,7 @@ UPDATE creature_template SET scriptname = 'npc_death_ray' WHERE entry = 33881;
 UPDATE creature_template SET modelid1 = 17612, modelid2 = 17612 WHERE entry = 33881;
 UPDATE creature_template SET minlevel = 80, maxlevel = 80, scriptname = 'npc_laughting_skull' WHERE entry = 33990;
 UPDATE creature_template SET modelid1 = 15880, modelid2 = 15880 WHERE entry = 33990;
-UPDATE creature_template SET scriptname = 'npc_keeper_help' WHERE entry in(33241,33244,33242,33213;
+UPDATE creature_template SET scriptname = 'npc_keeper_help' WHERE entry IN(33241,33244,33242,33213);
 
 UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 194625;
 

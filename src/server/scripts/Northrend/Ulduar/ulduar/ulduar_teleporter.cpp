@@ -60,6 +60,12 @@ float TeleportPointsUlduarGOs[9][3] =
     {1855.03f, -11.629f, 334.58f},      //Descent into Madness
 };
 
+enum TeleportSpells
+{
+    //64024
+    //64032
+};
+
 class ulduar_teleporter : public GameObjectScript
 {
 public:
