@@ -1217,6 +1217,7 @@ void AddBattlegroundScripts()
 void AddSC_npc_guildhouses();
 void AddSC_npc_lottery();
 void AddSC_npcs_mini_boss();
+void AddSC_npc_zingara();
 #endif
 
 void AddCustomScripts()
@@ -1226,5 +1227,6 @@ void AddCustomScripts()
     AddSC_npc_guildhouses();
     AddSC_npc_lottery();
     AddSC_npcs_mini_boss();
+    AddSC_npc_zingara();
 #endif
 }
