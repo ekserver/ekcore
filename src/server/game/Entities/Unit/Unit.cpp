@@ -11297,7 +11297,7 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
     if (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags[1] & 0x400)
         TakenTotalMod = 1.0f / (DoneTotalMod * NegativeDoneTotalMod);
 
-    heal = (int32(heal) + TakenTotal) * TakenTotalMod, NegativeTakenTotalMod;
+    heal = (int32(heal) + TakenTotal) * TakenTotalMod * NegativeTakenTotalMod;
 
     return uint32(std::max(heal, 0.0f));
 }
