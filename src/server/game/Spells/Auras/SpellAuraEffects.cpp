@@ -1558,33 +1558,35 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
             {
                 // Taken mods
                 float TakenTotalMod = 1.0f;
+                float NegativeTakenTotalMod = 1.0f;
 
                 // Tenacity increase healing % taken
                 if (AuraEffect const* Tenacity = target->GetAuraEffect(58549, 0))
-                    AddFlatPctN(TakenTotalMod, Tenacity->GetAmount());
+                    AddFlatPctN(TakenTotalMod, NegativeTakenTotalMod, Tenacity->GetAmount());
 
                 // Healing taken percent
                 float minval = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
                 if (minval)
-                    AddFlatPctF(TakenTotalMod, minval);
+                    AddFlatPctF(TakenTotalMod, NegativeTakenTotalMod, minval);
 
                 float maxval = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
                 if (maxval)
-                    AddFlatPctF(TakenTotalMod, maxval);
+                    AddFlatPctF(TakenTotalMod, NegativeTakenTotalMod, maxval);
 
                 // Healing over time taken percent
                 float minval_hot = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HOT_PCT);
                 if (minval_hot)
-                    AddFlatPctF(TakenTotalMod, minval_hot);
+                    AddFlatPctF(TakenTotalMod, NegativeTakenTotalMod, minval_hot);
 
                 float maxval_hot = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HOT_PCT);
                 if (maxval_hot)
-                    AddFlatPctF(TakenTotalMod, maxval_hot);
+                    AddFlatPctF(TakenTotalMod, NegativeTakenTotalMod, maxval_hot);
 
                 TakenTotalMod = std::max(TakenTotalMod, 0.0f);
+                NegativeTakenTotalMod = std::max(NegativeTakenTotalMod, 0.0f);
 
                 damage = uint32(target->CountPctFromMaxHealth(damage));
-                damage = uint32(damage * TakenTotalMod);
+                damage = uint32(damage * TakenTotalMod * NegativeTakenTotalMod);
             }
             else
             {

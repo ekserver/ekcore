@@ -1049,7 +1049,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                                 case 49638:
                                 {
                                     if (const SpellEntry *proto=sSpellStore.LookupEntry(itr->first))
-                                        AddFlatPctN(impurityMod, SpellMgr::CalculateSpellEffectAmount(proto, 0));
+                                        AddFlatPctN(impurityMod, impurityMod, SpellMgr::CalculateSpellEffectAmount(proto, 0));
                                 }
                                 break;
                             }

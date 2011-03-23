@@ -2782,6 +2782,7 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
     if (!spellInfo)
         return 0;
     float totalmul = 1.0f;
+    float neg_totalmul = 1.0f;
     int32 totalflat = 0;
 
     // Drop charges for triggering spells instead of triggered ones
@@ -2811,12 +2812,12 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
                 continue;
 
-            AddFlatPctN(totalmul, mod->value);
+            AddFlatPctN(totalmul, neg_totalmul, mod->value);
         }
 
         DropModCharge(mod, spell);
     }
-    float diff = (float)basevalue * (totalmul - 1.0f) + (float)totalflat;
+    float diff = (float)basevalue * (totalmul * neg_totalmul - 1.0f) + (float)totalflat;
     basevalue = T((float)basevalue + diff);
     return T(diff);
 }
