@@ -137,21 +137,30 @@ inline T AddPctU(T& base, uint32 pct)
 }
 
 template <class T>
-inline T AddFlatPctF(T& base, float pct)
+inline T AddFlatPctF(T& pos, T& neg, float pct)
 {
-    return base += (pct >= 0) ? pct / 100.0f : CalculatePctF(base, pct);
+    if (pct >= 0)
+        return pos += pct / 100.0f;
+    else
+        return neg += CalculatePctF(neg, pct);
 }
 
 template <class T>
-inline T AddFlatPctN(T& base, int32 pct)
+inline T AddFlatPctN(T& pos, T& neg, int32 pct)
 {
-    return base += (pct >= 0) ? float(pct) / 100.0f : CalculatePctN(base, pct);
+    if (pct >= 0)
+        return pos += float(pct) / 100.0f;
+    else
+        return neg += CalculatePctN(neg, pct);
 }
 
 template <class T>
-inline T AddFlatPctU(T& base, uint32 pct)
+inline T AddFlatPctU(T& pos, T& neg, uint32 pct)
 {
-    return base += (pct >= 0) ? float(pct) / 100.0f : CalculatePctU(base, pct);
+    if (pct >= 0)
+        return pos += float(pct) / 100.0f;
+    else
+        return neg += CalculatePctU(neg, pct);
 }
 
 template <class T>

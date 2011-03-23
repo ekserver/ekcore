@@ -3976,6 +3976,7 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
 
     // some spell specific modifiers
     float totalDamagePercentMod  = 1.0f;                    // applied to final bonus+weapon damage
+    float neg_totalDamagePercentMod  = 1.0f;
     int32 fixed_bonus = 0;
     int32 spell_bonus = 0;                                  // bonus specific for spell
 
@@ -4093,7 +4094,7 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
             else if (m_spellInfo->SpellFamilyFlags[0] & 0x00008800 && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
             {
                 if (AuraEffect const* rendAndTear = m_caster->GetDummyAuraEffect(SPELLFAMILY_DRUID, 2859, 0))
-                    AddFlatPctN(totalDamagePercentMod, rendAndTear->GetAmount());
+                    AddFlatPctN(totalDamagePercentMod, neg_totalDamagePercentMod, rendAndTear->GetAmount());
             }
             break;
         }
@@ -4111,18 +4112,18 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
             {
                 // Glyph of Plague Strike
                 if (AuraEffect const * aurEff = m_caster->GetAuraEffect(58657, EFFECT_0))
-                    AddFlatPctN(totalDamagePercentMod, aurEff->GetAmount());
+                    AddFlatPctN(totalDamagePercentMod, neg_totalDamagePercentMod, aurEff->GetAmount());
                 break;
             }
             // Blood Strike
             if (m_spellInfo->SpellFamilyFlags[EFFECT_0] & 0x400000)
             {
-                AddFlatPctF(totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) / 2.0f);
+                AddFlatPctF(totalDamagePercentMod, neg_totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) / 2.0f);
 
                 // Glyph of Blood Strike
                 if (m_caster->GetAuraEffect(59332, EFFECT_0))
                     if (unitTarget->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED))
-                       AddFlatPctN(totalDamagePercentMod, 20);
+                       AddFlatPctN(totalDamagePercentMod, neg_totalDamagePercentMod, 20);
                 break;
             }
             // Death Strike
@@ -4131,7 +4132,7 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
                 // Glyph of Death Strike
                 if (AuraEffect const * aurEff = m_caster->GetAuraEffect(59336, EFFECT_0))
                     if (uint32 runic = std::min<uint32>(m_caster->GetPower(POWER_RUNIC_POWER), SpellMgr::CalculateSpellEffectAmount(aurEff->GetSpellProto(), EFFECT_1)))
-                        AddFlatPctN(totalDamagePercentMod, runic);
+                        AddFlatPctN(totalDamagePercentMod, neg_totalDamagePercentMod, runic);
                 break;
             }
             // Obliterate (12.5% more damage per disease)
@@ -4144,19 +4145,19 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
                     if (roll_chance_i(aurEff->GetAmount()))
                         consumeDiseases = false;
 
-                AddFlatPctF(totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID(), consumeDiseases) / 2.0f);
+                AddFlatPctF(totalDamagePercentMod, neg_totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID(), consumeDiseases) / 2.0f);
                 break;
             }
             // Blood-Caked Strike - Blood-Caked Blade
             if (m_spellInfo->SpellIconID == 1736)
             {
-                AddFlatPctF(totalDamagePercentMod, unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) * 12.5f);
+                AddFlatPctF(totalDamagePercentMod, neg_totalDamagePercentMod, unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) * 12.5f);
                 break;
             }
             // Heart Strike
             if (m_spellInfo->SpellFamilyFlags[EFFECT_0] & 0x1000000)
             {
-                AddFlatPctN(totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()));
+                AddFlatPctN(totalDamagePercentMod, neg_totalDamagePercentMod, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, EFFECT_2) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()));
                 break;
             }
             break;
@@ -4243,8 +4244,8 @@ void Spell::SpellDamageWeaponDmg(SpellEffIndex effIndex)
     if (spell_bonus)
         weaponDamage += spell_bonus;
 
-    if (totalDamagePercentMod != 1.0f)
-        weaponDamage = int32(weaponDamage * totalDamagePercentMod);
+    if (totalDamagePercentMod != 1.0f || neg_totalDamagePercentMod != 1.0f)
+        weaponDamage = int32(weaponDamage * totalDamagePercentMod * neg_totalDamagePercentMod);
 
     // prevent negative damage
     uint32 eff_damage(std::max(weaponDamage, 0));

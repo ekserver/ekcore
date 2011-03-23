@@ -1049,7 +1049,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                                 case 49638:
                                 {
                                     if (const SpellEntry *proto=sSpellStore.LookupEntry(itr->first))
-                                        AddFlatPctN(impurityMod, SpellMgr::CalculateSpellEffectAmount(proto, 0));
+                                        AddFlatPctN(impurityMod, impurityMod, SpellMgr::CalculateSpellEffectAmount(proto, 0));
                                 }
                                 break;
                             }
@@ -1059,6 +1059,12 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
                     break;
+                }
+                case 28017: // Bloodworms
+                {
+                    SetCreateHealth(4 * petlevel);
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - 30 - (petlevel / 4)) + m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.006f);
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel - 30 + (petlevel / 4)) + m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.006f);
                 }
             }
             break;
