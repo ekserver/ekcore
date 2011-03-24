@@ -34,8 +34,12 @@ enum Yells
 enum Spells
 {
     SPELL_HANDOFTHAURISSAN                                 = 17492,
-    SPELL_AVATAROFFLAME                                    = 15636,
-	QUEST_ESCAPE                                           = 4362
+    SPELL_AVATAROFFLAME                                    = 15636
+};
+
+enum Creatures
+{
+    MOIRA_BRONZEBEARD                                      = 8929
 };
 
 class boss_emperor_dagran_thaurissan : public CreatureScript
@@ -54,24 +58,16 @@ public:
 
         uint32 HandOfThaurissan_Timer;
         uint32 AvatarOfFlame_Timer;
-        uint64 m_uiTargetGUID;
-		//uint32 Counter;
+        //uint32 Counter;
 
         void Reset()
         {
             HandOfThaurissan_Timer = 4000;
             AvatarOfFlame_Timer = 25000;
-            m_uiTargetGUID = 0;
-			//Counter= 0;
+            //Counter= 0;
         }
 
-		void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
-        {
-           m_uiTargetGUID = pDoneBy->GetGUID();
-        }
-
-
-        void EnterCombat(Unit *pWho)
+        void EnterCombat(Unit * /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             me->CallForHelp(VISIBLE_RANGE);
@@ -82,12 +78,6 @@ public:
             DoScriptText(SAY_SLAY, me);
         }
 
-		void JustDied(Unit* pKiller)
-		{
-			if (Player* target = Unit::GetPlayer(*me, m_uiTargetGUID))
-				target->GroupEventHappens(QUEST_ESCAPE, me);
-		}
-
         void UpdateAI(const uint32 diff)
         {
             //Return since we have no target
@@ -96,7 +86,7 @@ public:
 
             if (HandOfThaurissan_Timer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget, SPELL_HANDOFTHAURISSAN);
 
                 //3 Hands of Thaurissan will be casted
@@ -117,12 +107,22 @@ public:
             {
                 DoCast(me->getVictim(), SPELL_AVATAROFFLAME);
                 AvatarOfFlame_Timer = 18000;
-            }
-			else AvatarOfFlame_Timer -= diff;
+            } else AvatarOfFlame_Timer -= diff;
 
             DoMeleeAttackIfReady();
-        }        
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            if (Creature* pMoira = me->FindNearestCreature(MOIRA_BRONZEBEARD, 100.0f, true))
+            {
+                pMoira->setFaction(35);
+                pMoira->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pMoira->AI()->EnterEvadeMode();
+            }
+        }
     };
+
 };
 
 void AddSC_boss_draganthaurissan()
