@@ -35,11 +35,12 @@ public:
         uint32 uiEncounter[MAX_ENCOUNTER];
 
         std::string m_strInstData;
-        uint8  flag;
 
         uint64 uiLeviathanGUID;
         uint64 uiIgnisGUID;
         uint64 uiRazorscaleGUID;
+        uint64 uiRazorscaleController;
+        uint64 uiRazorHarpoonGUIDs[4];
         uint64 uiExpCommanderGUID;
         uint64 uiXT002GUID;
         uint64 uiAssemblyGUIDs[3];
@@ -103,6 +104,7 @@ public:
             SetBossNumber(MAX_ENCOUNTER);
             uiIgnisGUID             = 0;
             uiRazorscaleGUID        = 0;
+            uiRazorscaleController  = 0;
             uiExpCommanderGUID      = 0;
             uiXT002GUID             = 0;
             uiKologarnGUID          = 0;
@@ -136,12 +138,12 @@ public:
             uiYoggSaronBrainDoor1GUID = 0;
             uiYoggSaronBrainDoor2GUID = 0;
             uiYoggSaronBrainDoor3GUID = 0;
-            flag                    = 0;
             uiSupportKeeperFlag     = 0;
 
-            memset(&uiEncounter, 0, sizeof(uiEncounter));
-            memset(&uiAssemblyGUIDs, 0, sizeof(uiAssemblyGUIDs));
+            memset(uiEncounter, 0, sizeof(uiEncounter));
+            memset(uiAssemblyGUIDs, 0, sizeof(uiAssemblyGUIDs));
             memset(&uiLeviathanDoor, 0, sizeof(uiLeviathanDoor));
+            memset(uiRazorHarpoonGUIDs, 0, sizeof(uiRazorHarpoonGUIDs));
         }
 
         bool IsEncounterInProgress() const
@@ -167,6 +169,9 @@ public:
                     break;
                 case NPC_RAZORSCALE:
                     uiRazorscaleGUID = creature->GetGUID();
+                    break;
+                case NPC_RAZORSCALE_CONTROLLER:
+                    uiRazorscaleController = creature->GetGUID();
                     break;
                 case NPC_EXPEDITION_COMMANDER:
                     uiExpCommanderGUID = creature->GetGUID();
@@ -360,6 +365,18 @@ public:
                 case GO_YOGGBRAIN_DOOR_2:
                     uiYoggSaronBrainDoor2GUID = go->GetGUID();
                     HandleGameObject(NULL, false, go);
+                case GO_RAZOR_HARPOON_1:
+                    uiRazorHarpoonGUIDs[0] = go->GetGUID();
+                    break;
+                case GO_RAZOR_HARPOON_2:
+                    uiRazorHarpoonGUIDs[1] = go->GetGUID();
+                    break;
+                case GO_RAZOR_HARPOON_3:
+                    uiRazorHarpoonGUIDs[2] = go->GetGUID();
+                    break;
+                case GO_RAZOR_HARPOON_4:
+                    uiRazorHarpoonGUIDs[3] = go->GetGUID();
+                    break;
                     break;
                 case GO_YOGGBRAIN_DOOR_3:
                     uiYoggSaronBrainDoor3GUID = go->GetGUID();
@@ -541,6 +558,7 @@ public:
                 case TYPE_LEVIATHAN:            return uiLeviathanGUID;
                 case TYPE_IGNIS:                return uiIgnisGUID;
                 case TYPE_RAZORSCALE:           return uiRazorscaleGUID;
+                case DATA_RAZORSCALE_CONTROL:   return uiRazorscaleController;
                 case TYPE_XT002:                return uiXT002GUID;
                 case TYPE_KOLOGARN:             return uiKologarnGUID;
                 case DATA_LEFT_ARM:             return uiLeftArmGUID;
@@ -575,6 +593,10 @@ public:
                 case TYPE_ALGALON:              return uiAlgalonGUID;
                 // razorscale expedition commander
                 case DATA_EXP_COMMANDER:        return uiExpCommanderGUID;
+                case GO_RAZOR_HARPOON_1:        return uiRazorHarpoonGUIDs[0];
+                case GO_RAZOR_HARPOON_2:        return uiRazorHarpoonGUIDs[1];
+                case GO_RAZOR_HARPOON_3:        return uiRazorHarpoonGUIDs[2];
+                case GO_RAZOR_HARPOON_4:        return uiRazorHarpoonGUIDs[3];
                 // Assembly of Iron
                 case DATA_STEELBREAKER:         return uiAssemblyGUIDs[0];
                 case DATA_MOLGEIM:              return uiAssemblyGUIDs[1];
@@ -586,20 +608,6 @@ public:
             }
 
             return 0;
-        }
-
-        bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
-        {
-            switch (criteria_id)
-            {
-                case ACHIEVEMENT_CRITERIA_HOT_POCKET_10:
-                    return true;
-                case ACHIEVEMENT_CRITERIA_HOT_POCKET_25:
-                    return true;
-                default:
-                    break;
-            }
-            return false;
         }
 
         uint32 GetData(uint32 type)
@@ -688,6 +696,7 @@ public:
         return true;
     }
 };
+
 
 void AddSC_instance_ulduar()
 {
