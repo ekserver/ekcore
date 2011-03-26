@@ -331,7 +331,7 @@ void AnticheatMgr::AnticheatGlobalCommand(ChatHandler* handler)
     // MySQL will sort all for us, anyway this is not the best way we must only save the anticheat data not whole player's data!.
     sObjectAccessor->SaveAllPlayers();
 
-    QueryResult resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status WHERE total_reports != 0 ORDER BY average ASC LIMIT 3;");
+    QueryResult resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status WHERE total_reports != 0 ORDER BY average ASC LIMIT 10;");
     if (!resultDB)
     {
         handler->PSendSysMessage("No players found.");
@@ -354,7 +354,7 @@ void AnticheatMgr::AnticheatGlobalCommand(ChatHandler* handler)
         } while (resultDB->NextRow());
     }
 
-    resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status WHERE total_reports != 0 ORDER BY total_reports DESC LIMIT 3;");
+    resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status WHERE total_reports != 0 ORDER BY total_reports DESC LIMIT 10;");
         
     // this should never happen
     if (!resultDB)
