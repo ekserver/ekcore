@@ -314,11 +314,12 @@ public:
                     uiFreyaChestGUID = go->GetGUID();
                     break;
                 case GO_LEVIATHAN_DOOR:
-                    uiLeviathanDoor[flag] = go->GetGUID();
-                    HandleGameObject(NULL, true, go);
-                    flag++;
-                    if (flag == 7)
-                        flag =0;
+                    //uiLeviathanDoor[flag] = go->GetGUID();
+                    //HandleGameObject(NULL, true, go);
+                    //flag++;
+                    //if (flag == 7)
+                    //    flag =0;
+                    AddDoor(go, true);
                     break;
                 case GO_LEVIATHAN_GATE:
                     uiLeviathanGateGUID = go->GetGUID();
