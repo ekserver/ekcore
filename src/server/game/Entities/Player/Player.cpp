@@ -17837,8 +17837,8 @@ void Player::_LoadQuestStatusRewarded(PreparedQueryResult result)
             Quest const* pQuest = sObjectMgr->GetQuestTemplate(quest_id);
             if (pQuest)
             {
-                // learn rewarded spell if unknown
-                learnQuestRewardedSpells(pQuest);
+                // spells got learned in a transaction we should never need to add the spells (adding breaks profession specs)
+                //learnQuestRewardedSpells(pQuest);
 
                 // set rewarded title if any
                 if (pQuest->GetCharTitleId())
