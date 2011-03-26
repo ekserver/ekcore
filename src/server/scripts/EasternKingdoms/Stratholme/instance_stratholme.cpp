@@ -291,6 +291,8 @@ public:
                 {
                     SlaugtherSquare_Timer = 300000;
                     sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Instance Stratholme: Slaugther event will continue in 1 minute.");
+                    HandleGameObject(ziggurat4GUID, true);
+                    HandleGameObject(ziggurat5GUID, true);
                 }
                 Encounter[4] = data;
                 break;
