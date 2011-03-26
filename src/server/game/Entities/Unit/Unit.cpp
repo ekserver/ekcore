@@ -1665,7 +1665,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
                 AddPctN(damageResisted, -(*j)->GetAmount());
 
         // Chaos Bolt should not be resisted
-        if (spellInfo->SpellIconID == 3178)
+        if (spellInfo && spellInfo->SpellIconID == 3178)
             damageResisted = 0;
 
         dmgInfo.ResistDamage(uint32(damageResisted));
