@@ -1509,8 +1509,6 @@ void Player::Update(uint32 p_time)
     if (!IsInWorld())
         return;
 
-    //sAnticheatMgr->HandleHackDetectionTimer(this, p_time);
-
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
     {
@@ -2107,8 +2105,6 @@ void Player::TeleportOutOfMap(Map *oldMap)
 
 bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options)
 {
-    //sAnticheatMgr->DisableAnticheatDetection(this,true);
-
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
     {
         sLog->outError("TeleportTo: invalid map (%d) or invalid coordinates (X: %f, Y: %f, Z: %f, O: %f) given when teleporting player (GUID: %u, name: %s, map: %d, X: %f, Y: %f, Z: %f, O: %f).",
@@ -7360,16 +7356,6 @@ uint32 Player::GetLevelFromDB(uint64 guid)
 
     return level;
 }
-
-// Need to be implementet in new Anticheat
-//bool Player::HasSpeedEffectAuras()
-//{
-//    if(HasAura(1953,GetGUID()))
-//        return true;
-//    if(HasAura(1066,GetGUID()))
-//        return true;
-//    return false;
-//}
 
 void Player::UpdateArea(uint32 newArea)
 {
@@ -24701,13 +24687,13 @@ void Player::_SaveInstanceTimeRestrictions(SQLTransaction& trans)
         trans->Append(stmt);
     }
 }
-
-void Player::SendClearFocus(Unit* target)
-{
-    WorldPacket data(SMSG_BREAK_TARGET, target->GetPackGUID().size());
-    data.append(target->GetPackGUID());
-    GetSession()->SendPacket(&data);
-}
+//
+//void Player::SendClearFocus(Unit* target)
+//{
+//    WorldPacket data(SMSG_BREAK_TARGET, target->GetPackGUID().size());
+//    data.append(target->GetPackGUID());
+//    GetSession()->SendPacket(&data);
+//}
 
 /** World of Warcraft Armory **/
 void Player::WriteWowArmoryDatabaseLog(uint32 type, uint32 data)
