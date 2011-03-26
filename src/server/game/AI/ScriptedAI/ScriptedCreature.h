@@ -237,7 +237,7 @@ struct ScriptedAI : public CreatureAI
     void SetImmuneToPushPullEffects(bool set)
     {
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, set);
-        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, set);
+        me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, set);
     }
 
     private:
@@ -249,7 +249,10 @@ struct ScriptedAI : public CreatureAI
 
 struct Scripted_NoMovementAI : public ScriptedAI
 {
-    Scripted_NoMovementAI(Creature* creature) : ScriptedAI(creature) {}
+    Scripted_NoMovementAI(Creature* creature) : ScriptedAI(creature) 
+    {
+        SetImmuneToPushPullEffects(true);
+    }
     virtual ~Scripted_NoMovementAI() {}
 
     //Called at each attack of me by any victim

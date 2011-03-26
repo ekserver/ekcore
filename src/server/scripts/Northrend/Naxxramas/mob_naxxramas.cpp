@@ -766,7 +766,10 @@ public:
     // Eye Stalk - 16236
     struct mob_eye_stalkAI : mob_naxxramas_tashAI 
     {
-        mob_eye_stalkAI(Creature *c) : mob_naxxramas_tashAI(c){}
+        mob_eye_stalkAI(Creature *c) : mob_naxxramas_tashAI(c)
+        {
+            SetImmuneToPushPullEffects(true);
+        }
 
         uint32 uiMindFlay_Timer;
 
