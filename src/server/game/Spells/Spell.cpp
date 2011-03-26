@@ -5353,9 +5353,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (map->IsRaid())
                         if (InstancePlayerBind* targetBind = target->GetBoundInstance(mapId, difficulty))
                             if (InstancePlayerBind* casterBind = m_caster->ToPlayer()->GetBoundInstance(mapId, difficulty))
-                                if (targetBind->save && casterBind->save)
-                                    if (targetBind->perm && targetBind->save->GetInstanceId() != casterBind->save->GetInstanceId())
+                                if (targetBind->save)
+                                    if (casterBind->save)
+                                    {
+                                        if (targetBind->perm && targetBind->save->GetInstanceId() != casterBind->save->GetInstanceId())
+                                            return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
+                                    }
+                                    else
+                                    {
                                         return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
+                                    }
 
                     InstanceTemplate const* instance = ObjectMgr::GetInstanceTemplate(mapId);
                     if (!instance)
