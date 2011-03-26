@@ -4082,6 +4082,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         // ULDUAR SPELLS
         //
+        case 62775: // XT-002 - Tympanic Tantrum
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            count++;
+            break;
         case 65210: // Keeper Mimiron Destabilization Matrix
             // Ignore LoS (because Mimiron stands in a Tube and is out of LoS)
             mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_LOS;

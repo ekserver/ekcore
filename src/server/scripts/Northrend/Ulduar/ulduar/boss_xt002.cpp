@@ -79,8 +79,7 @@ enum Spells
 
 enum Timers
 {
-    TIMER_TYMPANIC_TANTRUM_MIN                  = 32000,
-    TIMER_TYMPANIC_TANTRUM_MAX                  = 36000,
+    TIMER_TYMPANIC_TANTRUM                      = 60000,
     TIMER_SEARING_LIGHT                         = 20000,
     TIMER_SPAWN_LIFE_SPARK                      = 9000,
     TIMER_GRAVITY_BOMB                          = 20000,
@@ -236,7 +235,7 @@ public:
             uiEnrageTimer = TIMER_ENRAGE;
 
             //Tantrum is casted a bit slower the first time.
-            uiTympanicTantrumTimer = urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX) * 2;
+            uiTympanicTantrumTimer = TIMER_TYMPANIC_TANTRUM;
 
             searing_light_active = false;
             gravity_bomb_active = false;
@@ -370,7 +369,7 @@ public:
                 {
                     DoScriptText(SAY_TYMPANIC_TANTRUM, me);
                     DoCast(SPELL_TYMPANIC_TANTRUM);
-                    uiTympanicTantrumTimer = urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX);
+                    uiTympanicTantrumTimer = TIMER_TYMPANIC_TANTRUM;
                 } else uiTympanicTantrumTimer -= diff;
             }
 
@@ -530,7 +529,7 @@ public:
 
             uiSearingLightTimer = TIMER_SEARING_LIGHT / 2;
             uiGravityBombTimer = TIMER_GRAVITY_BOMB;
-            uiTympanicTantrumTimer = urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX);
+            uiTympanicTantrumTimer = TIMER_TYMPANIC_TANTRUM;
             uiSpawnAddTimer = TIMER_SPAWN_ADD;
 
             if (!hardMode)
@@ -688,7 +687,7 @@ public:
             uiTrampleTimer = TIMER_TRAMPLE;
             uiUppercutTimer = TIMER_UPPERCUT;
 
-            if(Unit* target = SelectPlayerTargetInRange(100.0f))
+            if(Unit* target = SelectPlayerTargetInRange(500.0f))
                 me->AI()->AttackStart(target);
         }
 
@@ -754,9 +753,12 @@ public:
         mob_boombotAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             m_pInstance = pCreature->GetInstanceScript();
+            boomed = false;
         }
 
-   
+        InstanceScript* m_pInstance;
+        bool boomed;
+
         Unit* SelectPlayerTargetInRange(float range)
         {
             Player *target = NULL;
@@ -764,12 +766,12 @@ public:
             Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, target, u_check);
             me->VisitNearbyObject(range, searcher);
             return target;
-        }     InstanceScript* m_pInstance;
+        }
 
         void Reset()
         {
-            if(Unit* target = SelectPlayerTargetInRange(100.0f))
-                me->AI()->AttackStart(target);
+            if(Unit* target = SelectPlayerTargetInRange(500.0f))
+                AttackStart(target);
         }
 
         void DamageTaken(Unit* attacker, uint32 &amount)
@@ -777,6 +779,7 @@ public:
             if((me->GetHealth() - amount) < (me->GetMaxHealth()/2))
             {
                 DoCast(SPELL_BOOM);
+                boomed = true;
             }
         }
 
