@@ -55,7 +55,6 @@ public:
         void Reset()
         {
             _Reset();
-            SetImmuneToDeathGrip();
         }
 
         void EnterCombat(Unit * /*who*/)

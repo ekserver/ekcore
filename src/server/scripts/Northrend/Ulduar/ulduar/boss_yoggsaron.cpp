@@ -1702,15 +1702,14 @@ public:
         return new npc_yogg_saron_tentacleAI (pCreature);
     }
 
-    struct npc_yogg_saron_tentacleAI : public ScriptedAI
+    struct npc_yogg_saron_tentacleAI : public Scripted_NoMovementAI
     {
-        npc_yogg_saron_tentacleAI(Creature *c) : ScriptedAI(c)
+        npc_yogg_saron_tentacleAI(Creature *c) : Scripted_NoMovementAI(c)
         {
             m_pInstance = c->GetInstanceScript();
             SetTentacleType(c->GetEntry());
             once = false;
             me->setFaction(14);
-            SetImmuneToPushPullEffects(true);
         }
 
         InstanceScript* m_pInstance;
@@ -1869,7 +1868,6 @@ public:
     {
         npc_descend_into_madnessAI(Creature *c) : Scripted_NoMovementAI(c)
         {
-            SetImmuneToPushPullEffects(true);
         }
 
         BrainEventPhase bPhase;
@@ -1919,7 +1917,6 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->setFaction(14);
             me->SetFlying(true);
-            SetImmuneToPushPullEffects(true);
         }
 
         bool IsPlayerInBrainRoom(Player* pPlayer)

@@ -207,7 +207,6 @@ public:
             mergedSides = false;
             phaseTwo = false;
             thirtyPercentReached = false;
-            SetImmuneToDeathGrip();
         }
 
         void EnterCombat(Unit * /*who*/)

@@ -327,8 +327,6 @@ public:
             Phase = 0;
             nAbomination = 0;
             nWeaver = 0;
-
-            SetImmuneToDeathGrip();
         }
 
         void KilledUnit(Unit* /*victim*/)

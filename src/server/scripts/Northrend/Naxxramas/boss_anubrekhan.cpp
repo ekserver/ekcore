@@ -70,7 +70,6 @@ public:
         void Reset()
         {
             _Reset();
-            SetImmuneToDeathGrip();
 
             hasTaunted = false;
 

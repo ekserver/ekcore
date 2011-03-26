@@ -509,6 +509,7 @@ BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature)
 , _bossId(bossId), summons(creature), instance(creature->GetInstanceScript())
 , _boundary(instance ? instance->GetBossBoundary(bossId) : NULL)
 {
+    SetImmuneToPushPullEffects(true);
 }
 
 void BossAI::_Reset()
@@ -571,11 +572,6 @@ void BossAI::TeleportCheaters()
         if (Unit* target = (*itr)->getTarget())
             if (target->GetTypeId() == TYPEID_PLAYER && !CheckBoundary(target))
                 target->NearTeleportTo(x, y, z, 0);
-}
-
-void BossAI::SetImmuneToDeathGrip(bool set)
-{
-    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, set);
 }
 
 bool BossAI::CheckBoundary(Unit* who)

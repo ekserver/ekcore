@@ -123,8 +123,6 @@ public:
         boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, TYPE_IGNIS), vehicle(me->GetVehicleKit())
         {
             assert(vehicle);
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
         }
 
         Vehicle *vehicle;

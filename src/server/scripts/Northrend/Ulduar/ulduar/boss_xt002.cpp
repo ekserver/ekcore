@@ -222,6 +222,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             me->SetStandState(UNIT_STAND_STATE_STAND);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
 
@@ -343,6 +344,8 @@ public:
         {
             if (!UpdateVictim())
                 return;
+
+            _DoAggroPulse(diff);
 
             if (enterHardMode)
             {

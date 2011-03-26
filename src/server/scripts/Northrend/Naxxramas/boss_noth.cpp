@@ -85,7 +85,6 @@ public:
             me->SetReactState(REACT_AGGRESSIVE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             _Reset();
-            SetImmuneToDeathGrip();
         }
 
         void EnterCombat(Unit * /*who*/)

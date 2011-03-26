@@ -92,7 +92,6 @@ public:
             _Reset();
             doDelayFrenzy = false;
             bAchievement = true;
-            SetImmuneToDeathGrip();
         }
 
         void MoveInLineOfSight(Unit *who)
