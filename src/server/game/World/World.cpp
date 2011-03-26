@@ -1192,7 +1192,8 @@ void World::LoadConfigSettings(bool reload)
 
     m_bool_configs[CONFIG_ANTICHEAT_ENABLE] = sConfig->GetBoolDefault("Anticheat.Enable", true);
     m_int_configs[CONFIG_ANTICHEAT_REPORTS_INGAME_NOTIFICATION] = sConfig->GetIntDefault("Anticheat.ReportsForIngameWarnings", 70);
-    
+    m_int_configs[CONFIG_ANTICHEAT_DETECTIONS_ENABLED] = sConfig->GetIntDefault("Anticheat.DetectionsEnabled",31);
+
     /** World of Warcraft Armory **/
     m_bool_configs[CONFIG_ARMORY_ENABLE] = sConfig->GetBoolDefault("Armory.Enable", false);
 
