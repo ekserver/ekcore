@@ -215,8 +215,6 @@ public:
     {
         boss_mimironAI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON)
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_ROCKET_STRIKE_DMG, true);
             me->SetReactState(REACT_PASSIVE);
         }
@@ -715,8 +713,6 @@ public:
     {
         boss_leviathan_mkAI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON), phase(PHASE_NULL), vehicle(pCreature->GetVehicleKit())
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_ROCKET_STRIKE_DMG, true);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
@@ -953,8 +949,7 @@ public:
     {
         boss_leviathan_mk_turretAI(Creature *c) : ScriptedAI(c) 
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            SetImmuneToPushPullEffects(true);
             me->SetReactState(REACT_PASSIVE);
             uiNapalmShell = urand(4000, 8000);
         }
@@ -1046,8 +1041,6 @@ public:
     {
         boss_vx_001AI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON), phase(PHASE_NULL)
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_ROCKET_STRIKE_DMG, true);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
@@ -1298,8 +1291,6 @@ public:
     {
         boss_aerial_unitAI(Creature *pCreature) : BossAI(pCreature, TYPE_MIMIRON), phase(PHASE_NULL)
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_ROCKET_STRIKE_DMG, true);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
@@ -1639,8 +1630,7 @@ public:
         npc_emergency_botAI(Creature *pCreature) : ScriptedAI(pCreature)
         {
             me->setFaction(14);
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            SetImmuneToPushPullEffects(true);
             me->SetReactState(REACT_PASSIVE);
             me->GetMotionMaster()->MoveRandom(15);
             uiSprayTimer = 5000;

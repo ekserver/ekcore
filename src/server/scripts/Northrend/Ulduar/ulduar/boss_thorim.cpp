@@ -262,8 +262,6 @@ public:
     {
         boss_thorimAI(Creature* pCreature) : BossAI(pCreature, TYPE_THORIM)
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
             bWipe = false;
         }
 
@@ -724,8 +722,7 @@ public:
         npc_runic_colossusAI(Creature *pCreature) : ScriptedAI(pCreature), summons(me)
         {
             pInstance = pCreature->GetInstanceScript();
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            SetImmuneToPushPullEffects(true);
         }
 
         InstanceScript* pInstance;
@@ -819,8 +816,7 @@ public:
         npc_ancient_rune_giantAI(Creature *pCreature) : ScriptedAI(pCreature), summons(me)
         {
             pInstance = pCreature->GetInstanceScript();
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            SetImmuneToPushPullEffects(true);
         }
 
         InstanceScript* pInstance;

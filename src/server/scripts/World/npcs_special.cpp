@@ -2024,7 +2024,6 @@ public:
         void Reset()
         {
             me->SetControlled(true,UNIT_STAT_STUNNED);//disable rotate
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
 
             uiResetTimer = 5000;
             uiDespawnTimer = 15000;

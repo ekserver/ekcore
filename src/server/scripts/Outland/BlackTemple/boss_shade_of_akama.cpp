@@ -121,14 +121,17 @@ public:
 
     struct mob_ashtongue_channelerAI : public ScriptedAI
     {
-        mob_ashtongue_channelerAI(Creature* c) : ScriptedAI(c) {ShadeGUID = 0;}
+        mob_ashtongue_channelerAI(Creature* c) : ScriptedAI(c) 
+        {
+            ShadeGUID = 0;
+            SetImmuneToPushPullEffects(true);
+        }
 
         uint64 ShadeGUID;
 
         void Reset() 
         {
             me->setActive(true);
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
         }
         void JustDied(Unit* killer);
         void EnterCombat(Unit* who) {}
@@ -150,7 +153,11 @@ public:
 
     struct mob_ashtongue_sorcererAI : public ScriptedAI
     {
-        mob_ashtongue_sorcererAI(Creature* c) : ScriptedAI(c) {ShadeGUID = 0;}
+        mob_ashtongue_sorcererAI(Creature* c) : ScriptedAI(c) 
+        {
+            ShadeGUID = 0;
+            SetImmuneToPushPullEffects(true);
+        }
 
         uint64 ShadeGUID;
         uint32 CheckTimer;
@@ -161,7 +168,6 @@ public:
             StartBanishing = false;
             CheckTimer = 5000;
             me->setActive(true);
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
         }
 
         void JustDied(Unit* killer);

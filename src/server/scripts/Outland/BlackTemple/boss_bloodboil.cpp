@@ -95,6 +95,7 @@ public:
         boss_gurtogg_bloodboilAI(Creature *c) : ScriptedAI(c)
         {
             pInstance = c->GetInstanceScript();
+            SetImmuneToPushPullEffects(true);
         }
 
         InstanceScript* pInstance;
@@ -157,7 +158,6 @@ public:
 
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
         }
 
         void EnterCombat(Unit * /*who*/)
