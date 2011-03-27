@@ -559,11 +559,15 @@ public:
                         {
                             if (!i_pl->GetVehicle())
                             {
-                                i_pl->GetMotionMaster()->Clear();
-                                i_pl->GetMotionMaster()->MoveIdle();
                                 i_pl->SetUnitMovementFlags(0);
                                 me->DealDamage(i_pl, i_pl->GetHealth());
                                 i_pl->SetMovement(MOVE_ROOT);
+
+                                // despawn dragon
+                                for (std::list<std::pair<uint64, uint64> >::iterator iter = uiMounts.begin(); iter != uiMounts.end(); ++iter)
+                                    if (i_pl->GetGUID() == (*iter).second)
+                                        if (Creature* mount = Unit::GetCreature(*me, (*iter).first))
+                                            mount->ForcedDespawn(1*IN_MILLISECONDS);
                             }
                         }
                     }
