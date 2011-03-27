@@ -2731,7 +2731,7 @@ public:
                 if (uiBuff & STATE_SHOP)
                     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Visit a trader.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
                 if (uiBuff & STATE_MAIL)
-                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Visit a mailbox. (Non Implementato)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_MAIL);
+                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Visit a mailbox.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_MAIL);
             }
 
         // Horde
