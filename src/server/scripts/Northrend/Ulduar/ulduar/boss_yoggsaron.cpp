@@ -861,8 +861,6 @@ public:
                     break;
                 default: break;
                 }
-
-                DoUpdateAchievmentsOnEncounterFinished();
                 me->Kill(me);
                 break;
             case ACTION_USED_MINDCONTROL:
@@ -2906,7 +2904,7 @@ class spell_summon_tentacle_position : public SpellScriptLoader
             {
                 WorldLocation* summonPos = GetTargetDest();
                 if(Unit* caster = GetCaster())
-                    summonPos->m_positionZ = caster->GetMap()->GetHeight(summonPos->GetPositionX(),summonPos->GetPositionY(),summonPos->GetPositionZ(),true,500.0f);
+                    summonPos->m_positionZ = caster->GetMap()->GetHeight(summonPos->GetPositionX(),summonPos->GetPositionY(),summonPos->GetPositionZ(),true,500.0f) + 2.0f;
             }
 
             void Register()
