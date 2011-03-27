@@ -374,7 +374,7 @@ public:
                                 i_pl->AddAura(SPELL_VORTEX_PLAYER, i_pl);
                             }
                         }
-                    }   
+                    }
                     break;
                 }
                 case ACTION_SPARK:
@@ -458,7 +458,7 @@ public:
                 }
                 case ACTION_SPAWN_MOUNTS:
                 {
-                    Map *map = me->GetMap();
+                    Map* map = me->GetMap();
                     if (!map->IsDungeon())
                         return;
 
@@ -488,7 +488,7 @@ public:
                     {
                         Creature* mount = Unit::GetCreature(*me, (*iter).first);
                         Player* player = Unit::GetPlayer(*me, (*iter).second);
-                        
+
                         if (!mount || !player)
                             continue;
 
@@ -518,12 +518,23 @@ public:
                     }
                     else
                     {
-                        // immune whole threatlist
-                        std::list<HostileReference *>& ThreatList = me->getThreatManager().getThreatList();
-                        for (std::list<HostileReference *>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+                        // immune all drakes and players
+                        Map* map = me->GetMap();
+                        if (!map->IsDungeon())
+                            return;
+
+                        Map::PlayerList const &PlayerList = map->GetPlayers();
+                        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         {
-                            if (Unit* hostil = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
-                                hostil->ApplySpellImmune(0, IMMUNITY_ID, SPELL_SURGE_OF_POWER_25, true);
+                            Player* i_pl = i->getSource();
+                            if (i_pl && !i_pl->isGameMaster() && i_pl->isAlive())
+                            {
+                                if (Unit* drake = i_pl->GetVehicleBase())
+                                {
+                                    drake->ApplySpellImmune(0, IMMUNITY_ID, SPELL_SURGE_OF_POWER_25, true);
+                                    i_pl->ApplySpellImmune(0, IMMUNITY_ID, SPELL_SURGE_OF_POWER_25, true);
+                                }
+                            }
                         }
 
                         // select 3 targets, remove immunity on spellhit
@@ -536,7 +547,7 @@ public:
                 case ACTION_CLEAR_PLR:
                 {
                     /* workaround to prevent players from falling through map in alive state (once they got unmounted) */
-                    Map *map = me->GetMap();
+                    Map* map = me->GetMap();
                     if (!map->IsDungeon())
                         return;
 
@@ -548,6 +559,8 @@ public:
                         {
                             if (!i_pl->GetVehicle())
                             {
+                                i_pl->GetMotionMaster()->Clear();
+                                i_pl->GetMotionMaster()->MoveIdle();
                                 i_pl->SetUnitMovementFlags(0);
                                 me->DealDamage(i_pl, i_pl->GetHealth());
                                 i_pl->SetMovement(MOVE_ROOT);
@@ -639,6 +652,7 @@ public:
                 {
                     DoScriptText(SAY_PHASE2_AGGRO, me);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    me->RemoveAllAuras();
                     DoAction(ACTION_SPAWN_ADDS);
                     uiPhase = PHASE_ADDS;
                     SparkMovement(false);
@@ -737,7 +751,7 @@ public:
                 {
                     if (me->HasUnitState(UNIT_STAT_CASTING))
                         return;
- 
+
                     if (uiStormTimer <= uiDiff)
                     {
                         DoCast(me, RAID_MODE(SPELL_ARCANE_STORM_10, SPELL_ARCANE_STORM_25), true);
@@ -883,7 +897,7 @@ public:
                         DoAction(ACTION_CLEAR_PLR);
                         uiWaitTimer = 1*IN_MILLISECONDS;
                     } else uiWaitTimer -= uiDiff;
-                    
+
                     break;
                 }
                 case PHASE_IDLE:
@@ -1067,7 +1081,7 @@ public:
                                 platform->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
                         }
 
-                        Map *map = me->GetMap();
+                        Map* map = me->GetMap();
                         if (!map->IsDungeon())
                             return;
 
@@ -1426,6 +1440,7 @@ class spell_surge_of_power_targeting : public SpellScriptLoader
             return new spell_surge_of_power_targeting_SpellScript();
         }
 };
+
 void AddSC_boss_malygos()
 {
     new boss_malygos();
