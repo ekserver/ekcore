@@ -15043,7 +15043,7 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     // Custom Random Experience Boost Buff
     if (XP > 0 && getLevel() < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
     {
-        uint8 boost_chance = 5;
+        uint8 boost_chance = 10;
         if (urand(0,99) < boost_chance)
         {
             CastSpell(this, 29175, true);            // Cast Buff
