@@ -236,6 +236,7 @@ enum Actions
 
 enum Spells
 {
+    SPELL_IN_THE_MAWS_OF_THE_OLD_GOD            = 64184,
     //All Phases
     // Keeper Freya
     SPELL_RESILIENCE_OF_NATURE                  = 62670,
@@ -1711,6 +1712,8 @@ public:
                     if(me->GetDistance2d(cSara) <= 15)
                         cSara->AI()->DoAction(ACTION_NOVA_HIT);
             }
+
+            me->DespawnOrUnsummon(1000);
         }
 
         void Reset()
@@ -1798,6 +1801,8 @@ public:
         void JustDied(Unit* /*killer*/)
         {
             me->RemoveAurasDueToSpell(SPELL_TENTACLE_VOID_ZONE);
+
+            me->DespawnOrUnsummon(1000);
         }
 
         void Reset()
@@ -2046,16 +2051,37 @@ public:
             m_pInstance = c->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
             me->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_SWIMMING);
+            bCreateValanyr = false;
         }
 
         InstanceScript* m_pInstance;
         uint32 uiSanityCheck_Timer;
         bool bUsedMindControll;
+        bool bCreateValanyr;
 
         void Reset()
         {
             uiSanityCheck_Timer = 1000;
             bUsedMindControll = false;
+        }
+
+        void CreateValanyr()
+        {
+            if(!bCreateValanyr)
+                return;
+
+            if(me->GetMap() && me->GetMap()->IsDungeon())
+            {
+                Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                if (!players.isEmpty())
+                    for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        if (Player* plr = itr->getSource())
+                            if(plr->isAlive() && plr->GetQuestStatus(13629) == QUEST_STATUS_INCOMPLETE)
+                            {
+                                if(!plr->HasItemCount(45897,1,true))
+                                    plr->AddItem(45897,1);
+                            }
+            }
         }
 
         void JustDied(Unit *killer)
@@ -2064,6 +2090,8 @@ public:
                 cSara->AI()->DoAction(ACTION_YOGGSARON_KILLED);
 
             DoScriptText(SAY_DEATH,me);
+
+            CreateValanyr();
         }
 
         void SpellHitTarget(Unit* target, const SpellEntry* spell)
@@ -2079,6 +2107,14 @@ public:
                         CAST_AI(boss_sara::boss_saraAI,cSara->AI())->ModifySanity(target->ToPlayer(),-4);
                     break;
                 }
+            }
+        }
+
+        void SpellHit(Unit* caster, const SpellEntry* spell)
+        {
+            if(spell->Id == SPELL_IN_THE_MAWS_OF_THE_OLD_GOD)
+            {
+                bCreateValanyr = true;
             }
         }
 
@@ -2196,6 +2232,11 @@ public:
                 me->AI()->AttackStart(target);
 
             uint32 uiDrainLife_Timer = 10000;
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            me->DespawnOrUnsummon(1000);
         }
 
         void SpellHit(Unit* caster, const SpellEntry* spell)
@@ -2904,7 +2945,7 @@ class spell_summon_tentacle_position : public SpellScriptLoader
             {
                 WorldLocation* summonPos = GetTargetDest();
                 if(Unit* caster = GetCaster())
-                    summonPos->m_positionZ = caster->GetMap()->GetHeight(summonPos->GetPositionX(),summonPos->GetPositionY(),summonPos->GetPositionZ(),true,500.0f) + 2.0f;
+                    summonPos->m_positionZ = caster->GetMap()->GetHeight(summonPos->GetPositionX(),summonPos->GetPositionY(),summonPos->GetPositionZ(),true,500.0f) + 5.0f;
             }
 
             void Register()
@@ -3087,6 +3128,25 @@ public:
     };
 };
 
+class item_unbound_fragments_of_valanyr : public ItemScript
+{
+public:
+    item_unbound_fragments_of_valanyr() : ItemScript("item_unbound_fragments_of_valanyr") { }
+
+    bool OnUse(Player* pPlayer, Item* pItem, SpellCastTargets const& /*targets*/)
+    {
+
+        if(Creature* yogg = pPlayer->FindNearestCreature(ENTRY_YOGG_SARON,20))
+        {
+            if(yogg->FindCurrentSpellBySpellId(SPELL_DEAFENING_ROAR))
+                return false;
+        }
+
+        pPlayer->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,pItem,NULL);
+        return true;
+    }
+};
+
 /*
 UPDATE creature_template SET scriptname = 'boss_sara' WHERE entry = 33134;
 UPDATE script_texts SET npc_entry = 33134 WHERE npc_entry = 33288 AND entry IN (-1603330,-1603331,-1603332,-1603333);
@@ -3113,6 +3173,7 @@ UPDATE creature_template SET modelid1 = 15880, modelid2 = 15880 WHERE entry = 33
 UPDATE creature_template SET scriptname = 'npc_keeper_help' WHERE entry IN(33241,33244,33242,33213);
 
 UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 194625;
+UPDATE item_template SET scriptname = 'item_unbound_fragments_of_valanyr' WHERE entry = 45896;
 
 UPDATE creature_template SET RegenHealth = 0 WHERE entry IN (33134,34332,33890,33954);
 
@@ -3192,6 +3253,14 @@ INSERT INTO spell_script_names (spell_id,Scriptname)
 VALUES
 (64466,'spell_empowering_shadows');
 
+-- Create Val'anyr on Yogg-Saron
+DELETE FROM conditions WHERE SourceEntry IN (64184);
+INSERT INTO conditions
+(SourceTypeOrReferenceId,SourceGroup,SourceEntry,ElseGroup,
+ ConditionTypeOrReference,ConditionValue1,ConditionValue2,ConditionValue3,
+ ErrorTextId,ScriptName,COMMENT)
+VALUES
+(13,0,64184,0,18,1,33288,0,0,'','Effekt on YoggSaron');
 
 -- Missing Says Vision
 DELETE FROM script_texts WHERE entry BETWEEN -1603360 AND -1603342;
@@ -3238,6 +3307,7 @@ void AddSC_boss_yoggsaron()
     new npc_death_ray();
     new npc_keeper_help();
     new go_flee_to_surface();
+    new item_unbound_fragments_of_valanyr();
 
     new spell_keeper_support_aura_targeting();
     new spell_lunatic_gaze_targeting();
