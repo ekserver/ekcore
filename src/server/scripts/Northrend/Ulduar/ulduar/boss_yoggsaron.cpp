@@ -111,8 +111,13 @@ enum Events
 
 enum Achievments
 {
+    // Sara
     ACHIEVMENT_KISS_AND_MAKE_UP_10              = 3009,
     ACHIEVMENT_KISS_AND_MAKE_UP_25              = 3011,
+    ACHIEVMENT_DRIVE_ME_CRAZY_10                = 3008,
+    ACHIEVMENT_DRIVE_ME_CRAZY_25                = 3010,
+    ACHIEVMENT_HE_S_NOT_GETTING_ANY_OLDER_10    = 3012,
+    ACHIEVMENT_HE_S_NOT_GETTING_ANY_OLDER_25    = 3013,
 
     // Heroic Mode
     ACHIEVMENT_THREE_LIGHTS_IN_THE_DARKNESS_10  = 3157,
@@ -126,6 +131,16 @@ enum Achievments
 
     // Realm First - 0 Keeper - 25 
     ACHIEVMENT_REALM_FIRST_DEATHS_DEMISE        = 3117,
+};
+
+enum AchievmentsCriterias
+{
+    ACHIEV_THE_ASSASSINATION_OF_KING_LLANE_25   = 10321,
+    ACHIEV_THE_ASSASSINATION_OF_KING_LLANE_10   = 10324,
+    ACHIEV_THE_FORGING_OF_THE_DEMON_SOUL_25     = 10322,
+    ACHIEV_THE_FORGING_OF_THE_DEMON_SOUL_10     = 10325,
+    ACHIEV_THE_TORTURED_CHAMPION_25             = 10323,
+    ACHIEV_THE_TORTURED_CHAMPION_10             = 10326,
 };
 
 enum Entrys
@@ -216,6 +231,7 @@ enum Actions
     ACTION_BRAIN_UNDER_30_PERCENT = 6,
     ACTION_YOGGSARON_KILLED = 7,
     ACTION_DEATH_RAY_MOVE = 8,
+    ACTION_USED_MINDCONTROL = 9,
 };
 
 enum Spells
@@ -298,6 +314,7 @@ enum Spells
     SPELL_BRAIN_HURT_VISUAL                     = 64361,
     //  Mind Portal 
     SPELL_TELEPORT                              = 64027, // Not Used
+    SPELL_ILLUSION_ROOM                         = 63988, // Must be removed if not in Room
     //  Lauthing Skull
     SPELL_LS_LUNATIC_GAZE                       = 64167,
     SPELL_LS_LUNATIC_GAZE_EFFECT                = 64168,
@@ -554,6 +571,8 @@ public:
         std::list<uint64> guidEventSkulls;
         std::list<EventNPC> listEventNPCs;
 
+        bool bUsedMindcontroll;
+
         // Phase 1
         uint32 uiSarasHelp_Timer;
 
@@ -639,16 +658,19 @@ public:
 
             // Spawn Yoggy if not spawned
             Creature* yogg = me->GetCreature(*me,guidYogg);
-            if(!yogg)
-                DoSummon(ENTRY_YOGG_SARON,SaraLocation,0,TEMPSUMMON_MANUAL_DESPAWN);
+            if(yogg) yogg->DespawnOrUnsummon();
+            DoSummon(ENTRY_YOGG_SARON,SaraLocation,0,TEMPSUMMON_MANUAL_DESPAWN);
+
             Creature* yoggbrain = me->GetCreature(*me,guidYoggBrain);
-            if(!yoggbrain)
-                DoSummon(ENTRY_BRAIN_OF_YOGG_SARON,BrainLocation,0,TEMPSUMMON_MANUAL_DESPAWN);
+            if(yoggbrain) yoggbrain->DespawnOrUnsummon();
+            DoSummon(ENTRY_BRAIN_OF_YOGG_SARON,BrainLocation,0,TEMPSUMMON_MANUAL_DESPAWN);
 
             if(m_pInstance)
                 m_pInstance->SetBossState(TYPE_YOGGSARON,NOT_STARTED);
 
             uiRandomYell_Timer = urand(10000,20000);
+
+            bUsedMindcontroll = false;
         }
 
         void JustDied(Unit *killer)
@@ -820,7 +842,31 @@ public:
                 if(Creature* yogg = me->GetCreature(*me,guidYogg))
                     yogg->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
 
+                if(uiEnrage_Timer >= 480000)
+                    m_pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_HE_S_NOT_GETTING_ANY_OLDER_10,ACHIEVMENT_HE_S_NOT_GETTING_ANY_OLDER_25));
+                if(!bUsedMindcontroll)
+                    m_pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_DRIVE_ME_CRAZY_10,ACHIEVMENT_DRIVE_ME_CRAZY_25));
+                if(GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL && uiAmountKeeperActive == 0)
+                    m_pInstance->DoCompleteAchievement(ACHIEVMENT_REALM_FIRST_DEATHS_DEMISE);
+                switch(uiAmountKeeperActive)
+                {
+                case 0:
+                    m_pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_ALONE_IN_THE_DARKNESS_10,ACHIEVMENT_ALONE_IN_THE_DARKNESS_25));
+                case 1:
+                    m_pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_ONE_LIGHTS_IN_THE_DARKNESS_10,ACHIEVMENT_ONE_LIGHTS_IN_THE_DARKNESS_25));
+                case 2:
+                    m_pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_ONE_LIGHTS_IN_THE_DARKNESS_10,ACHIEVMENT_ONE_LIGHTS_IN_THE_DARKNESS_25));
+                case 3:
+                    m_pInstance->DoCompleteAchievement(RAID_MODE(ACHIEVMENT_ONE_LIGHTS_IN_THE_DARKNESS_10,ACHIEVMENT_ONE_LIGHTS_IN_THE_DARKNESS_25));
+                    break;
+                default: break;
+                }
+
+                DoUpdateAchievmentsOnEncounterFinished();
                 me->Kill(me);
+                break;
+            case ACTION_USED_MINDCONTROL:
+                bUsedMindcontroll = true;
                 break;
             }
         }
@@ -853,6 +899,7 @@ public:
                 me->SetVisible(false);
                 if(Creature* yogg = me->GetCreature(*me,guidYogg))
                 {
+                    yogg->LowerPlayerDamageReq(uint32(yogg->GetMaxHealth()*0.3f));
                     yogg->SetHealth(yogg->CountPctFromMaxHealth(30));
                     yogg->RemoveAurasDueToSpell(SPELL_SHADOWY_BARRIER);
                     yogg->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
@@ -927,12 +974,12 @@ public:
                 pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 pSummoned->SetFloatValue(UNIT_FIELD_COMBATREACH, 7.0f);
                 pSummoned->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 7.0f);
-                break;
+                return; // Do Not Save Yoggy in Summons because he shouldnt despawnt on Encount Finished
             case ENTRY_BRAIN_OF_YOGG_SARON:
                 guidYoggBrain = pSummoned->GetGUID();
                 pSummoned->setActive(true);
-                pSummoned->SetFloatValue(UNIT_FIELD_COMBATREACH, 7.0f);
-                pSummoned->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 7.0f);
+                pSummoned->SetFloatValue(UNIT_FIELD_COMBATREACH, 10.0f);
+                pSummoned->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10.0f);
                 break;
             case ENTRY_RUBY_CONSORT:
             case ENTRY_OBSIDIAN_CONSORT:
@@ -1104,7 +1151,12 @@ public:
                         EventNPC *info = new EventNPC();
                         info->entry = temp->GetEntry();
                         info->guid = temp->GetGUID();
-                                
+                        switch(info->entry)
+                        {
+                        case ENTRY_GARONA_VISION:
+                            temp->SetStandState(UNIT_STAND_STATE_KNEEL);
+                            break;
+                        }
                         listEventNPCs.push_back(*info);
                     }
                 }
@@ -1830,7 +1882,7 @@ public:
         bool AcceptTeleport = false;
         Position posTeleportPosition;
         //pPlayer->NearTeleportTo();
-        BrainEventPhase pTemp;
+        BrainEventPhase pTemp = PORTAL_PHASE_BRAIN_NONE;
         if(pCreature && pCreature->AI())
             pTemp = CAST_AI(npc_descend_into_madnessAI,pCreature->AI())->bPhase;
 
@@ -1849,11 +1901,36 @@ public:
         {
             if(pPlayer)
             {
+                pCreature->AddAura(SPELL_ILLUSION_ROOM,pPlayer);
                 pPlayer->NearTeleportTo(posTeleportPosition.m_positionX,posTeleportPosition.m_positionY,posTeleportPosition.m_positionZ,posTeleportPosition.m_orientation,true);
                 //pPlayer->CastSpell(pPlayer,SPELL_TELEPORT,true);
+                CAST_AI(npc_descend_into_madnessAI,pCreature->AI())->bPhase = PORTAL_PHASE_BRAIN_NONE;
+                AcceptTeleport = false;
+                Difficulty diff = pPlayer->GetDifficulty(true);
+                switch(pTemp)
+                {
+                case PORTAL_PHASE_KING_LLIANE:
+                    if(diff == RAID_DIFFICULTY_10MAN_NORMAL)
+                        pPlayer->GetAchievementMgr().SetCriteriaComplete(ACHIEV_THE_ASSASSINATION_OF_KING_LLANE_10);
+                    else if(diff == RAID_DIFFICULTY_25MAN_NORMAL)
+                        pPlayer->GetAchievementMgr().SetCriteriaComplete(ACHIEV_THE_ASSASSINATION_OF_KING_LLANE_25);
+                    break;
+                case PORTAL_PHASE_DRAGON_SOUL:
+                    if(diff == RAID_DIFFICULTY_10MAN_NORMAL)
+                        pPlayer->GetAchievementMgr().SetCriteriaComplete(ACHIEV_THE_FORGING_OF_THE_DEMON_SOUL_10);
+                    else if(diff == RAID_DIFFICULTY_25MAN_NORMAL)
+                        pPlayer->GetAchievementMgr().SetCriteriaComplete(ACHIEV_THE_FORGING_OF_THE_DEMON_SOUL_25);
+                    break;
+                case PORTAL_PHASE_LICH_KING:
+                    if(diff == RAID_DIFFICULTY_10MAN_NORMAL)
+                        pPlayer->GetAchievementMgr().SetCriteriaComplete(ACHIEV_THE_TORTURED_CHAMPION_10);
+                    else if(diff == RAID_DIFFICULTY_25MAN_NORMAL)
+                        pPlayer->GetAchievementMgr().SetCriteriaComplete(ACHIEV_THE_TORTURED_CHAMPION_25);
+                    break;
+                }
+                //pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2,SPELL_ILLUSION_ROOM);
             }
-            CAST_AI(npc_descend_into_madnessAI,pCreature->AI())->bPhase = PORTAL_PHASE_BRAIN_NONE;
-            AcceptTeleport = false;
+
         }
 
         return true;
@@ -1970,14 +2047,17 @@ public:
         {
             m_pInstance = c->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
+            me->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_SWIMMING);
         }
 
         InstanceScript* m_pInstance;
         uint32 uiSanityCheck_Timer;
+        bool bUsedMindControll;
 
         void Reset()
         {
             uiSanityCheck_Timer = 1000;
+            bUsedMindControll = false;
         }
 
         void JustDied(Unit *killer)
@@ -2023,6 +2103,14 @@ public:
                                         // Dont make GMs Insane
                                         if(plr->GetSession()->GetSecurity() > SEC_PLAYER)
                                             continue;
+
+                                        // Say Sara we used Mindcontrol - for Archievment ... we need only one mindecontrolled Player to cancel Achievment
+                                        if(!bUsedMindControll)
+                                        {
+                                            if(Creature* cSara = me->GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
+                                                cSara->AI()->DoAction(ACTION_USED_MINDCONTROL);
+                                            bUsedMindControll = true;
+                                        }
 
                                         // Do Not Cast because its AoE and need better targeting scripting
                                         //DoCast(plr,SPELL_INSANE,true);
@@ -2606,6 +2694,7 @@ public:
 
     bool OnGossipHello(Player *pPlayer, GameObject * /*pGO*/)
     {
+        pPlayer->RemoveAurasDueToSpell(SPELL_ILLUSION_ROOM);
         pPlayer->NearTeleportTo(SaraLocation.GetPositionX(),SaraLocation.GetPositionY(),SaraLocation.GetPositionZ(),M_PI,false);
         pPlayer->JumpTo(40.0f,15.0f,true);
         return false;
@@ -2816,8 +2905,8 @@ class spell_summon_tentacle_position : public SpellScriptLoader
             void ChangeSummonPos(SpellEffIndex /*effIndex*/)
             {
                 WorldLocation* summonPos = GetTargetDest();
-                Position offset = {0.0f, 0.0f, 3.0f, 0.0f};
-                summonPos->RelocateOffset(offset);  // +20 in height
+                if(Unit* caster = GetCaster())
+                    summonPos->m_positionZ = caster->GetMap()->GetHeight(summonPos->GetPositionX(),summonPos->GetPositionY(),summonPos->GetPositionZ(),true,500.0f);
             }
 
             void Register()

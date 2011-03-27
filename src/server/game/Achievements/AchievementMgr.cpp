@@ -1950,6 +1950,15 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement, b
     if (achievement->flags & ACHIEVEMENT_FLAG_COUNTER || HasAchieved(achievement))
         return;
 
+    // I know this is already checked in Complete Criterium ... but CompleteAchievement cann also be called by InstanceScript::DoCompleteAchievments and is needet for some RealmFirsts
+    // so we check it again
+    if (achievement->flags & (ACHIEVEMENT_FLAG_REALM_FIRST_REACH | ACHIEVEMENT_FLAG_REALM_FIRST_KILL))
+    {
+        // someone on this realm has already completed that achievement
+        if (sAchievementMgr->IsRealmCompleted(achievement))
+            return;
+    }
+
     SendAchievementEarned(achievement);
     /** World of Warcraft Armory **/
     if (sWorld->getBoolConfig(CONFIG_ARMORY_ENABLE))
@@ -1960,7 +1969,6 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement, b
     ca.changed = true;
 
     // don't insert for ACHIEVEMENT_FLAG_REALM_FIRST_KILL since otherwise only the first group member would reach that achievement
-    // TODO: where do set this instead?
     if (!(achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL))
         sAchievementMgr->SetRealmCompleted(achievement);
     else sAchievementMgr->SetRealmCompletedDelayed(achievement);
@@ -2102,6 +2110,22 @@ bool AchievementMgr::CanUpdateCriteria(AchievementCriteriaEntry const* criteria,
         return false;
 
     return true;
+}
+
+void AchievementMgr::SetCriteriaComplete(uint32 criteria_id)
+{
+    AchievementCriteriaEntry const *achievementCriteria =  sAchievementCriteriaStore.LookupEntry(criteria_id);
+    if(!achievementCriteria)
+        return;
+
+    AchievementEntry const *achievement = sAchievementStore.LookupEntry(achievementCriteria->referredAchievement);
+    if (!achievement)
+        return;
+
+    SetCriteriaProgress(achievementCriteria,1,PROGRESS_ACCUMULATE);
+
+    if (IsCompletedCriteria(achievementCriteria, achievement))
+        CompletedCriteriaFor(achievement);
 }
 
 //==========================================================
