@@ -22,10 +22,9 @@
 LandofLegends - Entwicklungsnotizen:
 
 Allgemein:
-Keeper Hodir secoundary spell prüfen/fixen
 Loot
 
-Script ist zu 95% fertig.
+Script ist zu 97% fertig.
 
 Phase 1 ist komplett
 Phase 2 ist fast fertig
@@ -249,6 +248,8 @@ enum Spells
     // Keeper Hodir
     SPELL_FORTITUDE_OF_FROST                    = 62650,
     SPELL_HODIRS_PROTECTIVE_GAZE                = 64174,
+    SPELL_FLASH_FREEZE                          = 64175,
+    SPELL_FLASH_FREEZE_COOLDOWN                 = 64176,
     // Sanity
     SPELL_SANITY                                = 63050,
     SPELL_INSANE                                = 63120, // MindControl
@@ -368,15 +369,17 @@ const Position InnerBrainLocation[3] =
     {1953.41f, -73.73f, 240.0f, (1.33f*M_PI)}  //Lich King
 };
 
-const Position BrainPortalLocation[4] = 
+const Position BrainPortalLocation[10] = 
 {
     {1970.48f,   -9.75f, 325.5f, 0},
     {1992.76f,  -10.21f, 325.5f, 0},
     {1995.53f,  -39.78f, 325.5f, 0},
-    {1969.25f,  -42.00f, 325.5f, 0}
-    /*
-     ToDo: 6 Weitere Portale fuer 25 Mode
-    */
+    {1969.25f,  -42.00f, 325.5f, 0},
+    {1960.62f,  -32.00f, 325.5f, 0},
+    {1981.98f,  -5.69f,  325.5f, 0},
+    {1982.78f,  -45.73f, 325.5f, 0},
+    {2000.66f,  -29.68f, 325.5f, 0},
+    {1999.88f,  -19.61f, 325.5f, 0}
 };
 
 const Position KingLlaneTentacleLocation[CONSTANT_MAX_LLIANE_TENTACLE_SPAWNS] = 
@@ -1220,7 +1223,8 @@ public:
             lastBrainAction = tempAction;
 
             // Spawn Portal
-            for(int i = 0; i < 4; ++i)
+            int max = RAID_MODE(4,10);
+            for(int i = 0; i < max; ++i)
             {
                 if(Creature* portal = DoSummon(ENTRY_BRAIN_PORTAL,BrainPortalLocation[i],40000,TEMPSUMMON_TIMED_DESPAWN))
                     portal->AI()->DoAction(tempAction);
@@ -1659,7 +1663,7 @@ public:
 
         void MoveInLineOfSight(Unit* target)
         {
-            if(target && me->GetDistance2d(target) <= 5 && target->ToPlayer() && !target->ToPlayer()->isGameMaster())
+            if(target && me->GetDistance2d(target) <= 5 && target->ToPlayer() && !target->ToPlayer()->isGameMaster() && !target->HasAura(SPELL_FLASH_FREEZE))
                 TriggerGuardianSpawn();
         }
 
@@ -2236,7 +2240,7 @@ public:
         npc_influence_tentacleAI(Creature *c) : Scripted_NoMovementAI(c)
         {
             me->SetReactState(REACT_DEFENSIVE);
-            me->setFaction(14);
+            me->setFaction(7);
         }
 
         void JustDied(Unit* /*killer*/)
@@ -2513,9 +2517,22 @@ public:
                     }
                     uiSecondarySpell_Timer = 30000;
                     return;
+                case ENTRY_KEEPER_HODIR:
+                    {
+                        if(!me->HasAura(SPELL_HODIRS_PROTECTIVE_GAZE))
+                            DoCast(me,SPELL_HODIRS_PROTECTIVE_GAZE,false);
+                        uiSecondarySpell_Timer = 25000;
+                    }
                 }
                 uiSecondarySpell_Timer = 10000;
-            }else uiSecondarySpell_Timer -= diff;
+            }else
+            {
+                if(me->GetEntry() == ENTRY_KEEPER_HODIR)
+                {
+                    if(!me->HasAura(SPELL_HODIRS_PROTECTIVE_GAZE))
+                        uiSecondarySpell_Timer -= diff;
+                }else uiSecondarySpell_Timer -= diff;
+            }
         } 
     };
 };
@@ -2758,7 +2775,7 @@ public:
             Position pos;
             me->GetNearPoint2D(pos.m_positionX,pos.m_positionY,10,float(2*M_PI*rand_norm()));
             pos.m_positionZ = me->GetPositionZ();
-            pos.m_positionZ = me->GetMap()->GetHeight(pos.GetPositionX(),pos.GetPositionY(),pos.GetPositionZ(),true,500.0f);
+            pos.m_positionZ = me->GetMap()->GetHeight(pos.GetPositionX(),pos.GetPositionY(),pos.GetPositionZ(),true,50.0f);
             me->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);
             me->GetMotionMaster()->MovePoint(1,pos);
         }
@@ -3006,7 +3023,7 @@ class spell_summon_tentacle_position : public SpellScriptLoader
             {
                 WorldLocation* summonPos = GetTargetDest();
                 if(Unit* caster = GetCaster())
-                    summonPos->m_positionZ = caster->GetMap()->GetHeight(summonPos->GetPositionX(),summonPos->GetPositionY(),summonPos->GetPositionZ(),true,500.0f);
+                    summonPos->m_positionZ = caster->GetMap()->GetHeight(summonPos->GetPositionX(),summonPos->GetPositionY(),summonPos->GetPositionZ(),true,50.0f);
             }
 
             void Register()
@@ -3060,6 +3077,72 @@ class spell_empowering_shadows : public SpellScriptLoader
         {
             return new spell_empowering_shadows_SpellScript();
         }
+};
+
+// Hodir's Protective Gaze
+class spell_hodir_protective_gaze : public SpellScriptLoader
+{
+public:
+    spell_hodir_protective_gaze() : SpellScriptLoader("spell_hodir_protective_gaze") { }
+
+    class spell_hodir_protective_gaze_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_hodir_protective_gaze_AuraScript);
+
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            return sSpellStore.LookupEntry(SPELL_FLASH_FREEZE_COOLDOWN);
+        }
+
+        //bool Load()
+        //{
+        //    return GetOwner()->ToPlayer();
+        //}
+
+        void HandleEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            std::list<Unit*> targetList;
+            aurEff->GetTargetList(targetList);
+
+            for(std::list<Unit*>::iterator iter = targetList.begin(); iter != targetList.end(); ++iter)
+                if(!(*iter)->ToPlayer() && (*iter)->GetGUID() != GetCasterGUID() )
+                    (*iter)->RemoveAurasDueToSpell(GetSpellProto()->Id);
+        }
+
+        void CalculateAmount(AuraEffect const * /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+        {
+            // Set absorbtion amount to unlimited
+            amount = -1;
+        }
+
+        void Absorb(AuraEffect * /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+        {
+            Unit * target = GetTarget();
+            if (dmgInfo.GetDamage() < target->GetHealth())
+                return;
+
+            target->CastSpell(target, SPELL_FLASH_FREEZE, true);
+
+            // absorb hp till 1 hp
+            absorbAmount = dmgInfo.GetDamage() - target->GetHealth() + 1;
+
+            // Remove Aura from Hodir
+            if(GetCaster() && GetCaster()->ToCreature())
+                GetCaster()->ToCreature()->RemoveAurasDueToSpell(SPELL_HODIRS_PROTECTIVE_GAZE);
+        }
+
+        void Register()
+        {
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_hodir_protective_gaze_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            OnEffectAbsorb += AuraEffectAbsorbFn(spell_hodir_protective_gaze_AuraScript::Absorb, EFFECT_0);
+            OnEffectApply += AuraEffectApplyFn(spell_hodir_protective_gaze_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_hodir_protective_gaze_AuraScript();
+    }
 };
 
 #define GOSSIP_KEEPER_HELP                  "Lend us your aid, keeper. Together we shall defeat Yogg-Saron."
@@ -3294,6 +3377,12 @@ INSERT INTO conditions
 VALUES
 (13,0,64172,0,18,1,33988,0,0,'','Effekt only for Immortal Guardians');
 
+-- Hodir Secound Aura Script
+DELETE FROM spell_script_names WHERE spell_id IN (64174);
+INSERT INTO spell_script_names (spell_id,Scriptname)
+VALUES
+(64174,'spell_hodir_protective_gaze');
+
 -- Insane Death trigger on Remove
 DELETE FROM spell_script_names WHERE spell_id IN (63120);
 INSERT INTO spell_script_names (spell_id,Scriptname)
@@ -3387,4 +3476,5 @@ void AddSC_boss_yoggsaron()
     new spell_insane_death_effekt();
     new spell_summon_tentacle_position();
     new spell_empowering_shadows();
+    new spell_hodir_protective_gaze();
 }
