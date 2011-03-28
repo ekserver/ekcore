@@ -742,8 +742,14 @@ public:
             }
         }
 
-        void DamageTaken(Unit *attacker, uint32 &damage)
+        void DamageTaken(Unit* dealer, uint32 &damage)
         {
+            if(dealer->GetEntry() == ENTRY_GUARDIAN_OF_YOGG_SARON)
+            {
+                damage = 0;
+                return;
+            }
+
             if(damage > me->GetHealth())
                 damage = me->GetHealth()-1;
         }
@@ -918,6 +924,21 @@ public:
                 //                }
                 //}
 
+                for(std::list<uint64>::iterator itr = Summons.begin(); itr != Summons.end(); ++itr)
+                {
+                    if(Creature* temp = Creature::GetCreature(*me,*itr))
+                    {
+                        switch(temp->GetEntry())
+                        {
+                        case ENTRY_CONSTRICTOR_TENTACLE:
+                        case ENTRY_CORRUPTOR_TENTACLE:
+                        case ENTRY_CRUSHER_TENTACLE:
+                                temp->RemoveAurasDueToSpell(SPELL_SHATTERED_ILLUSIONS);
+                            break;
+                        }
+                    }
+                }
+
                 Summons.DespawnEntry(ENTRY_BRAIN_PORTAL);
 
                 if(Creature* yoggbrain = me->GetCreature(*me,guidYoggBrain))
@@ -969,14 +990,15 @@ public:
                 pSummoned->SetStandState(UNIT_STAND_STATE_SUBMERGED);
                 pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                pSummoned->SetFloatValue(UNIT_FIELD_COMBATREACH, 7.0f);
-                pSummoned->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 7.0f);
+                pSummoned->SetFloatValue(UNIT_FIELD_COMBATREACH, 20.0f);
+                pSummoned->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 20.0f);
                 return; // Do Not Save Yoggy in Summons because he shouldnt despawnt on Encount Finished
             case ENTRY_BRAIN_OF_YOGG_SARON:
                 guidYoggBrain = pSummoned->GetGUID();
                 pSummoned->setActive(true);
-                pSummoned->SetFloatValue(UNIT_FIELD_COMBATREACH, 10.0f);
-                pSummoned->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10.0f);
+                pSummoned->SetFloatValue(UNIT_FIELD_COMBATREACH, 25.0f);
+                pSummoned->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 25.0f);
+                pSummoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 break;
             case ENTRY_RUBY_CONSORT:
             case ENTRY_OBSIDIAN_CONSORT:
@@ -1267,7 +1289,10 @@ public:
             }
 
             if(Creature* yoggbrain = me->GetCreature(*me,guidYoggBrain))
+            {
+                yoggbrain->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 yoggbrain->CastSpell(yoggbrain,SPELL_INDUCE_MADNESS,false);
+            }
 
             SummonMadnessEventNPCs();
             IsEventSpeaking = true;
@@ -1517,6 +1542,9 @@ public:
                                         me->AddAura(SPELL_SHATTERED_ILLUSIONS,yogg);
                                     me->AddAura(SPELL_SHATTERED_ILLUSIONS,me);
 
+                                    if(Creature* yoggbrain = me->GetCreature(*me,guidYoggBrain))
+                                        yoggbrain->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
                                     for(std::list<uint64>::iterator itr = Summons.begin(); itr != Summons.end(); ++itr)
                                     {
                                         if(Creature* temp = Creature::GetCreature(*me,*itr))
@@ -1690,10 +1718,10 @@ public:
             m_pInstance = c->GetInstanceScript();
             me->setFaction(14);
 
-            SpellEntry *TempSpell;
-            TempSpell = GET_SPELL(SPELL_SHADOW_NOVA);
-            if (TempSpell)
-                TempSpell->Effect[1] = 0;
+            //SpellEntry *TempSpell;
+            //TempSpell = GET_SPELL(SPELL_SHADOW_NOVA);
+            //if (TempSpell)
+            //    TempSpell->Effect[1] = 0;
         }
 
         InstanceScript* m_pInstance;
@@ -1782,6 +1810,7 @@ public:
             SetTentacleType(c->GetEntry());
             once = false;
             me->setFaction(14);
+            me->SetFlying(true);
             if(m_pInstance)
             {
                 if(Creature* sara = Creature::GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
@@ -2028,6 +2057,13 @@ public:
             return pPlayer->GetPositionZ() < 300;
         }
 
+        void DamageTaken(Unit* dealer, uint32 &damage)
+        {
+            if(damage > me->GetHealth())
+                damage = me->GetHealth()-1;
+        }
+
+
         void SpellHitTarget(Unit *target, const SpellEntry *spell)
         {
             if(!target->ToPlayer())
@@ -2200,6 +2236,7 @@ public:
         npc_influence_tentacleAI(Creature *c) : Scripted_NoMovementAI(c)
         {
             me->SetReactState(REACT_DEFENSIVE);
+            me->setFaction(14);
         }
 
         void JustDied(Unit* /*killer*/)
@@ -2969,7 +3006,7 @@ class spell_summon_tentacle_position : public SpellScriptLoader
             {
                 WorldLocation* summonPos = GetTargetDest();
                 if(Unit* caster = GetCaster())
-                    summonPos->m_positionZ = caster->GetMap()->GetHeight(summonPos->GetPositionX(),summonPos->GetPositionY(),summonPos->GetPositionZ(),true,500.0f) + 5.0f;
+                    summonPos->m_positionZ = caster->GetMap()->GetHeight(summonPos->GetPositionX(),summonPos->GetPositionY(),summonPos->GetPositionZ(),true,500.0f);
             }
 
             void Register()
@@ -3200,6 +3237,16 @@ UPDATE gameobject_template SET scriptname = 'go_flee_to_surface' WHERE entry = 1
 UPDATE item_template SET scriptname = 'item_unbound_fragments_of_valanyr' WHERE entry = 45896;
 
 UPDATE creature_template SET RegenHealth = 0 WHERE entry IN (33134,34332,33890,33954);
+
+-- Secound Damage Effekt of ShadowNova only on other Guardians or Sara
+DELETE FROM conditions WHERE SourceEntry = 65209;
+INSERT INTO conditions
+(SourceTypeOrReferenceId,SourceGroup,SourceEntry,ElseGroup,
+ ConditionTypeOrReference,ConditionValue1,ConditionValue2,ConditionValue3,
+ ErrorTextId,ScriptName,COMMENT)
+VALUES
+(13,0,65209,0,18,1,33136,0,0,'','Effekt only for Guardian of YoggSaron'),
+(13,0,65209,0,18,1,33134,0,0,'','Effekt only for Sara');
 
 DELETE FROM gameobject WHERE id = 194625;
 INSERT INTO gameobject 
