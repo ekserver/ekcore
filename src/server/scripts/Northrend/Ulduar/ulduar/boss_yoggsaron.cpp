@@ -22,20 +22,16 @@
 LandofLegends - Entwicklungsnotizen:
 
 Allgemein:
-Keeper Hilfe zu/abschalten
 Keeper Hodir secoundary spell prüfen/fixen
 Loot
-Legendaere Waffen Quest fixen
-Archievments - teilweise schon erledigt
 
-Script ist zu 94% fertig.
+Script ist zu 95% fertig.
 
 Phase 1 ist komplett
 Phase 2 ist fast fertig
   Allgemein:
     Die kleinen Geschichten (visual spells finden)
   YoggSauron:
-    Tentakle Spawns (not spawn too many Crusher Tentakle)
     Tentakle brauch vehicleID
 Phase 3 fertig
 */
@@ -106,7 +102,7 @@ enum Vision_Says
 
 enum Events
 {
-    ACHIEV_TIMED_START_EVENT                    = 21001,
+    ACHIEV_TIMED_START_EVENT                    = 21001, // Dont Need this
 };
 
 enum Achievments
@@ -583,6 +579,7 @@ public:
 
         uint32 NovaHitCounter;
         // Phase 2
+        Actions lastBrainAction;
         bool IsSpeaking;
         uint32 SpeakingPhase;
         uint32 uiSpeaking_Timer;
@@ -724,6 +721,7 @@ public:
                 m_pInstance->SetBossState(TYPE_YOGGSARON,IN_PROGRESS);
 
             uiAmountKeeperActive = CountKeepersActive();
+            lastBrainAction = Actions(0);
         }
 
         void ReceiveEmote(Player* pPlayer, uint32 emote)
@@ -1181,8 +1179,24 @@ public:
                 m_pInstance->HandleGameObject(m_pInstance->GetData64(TYPE_BRAIN_DOOR_3),false);
             }
 
-            // Random Action - Not Blizzlike?
-            Actions tempAction = RAND(ACTION_PORTAL_TO_MADNESS_STORMWIND,ACTION_PORTAL_TO_MADNESS_DRAGON,ACTION_PORTAL_TO_MADNESS_LICHKING);
+            Actions tempAction;
+            switch(lastBrainAction)
+            {
+            case ACTION_PORTAL_TO_MADNESS_STORMWIND:
+                tempAction = ACTION_PORTAL_TO_MADNESS_DRAGON;
+                break;
+            case ACTION_PORTAL_TO_MADNESS_DRAGON:
+                tempAction = ACTION_PORTAL_TO_MADNESS_LICHKING;
+                break;
+            case ACTION_PORTAL_TO_MADNESS_LICHKING:
+                tempAction = ACTION_PORTAL_TO_MADNESS_STORMWIND;
+                break;
+            default: 
+                tempAction = RAND(ACTION_PORTAL_TO_MADNESS_STORMWIND,ACTION_PORTAL_TO_MADNESS_DRAGON,ACTION_PORTAL_TO_MADNESS_LICHKING);
+                break;
+            }
+            lastBrainAction = tempAction;
+
             // Spawn Portal
             for(int i = 0; i < 4; ++i)
             {
@@ -1439,9 +1453,14 @@ public:
                                 }else
                                 {
                                     if(Creature* yogg = me->GetCreature(*me,guidYogg))
-                                        yogg->CastSpell(yogg,RAND(SPELL_SUMMON_CRUSHER_TENTACLE,SPELL_SUMMON_CURRUPTOR_TENTACLE),true);
+                                    {
+                                        if(!GetRandomEntryTarget(SPELL_SUMMON_CRUSHER_TENTACLE) || !urand(0,3))
+                                            yogg->CastSpell(yogg,SPELL_SUMMON_CRUSHER_TENTACLE,true);
+                                        else
+                                            yogg->CastSpell(yogg,SPELL_SUMMON_CURRUPTOR_TENTACLE,true);
+                                    }
                                 }
-                                uiTentacle_Timer =  uiBrainEvents_Count < 4 ? urand(15000,30000) : urand(5000,10000);
+                                uiTentacle_Timer =  uiBrainEvents_Count < 4 ? urand(10000,20000) : urand(5000,10000);
                             }else uiTentacle_Timer -= diff;
                         }else
                         {
@@ -1713,7 +1732,7 @@ public:
                         cSara->AI()->DoAction(ACTION_NOVA_HIT);
             }
 
-            me->DespawnOrUnsummon(1000);
+            me->DespawnOrUnsummon(5000);
         }
 
         void Reset()
@@ -1763,6 +1782,11 @@ public:
             SetTentacleType(c->GetEntry());
             once = false;
             me->setFaction(14);
+            if(m_pInstance)
+            {
+                if(Creature* sara = Creature::GetCreature(*me,m_pInstance->GetData64(TYPE_SARA)))
+                    sara->AI()->JustSummoned(me);
+            }
         }
 
         InstanceScript* m_pInstance;
@@ -1802,7 +1826,7 @@ public:
         {
             me->RemoveAurasDueToSpell(SPELL_TENTACLE_VOID_ZONE);
 
-            me->DespawnOrUnsummon(1000);
+            me->DespawnOrUnsummon(5000);
         }
 
         void Reset()
@@ -2236,7 +2260,7 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            me->DespawnOrUnsummon(1000);
+            me->DespawnOrUnsummon(5000);
         }
 
         void SpellHit(Unit* caster, const SpellEntry* spell)
