@@ -8035,6 +8035,13 @@ bool Unit::HandleAuraProc(Unit * pVictim, uint32 damage, Aura * triggeredByAura,
             }
             break;
         }
+        case SPELLFAMILY_ROGUE:
+        {
+            // prevent proc of Savage Combat
+            if (dummySpell->SpellIconID == 1959)
+                *handled = true;
+            break;
+        }
         case SPELLFAMILY_DEATHKNIGHT:
         {
             // Blood of the North
