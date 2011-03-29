@@ -797,6 +797,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW       = 30,
     PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES    = 31,
     PLAYER_LOGIN_QUERY_LOADXPRATE               = 32,
+    PLAYER_LOGIN_QUERY_LOADXPPREMIUMRATE        = 33,
     MAX_PLAYER_LOGIN_QUERY,
 };
 
@@ -2331,6 +2332,11 @@ class Player : public Unit, public GridObject<Player>
         uint32 quest_xp_rate;
         uint32 explore_xp_rate;
         uint32 rest_xp_rate;
+        
+        uint32 p_kill_xp_rate;
+        uint32 p_quest_xp_rate;
+        uint32 p_explore_xp_rate;
+        uint32 p_rest_xp_rate;
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
@@ -2510,6 +2516,7 @@ class Player : public Unit, public GridObject<Player>
         bool _LoadHomeBind(PreparedQueryResult result);
         void _LoadDeclinedNames(PreparedQueryResult result);
         void _LoadExpRates(PreparedQueryResult result);
+        void _LoadExpPremiumRates(PreparedQueryResult result);
         void _LoadArenaTeamInfo(PreparedQueryResult result);
         void _LoadArenaStatsInfo(PreparedQueryResult result);
         void _LoadEquipmentSets(PreparedQueryResult result);

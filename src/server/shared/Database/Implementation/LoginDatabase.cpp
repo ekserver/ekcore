@@ -47,6 +47,7 @@ bool LoginDatabaseConnection::Open()
     PREPARE_STATEMENT(LOGIN_SET_IP_NOT_BANNED, "DELETE FROM ip_banned WHERE ip = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(LOGIN_SET_ACCOUNT_BANNED, "INSERT INTO account_banned VALUES (?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+?, ?, ?, 1)", CONNECTION_ASYNC)
     PREPARE_STATEMENT(LOGIN_SET_ACCOUNT_NOT_BANNED, "UPDATE account_banned SET active = 0 WHERE id = ? AND active != 0", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(LOGIN_GET_ACCOUNT_PREMIUMRATES, "SELECT UNIX_TIMESTAMP(start_time), UNIX_TIMESTAMP(end_time), kill_xp_rate, quest_xp_rate, explore_xp_rate, rest_xp_rate FROM premium_account WHERE id = ?", CONNECTION_ASYNC)
 
     /* ############## END OF LOADING PREPARED STATEMENTS ############## */
 
