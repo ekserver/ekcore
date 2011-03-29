@@ -379,7 +379,8 @@ const Position BrainPortalLocation[10] =
     {1981.98f,  -5.69f,  325.5f, 0},
     {1982.78f,  -45.73f, 325.5f, 0},
     {2000.66f,  -29.68f, 325.5f, 0},
-    {1999.88f,  -19.61f, 325.5f, 0}
+    {1999.88f,  -19.61f, 325.5f, 0},
+    {1961.37f,  -19.54f, 325.5f, 0}
 };
 
 const Position KingLlaneTentacleLocation[CONSTANT_MAX_LLIANE_TENTACLE_SPAWNS] = 
