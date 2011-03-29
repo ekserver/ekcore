@@ -677,10 +677,6 @@ public:
                     DoScriptText(SAY_PHASE3_AGGRO, me);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     DoCast(me, SPELL_ROOT, true);
-                    uiSurgeOfPowerTimer = 10*IN_MILLISECONDS;
-                    uiStormTimer = 15*IN_MILLISECONDS;
-                    uiWaitTimer = 1*IN_MILLISECONDS;
-                    uiPhase = PHASE_DRAGONS;
                     break;
                 }
                 default:
@@ -795,6 +791,7 @@ public:
                             me->SetFlying(true);
                             me->SetReactState(REACT_PASSIVE);
                             me->GetMotionMaster()->MovePoint(POINT_PHASE_2, Locations[3]);
+                            uiWaitTimer = 60*IN_MILLISECONDS; // dummy
                             uiPhase = PHASE_IDLE;
                         }
                     }
@@ -849,6 +846,7 @@ public:
                         DoScriptText(SAY_PHASE2_END, me);
                         me->GetMotionMaster()->MovePoint(POINT_DESTROY_FLOOR, Locations[1]);
                         Summons.DespawnAll(); // remove remaining anti-magic shells and discs
+                        uiWaitTimer = 60*IN_MILLISECONDS; // dummy
                         uiPhase = PHASE_IDLE;
                     }
 
@@ -934,6 +932,10 @@ public:
                             case 3:
                             {
                                 DoAction(ACTION_MOUNT_ALL);
+                                uiSurgeOfPowerTimer = 10*IN_MILLISECONDS;
+                                uiStormTimer = 15*IN_MILLISECONDS;
+                                uiWaitTimer = 5*IN_MILLISECONDS;
+                                uiPhase = PHASE_DRAGONS;
                                 uiStep++;
                                 break;
                             }
