@@ -155,6 +155,15 @@ enum eGameObjects
     GO_RAZOR_HARPOON_3      = 194543,
     GO_RAZOR_HARPOON_4      = 194519,
     GO_RAZOR_BROKEN_HARPOON = 194565,
+    GO_ALGALON_ACCESS       = 194628,
+    GO_ALGALON_DOOR_1       = 194911,
+    GO_ALGALON_DOOR_2       = 194767,
+    GO_ALGALON_PLATFORM     = 194715,
+    GO_ALGALON_GLOBE        = 194148,
+    GO_ALGALON_BRIDGE       = 194253,
+    GO_ALGALON_B_VISUAL     = 194716,
+    GO_ALGALON_B_DOOR       = 194910,
+    GO_GIFT_OF_THE_OBSERVER = 194821,
 };
 
 enum eTowerEvents
@@ -189,6 +198,12 @@ enum eKeeperSupport
     HODIR_SUPPORT = 0x02,
     FREYA_SUPPORT = 0x04,
     MIMIRON_SUPPORT = 0x08,
+};
+
+enum eWorldstates
+{
+    WORLDSTATE_ALGALON_TIME = 4131,
+    WORLDSTATE_ALGALON_SHOW = 4132
 };
 
 #endif

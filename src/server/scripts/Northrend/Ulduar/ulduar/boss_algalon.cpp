@@ -18,8 +18,6 @@
 #include "ScriptPCH.h"
 #include "ulduar.h"
 
-#define GAMEOBJECT_GIVE_OF_THE_OBSERVER 194821
-
 enum Spells
 {
     SPELL_ASCEND                    = 64487,
@@ -49,7 +47,7 @@ enum Yells
     SAY_AGGRO                                   = -1603000,
     SAY_SLAY_1                                  = -1603001,
     SAY_SLAY_2                                  = -1603002,
-    SAY_ENGADED_FOR_FIRTS_TIME                  = -1603003,
+    SAY_ENGAGED_FOR_FIRST_TIME                  = -1603003,
     SAY_PHASE_2                                 = -1603004,
     SAY_SUMMON_COLLAPSING_STAR                  = -1603005,
     SAY_DEATH_1                                 = -1603006,
@@ -205,7 +203,7 @@ public:
 
             if (HealthBelowPct(2))
             {
-                me->SummonGameObject(GAMEOBJECT_GIVE_OF_THE_OBSERVER, 1634.258667f, -295.101166f,417.321381f,0,0,0,0,0,0);
+                me->SummonGameObject(GO_GIFT_OF_THE_OBSERVER, 1634.258667f, -295.101166f,417.321381f,0,0,0,0,0,0);
 
                 // All of them. or random?
                 DoScriptText(SAY_DEATH_1, me);
@@ -243,7 +241,7 @@ public:
                                 JumpToNextStep(3000);
                                 break;
                             case 4:
-                                DoScriptText(SAY_ENGADED_FOR_FIRTS_TIME, me);
+                                DoScriptText(SAY_ENGAGED_FOR_FIRST_TIME, me);
                                 JumpToNextStep(3000);
                                 break;
                             case 5:
@@ -323,7 +321,6 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
 };
 
 //Collapsing Star
@@ -365,11 +362,32 @@ public:
             } else BlackHoleExplosion_Timer -= diff;
         }
     };
-
 };
 
-void AddSC_boss_Algalon()
+class go_planetarium_access : public GameObjectScript
+{
+public:
+    go_planetarium_access() : GameObjectScript("go_planetarium_access") { }
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {
+        InstanceScript* pInstance = go->GetInstanceScript();
+
+        if (player->HasItemCount(45796, 1) || player->HasItemCount(45798, 1))
+        {
+            go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+            go->SetGoState(GO_STATE_ACTIVE);
+            // TODO: move to instance
+            pInstance->HandleGameObject(pInstance->GetData64(GO_ALGALON_DOOR_1), true);
+            pInstance->HandleGameObject(pInstance->GetData64(GO_ALGALON_DOOR_2), true);
+        }
+        return true;
+    }
+};
+
+void AddSC_boss_algalon()
 {
     new boss_algalon();
     new mob_collapsing_star();
+    new go_planetarium_access();
 }

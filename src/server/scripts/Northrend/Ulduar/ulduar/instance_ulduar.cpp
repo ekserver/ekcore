@@ -79,6 +79,13 @@ public:
         uint64 uiSaraGUID;
 
         uint64 uiAlgalonGUID;
+        uint64 uiAlgalonBridgeGUID;
+        uint64 uiAlgalonBridgeVisualGUID;
+        uint64 uiAlgalonBridgeDoorGUID;
+        uint64 uiAlgalonGlobeGUID;
+        uint64 uiAlgalonDoor1GUID;
+        uint64 uiAlgalonDoor2GUID;
+        uint64 uiAlgalonAccessGUID;
 
         uint64 uiLeviathanDoor[7];
         uint64 uiLeviathanGateGUID;
@@ -124,6 +131,13 @@ public:
             uiVezaxGUID             = 0;
             uiYoggSaronGUID         = 0;
             uiAlgalonGUID           = 0;
+            uiAlgalonBridgeGUID     = 0;
+            uiAlgalonBridgeVisualGUID = 0;
+            uiAlgalonBridgeDoorGUID = 0;
+            uiAlgalonGlobeGUID      = 0;
+            uiAlgalonDoor1GUID      = 0;
+            uiAlgalonDoor2GUID      = 0;
+            uiAlgalonAccessGUID     = 0;
             uiSaraGUID              = 0;
             uiKologarnChestGUID     = 0;
             uiKologarnBridgeGUID    = 0;
@@ -378,10 +392,39 @@ public:
                 case GO_RAZOR_HARPOON_4:
                     uiRazorHarpoonGUIDs[3] = go->GetGUID();
                     break;
-                    break;
                 case GO_YOGGBRAIN_DOOR_3:
                     uiYoggSaronBrainDoor3GUID = go->GetGUID();
                     HandleGameObject(NULL, false, go);
+                    break;
+                case GO_ALGALON_PLATFORM:
+                    HandleGameObject(NULL, false, go);
+                    break;
+                case GO_ALGALON_BRIDGE:
+                    uiAlgalonBridgeGUID = go->GetGUID();
+                    HandleGameObject(NULL, false, go);
+                    break;
+                case GO_ALGALON_B_VISUAL:
+                    uiAlgalonBridgeVisualGUID = go->GetGUID();
+                    HandleGameObject(NULL, false, go);
+                    break;
+                case GO_ALGALON_B_DOOR:
+                    uiAlgalonBridgeDoorGUID = go->GetGUID();
+                    HandleGameObject(NULL, true, go);
+                    break;
+                case GO_ALGALON_GLOBE:
+                    uiAlgalonGlobeGUID = go->GetGUID();
+                    HandleGameObject(NULL, false, go);
+                    break;
+                case GO_ALGALON_DOOR_1:
+                    uiAlgalonDoor1GUID = go->GetGUID();
+                    HandleGameObject(NULL, false, go);
+                    break;
+                case GO_ALGALON_DOOR_2:
+                    uiAlgalonDoor2GUID = go->GetGUID();
+                    HandleGameObject(NULL, false, go);
+                    break;
+                case GO_ALGALON_ACCESS:
+                    uiAlgalonAccessGUID = go->GetGUID();
                     break;
             }
         }
@@ -590,8 +633,15 @@ public:
                 // Yogg-Saron
                 case TYPE_YOGGSARON:            return uiYoggSaronGUID;
                 case TYPE_SARA:                 return uiSaraGUID;
-
+                // Algalon
                 case TYPE_ALGALON:              return uiAlgalonGUID;
+                //case GO_ALGALON_BRIDGE:         return uiAlgalonBridgeGUID;
+                //case GO_ALGALON_B_VISUAL:       return uiAlgalonBridgeVisualGUID;
+                //case GO_ALGALON_B_DOOR:         return uiAlgalonBridgeDoorGUID;
+                //case GO_ALGALON_GLOBE:          return uiAlgalonGlobeGUID;
+                case GO_ALGALON_DOOR_1:         return uiAlgalonDoor1GUID;
+                case GO_ALGALON_DOOR_2:         return uiAlgalonDoor2GUID;
+                //case GO_ALGALON_ACCESS:         return uiAlgalonAccessGUID;
                 // razorscale expedition commander
                 case DATA_EXP_COMMANDER:        return uiExpCommanderGUID;
                 case GO_RAZOR_HARPOON_1:        return uiRazorHarpoonGUIDs[0];

@@ -436,6 +436,7 @@ void AddSC_boss_general_vezax();
 void AddSC_ulduar_teleporter();
 void AddSC_instance_ulduar();
 void AddSC_boss_yoggsaron();
+void AddSC_boss_algalon();
 void AddSC_boss_keleseth();              //Utgarde Keep
 void AddSC_boss_skarvald_dalronn();
 void AddSC_boss_ingvar_the_plunderer();
@@ -1148,6 +1149,7 @@ void AddNorthrendScripts()
     AddSC_ulduar_teleporter();
     AddSC_instance_ulduar();
     AddSC_boss_yoggsaron();
+    AddSC_boss_algalon();
     AddSC_boss_keleseth();              //Utgarde Keep
     AddSC_boss_skarvald_dalronn();
     AddSC_boss_ingvar_the_plunderer();
