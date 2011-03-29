@@ -2328,15 +2328,18 @@ class Player : public Unit, public GridObject<Player>
         void SendCinematicStart(uint32 CinematicSequenceId);
         void SendMovieStart(uint32 MovieId);
 
+        uint32 p_kill_xp_rate;
+        uint32 p_quest_xp_rate;
+        uint32 p_explore_xp_rate;
+        uint32 p_rest_xp_rate;
+
+        uint8 premium_is_active;
         uint32 kill_xp_rate;
         uint32 quest_xp_rate;
         uint32 explore_xp_rate;
         uint32 rest_xp_rate;
         
-        uint32 p_kill_xp_rate;
-        uint32 p_quest_xp_rate;
-        uint32 p_explore_xp_rate;
-        uint32 p_rest_xp_rate;
+        
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
