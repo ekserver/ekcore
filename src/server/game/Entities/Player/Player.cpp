@@ -16296,7 +16296,7 @@ void Player::_LoadExpPremiumRates(PreparedQueryResult result)
         else
         {
             // bonus is illegal, player gets default values
-            LogonDatabase.PExecute("UPDATE premium_account SET kill_xp_rate = '1', quest_xp_rate = '1', explore_xp_rate = '1', rest_xp_rate = '1', start_time = '0000-00-00 00:00:00', end_time = '0000-00-00 00:00:00' where id = '%u'",GetSession()->GetAccountId());
+            LoginDatabase.PExecute("UPDATE premium_account SET kill_xp_rate = '1', quest_xp_rate = '1', explore_xp_rate = '1', rest_xp_rate = '1', start_time = '0000-00-00 00:00:00', end_time = '0000-00-00 00:00:00' where id = '%u'",GetSession()->GetAccountId());
 
             p_kill_xp_rate = 1;
             p_quest_xp_rate = 1;
@@ -17174,7 +17174,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     _LoadExpRates(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADXPRATE));
     
     // load data from table premium_account
-    _loadExpPremiumRates(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADXPPREMIUMRATE));
+    _LoadExpPremiumRates(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADXPPREMIUMRATE));
 
     return true;
 }

@@ -200,7 +200,7 @@ bool LoginQueryHolder::Initialize()
     
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_PREMIUMRATES);
     stmt->setUInt32(0, m_accountId);
-    res &= SetPreparedQuery(LOGIN_GET_PLAYER_PREMIUMRATES, stmt);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADXPPREMIUMRATE, stmt);
 
     return res;
 }
