@@ -1053,6 +1053,9 @@ enum TrinityStrings
     LANG_BONI_P_INFO                        = 16002,
     LANG_YOU_CHANGE_PREMIUM_HEAD            = 16003,
     LANG_YOU_CHANGE_PREMIUM                 = 16004,
+    LANG_YOU_CHANGE_BONI_HEAD               = 16005,
+    LANG_YOU_CHANGE_BONI                    = 16006,
+    
 
     // NOT RESERVED IDS                   12000-1999999999
     // `db_script_string` table index     2000000000-2000009999 (MIN_DB_SCRIPT_STRING_ID-MAX_DB_SCRIPT_STRING_ID)

@@ -118,8 +118,15 @@ bool ChatHandler::HandleBoniInfoCommand(const char* /*args*/)
     uint32 p_exploreBoni    = player->p_explore_xp_rate;
     uint32 p_restBoni       = player->p_rest_xp_rate;
     
+    // FactionBoni
+    uint32 f_xpBoni         = player->f_kill_xp_rate;
+    uint32 f_questBoni      = player->f_quest_xp_rate;
+    uint32 f_exploreBoni    = player->f_explore_xp_rate;
+    uint32 f_restBoni       = player->f_rest_xp_rate;
+    
     PSendSysMessage(LANG_BONI_INFO, xpBoni, questBoni, exploreBoni, restBoni);
     PSendSysMessage(LANG_BONI_P_INFO, p_xpBoni, p_questBoni, p_exploreBoni, p_restBoni);
+    PSendSysMessage(LANG_BONI_F_INFO, f_xpBoni, f_questBoni, f_exploreBoni, f_restBoni);
     
     return true;
 }

@@ -500,7 +500,7 @@ public:
         if (!szAccount || !szXp || !szQuest || !szExplore || !szRest)
             return false;
             
-        if (szXp < 1 || szQuest < 1 || szExplore < 1 || szRest < 1)
+        if (szXp == "0" || szQuest == "0" || szExplore == "0" || szRest == "0")
             return false;
             
         std::string account_name = szAccount;

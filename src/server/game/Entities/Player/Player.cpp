@@ -382,6 +382,36 @@ void TradeData::SetAccepted(bool state, bool crosssend /*= false*/)
     }
 }
 
+bool Player::EpBooster(Player* player, uint8 type) // 1 = xp, 2 = quest, 3 = explore, 4 = rest
+{
+    //    = CharacterBoni
+    // p_ = PremiumBoni
+    // f_ = FactionBoni
+    uint32 xp      = player->kill_xp_rate * player->p_kill_xp_rate * player->f_kill_xp_rate;
+    uint32 quest   = player->quest_xp_rate * player->p_quest_xp_rate * player->f_kill_xp_rate;
+    uint32 explore = player->explore_xp_rate * player->p_explore_xp_rate * player->f_explore_xp_rate;
+    uint32 rest    = player->rest_xp_rate * player->p_rest_xp_rate * player->f_rest_xp_rate;
+    
+    switch(type)
+    {   
+        default:
+            return 1;
+            break;
+        case 1:
+            return xp;
+            break;
+        case 2:
+            return quest;
+            break;
+        case 3:
+            return explore;
+            break;
+        case 4:
+            return rest;
+            break;
+    }
+}
+
 // == KillRewarder ====================================================
 // KillRewarder incapsulates logic of rewarding player upon kill with:
 // * XP;

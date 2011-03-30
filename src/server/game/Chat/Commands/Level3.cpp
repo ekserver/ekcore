@@ -2701,20 +2701,26 @@ void ChatHandler::HandleCharacterLevel(Player* player, uint64 player_guid, uint3
     }
 }
 
-void ChatHandler::HandleCharacterBoni(Player* player, uint64 player_guid, uint32 xpBoni, uint32 questBoni, uint32 exploreBoni, uint32 restBoni)
-{
-    
-}
-
 bool ChatHandler::HandleCharacterChangeBoniCommand(const char *args)
 {
-    char* nameStr;
-    char* xpBoni;
-    char* questBoni;
-    char* exploreBoni;
-    char* restBoni;
-    extractOptFirstArg((char*)args,&nameStr,&xpBoni,&questBoni,&exploreBoni,&restBoni);
-    if (!xpBoni || !questBoni || !exploreBoni || !restBoni)
+    if (!*args)
+        return false;
+
+    char *nameStr   = strtok((char*)args," ");
+    char *szXp      = strtok(NULL," ");
+    char *szQuest   = strtok(NULL," ");
+    char *szExplore = strtok(NULL," ");
+    char *szRest    = strtok(NULL," ");
+
+    Player *player = getSelectedPlayer();
+    if (player == NULL)
+    {
+        SendSysMessage(LANG_NO_CHAR_SELECTED);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (!szXp || !szQuest || !szExplore || !szRest)
         return false;
     
     Player* target;
@@ -2723,19 +2729,19 @@ bool ChatHandler::HandleCharacterChangeBoniCommand(const char *args)
     if (!extractPlayerTarget(nameStr,&target,&target_guid,&target_name))
         return false;
         
-    if (xpBoni < 1 || questBoni < 1 || exploreBoni < 1 || restBoni < 1)
+    if (szXp == "0" || szQuest == "0" || szExplore == "0" || szRest == "0")
         return false;
-        
-    HandleCharacterBoni(target,target_guid,xpBoni,questBoni,exploreBoni,restBoni);
         
     if (!m_session || m_session->GetPlayer() != target)      // including player == NULL
     {
         std::string nameLink = playerLink(target_name);
         PSendSysMessage(LANG_YOU_CHANGE_BONI_HEAD,nameLink.c_str());
-        PSendSysMessage(LANG_YOU_CHANGE_BONI,xpBoni,questBoni,exploreBoni,restBoni)
+        PSendSysMessage(LANG_YOU_CHANGE_BONI,szXp,szQuest,szExplore,szRest);
+
+        CharacterDatabase.PExecute("INSERT IGNORE INTO character_rates (guid,kill_xp_rate,quest_xp_rate,explore_xp_rate,rest_xp_rate,premium) VALUES ('%u', '%u', '%u', '%u' '%u', '0')", target_guid, szXp, szQuest, szExplore, szRest);
     }
-        
-    LoginDatabase.PExecute("UPDATE premium_account SET kill_xp_rate = '%u', quest_xp_rate = '%u', explore_xp_rate = '%u', rest_xp_rate = '%u' WHERE id = '%u'", szXp, szQuest, szExplore, szRest, targetAccountId);
+    else
+        return false;
 
     return true;
 }
