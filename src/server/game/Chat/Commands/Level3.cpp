@@ -2701,6 +2701,45 @@ void ChatHandler::HandleCharacterLevel(Player* player, uint64 player_guid, uint3
     }
 }
 
+void ChatHandler::HandleCharacterBoni(Player* player, uint64 player_guid, uint32 xpBoni, uint32 questBoni, uint32 exploreBoni, uint32 restBoni)
+{
+    
+}
+
+bool ChatHandler::HandleCharacterChangeBoniCommand(const char *args)
+{
+    char* nameStr;
+    char* xpBoni;
+    char* questBoni;
+    char* exploreBoni;
+    char* restBoni;
+    extractOptFirstArg((char*)args,&nameStr,&xpBoni,&questBoni,&exploreBoni,&restBoni);
+    if (!xpBoni || !questBoni || !exploreBoni || !restBoni)
+        return false;
+    
+    Player* target;
+    uint64 target_guid;
+    std::string target_name;
+    if (!extractPlayerTarget(nameStr,&target,&target_guid,&target_name))
+        return false;
+        
+    if (xpBoni < 1 || questBoni < 1 || exploreBoni < 1 || restBoni < 1)
+        return false;
+        
+    HandleCharacterBoni(target,target_guid,xpBoni,questBoni,exploreBoni,restBoni);
+        
+    if (!m_session || m_session->GetPlayer() != target)      // including player == NULL
+    {
+        std::string nameLink = playerLink(target_name);
+        PSendSysMessage(LANG_YOU_CHANGE_BONI_HEAD,nameLink.c_str());
+        PSendSysMessage(LANG_YOU_CHANGE_BONI,xpBoni,questBoni,exploreBoni,restBoni)
+    }
+        
+    LoginDatabase.PExecute("UPDATE premium_account SET kill_xp_rate = '%u', quest_xp_rate = '%u', explore_xp_rate = '%u', rest_xp_rate = '%u' WHERE id = '%u'", szXp, szQuest, szExplore, szRest, targetAccountId);
+
+    return true;
+}
+
 bool ChatHandler::HandleCharacterLevelCommand(const char *args)
 {
     char* nameStr;

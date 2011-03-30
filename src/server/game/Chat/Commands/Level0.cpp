@@ -72,9 +72,9 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
 
     if ((chr->isDead()) || (chr->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST)))
     {
-    // if player is dead and stuck, send ghost to graveyard
-    chr->RepopAtGraveyard();
-    return true;
+        // if player is dead and stuck, send ghost to graveyard
+        chr->RepopAtGraveyard();
+        return true;
     }
 
     // cast spell Stuck
@@ -99,6 +99,28 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     PSendSysMessage(LANG_UPTIME, uptime.c_str());
     PSendSysMessage("Update time diff: %u.", updateTime);
 
+    return true;
+}
+
+bool ChatHandler::HandleBoniInfoCommand(const char* /*args*/)
+{
+    Player *player          = m_session->GetPlayer();
+    
+    // CharBoni
+    uint32 xpBoni           = player->kill_xp_rate;
+    uint32 questBoni        = player->quest_xp_rate;
+    uint32 exploreBoni      = player->explore_xp_rate;
+    uint32 restBoni         = player->rest_xp_rate;
+    
+    // PremiumBoni
+    uint32 p_xpBoni         = player->p_kill_xp_rate;
+    uint32 p_questBoni      = player->p_quest_xp_rate;
+    uint32 p_exploreBoni    = player->p_explore_xp_rate;
+    uint32 p_restBoni       = player->p_rest_xp_rate;
+    
+    PSendSysMessage(LANG_BONI_INFO, xpBoni, questBoni, exploreBoni, restBoni);
+    PSendSysMessage(LANG_BONI_P_INFO, p_xpBoni, p_questBoni, p_exploreBoni, p_restBoni);
+    
     return true;
 }
 

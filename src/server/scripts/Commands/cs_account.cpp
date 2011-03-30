@@ -38,6 +38,7 @@ public:
             { "addon",          SEC_ADMINISTRATOR,  true,  &HandleAccountSetAddonCommand,     "", NULL },
             { "gmlevel",        SEC_CONSOLE,        true,  &HandleAccountSetGmLevelCommand,   "", NULL },
             { "password",       SEC_CONSOLE,        true,  &HandleAccountSetPasswordCommand,  "", NULL },
+            { "premium",        SEC_ADMINISTRATOR,  true,  &HandleAccountSetPremiumCommand,   "", NULL },
             { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand accountCommandTable[] =
@@ -482,7 +483,51 @@ public:
         handler->PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
         return true;
     }
+    
+    /// Set/Unset the premium rates for an account
+    static bool HandleAccountSetPremiumCommand(ChatHandler* handler, const  char *args)
+    {
+        if (!*args)
+            return false;
+    
+        ///- Get the command line arguments
+        char *szAccount = strtok((char*)args," ");
+        char *szXp      = strtok(NULL," ");
+        char *szQuest   = strtok(NULL," ");
+        char *szExplore = strtok(NULL," ");
+        char *szRest    = strtok(NULL," ");
+        
+        if (!szAccount || !szXp || !szQuest || !szExplore || !szRest)
+            return false;
+            
+        std::string account_name = szAccount;
+        if(!AccountMgr::normalizeString(account_name))
+        {
+            handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        
+        uint32 targetAccountId = sAccountMgr->GetId(account_name);
+        if (!targetAccountId)
+        {
+            handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
 
+        /// can set premium account only for target with less security
+        /// This is also reject self apply in fact
+        if (handler->HasLowerSecurityAccount(NULL,targetAccountId,true))
+            return false;
+            
+        LoginDatabase.PExecute("UPDATE premium_account SET kill_xp_rate = '%u', quest_xp_rate = '%u', explore_xp_rate = '%u', rest_xp_rate = '%u' WHERE id = '%u'", szXp, szQuest, szExplore, szRest, targetAccountId);
+        handler->PSendSysMessage(LANG_YOU_CHANGE_PREMIUM_HEAD, account_name.c_str());
+        handler->PSendSysMessage(LANG_YOU_CHANGE_PREMIUM, szXp, szQuest, szExplore, szRest);
+
+        return true;
+    }
+    
     /// Set password for account
     static bool HandleAccountSetPasswordCommand(ChatHandler* handler, const char *args)
     {
