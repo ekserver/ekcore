@@ -16349,7 +16349,7 @@ void Player::_LoadExpRates(PreparedQueryResult result)
         else
         {
             // bonus is illegal or Premium is active
-            CharacterDatabase.PExecute("UPDATE character_rates SET kill_xp_rate = '1', quest_xp_rate = '1', explore_xp_rate = '1', rest_xp_rate = '1' WHERE guid = '%u'", GetGUIDLow());
+            CharacterDatabase.PExecute("UPDATE character_rates SET kill_xp_rate = '1', quest_xp_rate = '1', explore_xp_rate = '1', rest_xp_rate = '1', start_time = '0000-00-00 00:00:00', end_time = '0000-00-00 00:00:00' WHERE guid = '%u'", GetGUIDLow());
 
             kill_xp_rate    = 1;
             quest_xp_rate   = 1;
