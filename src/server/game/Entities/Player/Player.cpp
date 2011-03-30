@@ -8764,8 +8764,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                     loot->FillLoot(item->GetEntry(), LootTemplates_Milling, this,true);
                     break;
                 default:
-                    loot->FillLoot(item->GetEntry(), LootTemplates_Item, this,true);
                     loot->generateMoneyLoot(item->GetProto()->MinMoneyLoot,item->GetProto()->MaxMoneyLoot);
+                    loot->FillLoot(item->GetEntry(), LootTemplates_Item, this, true, loot->gold != 0);
                     break;
             }
         }
@@ -15051,7 +15051,7 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     // Custom Random Experience Boost Buff
     if (XP > 0 && getLevel() < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
     {
-        uint8 boost_chance = 10;
+        uint8 boost_chance = 20;
         if (urand(0,99) < boost_chance)
         {
             CastSpell(this, 29175, true);            // Cast Buff
@@ -16510,6 +16510,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
 
+    // load achievements before anything else to prevent multiple gains for the same achievement/criteria on every loading (as loading does call UpdateAchievementCriteria)
+    m_achievementMgr.LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS), holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS));
+
     uint32 money = fields[8].GetUInt32();
     if (money > MAX_MONEY_AMOUNT)
         money = MAX_MONEY_AMOUNT;
@@ -17069,7 +17072,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadDeclinedNames(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
 
-    m_achievementMgr.LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS), holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS));
     m_achievementMgr.CheckAllAchievementCriteria();
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
