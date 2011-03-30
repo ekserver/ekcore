@@ -596,6 +596,41 @@ void Player::UpdateAllCritPercentages()
     UpdateCritPercentage(RANGED_ATTACK);
 }
 
+// Avoidance Diminishing Returns
+// Constants
+#define DR_K_WARRIOR                0.956
+#define DR_K_PALADIN                0.956
+#define DR_K_HUNTER                 0.988
+#define DR_K_ROGUE                  0.988
+#define DR_K_PRIEST                 0.953
+#define DR_K_DEATH_KNIGHT            0.956
+#define DR_K_SHAMAN                 0.988
+#define DR_K_MAGE                   0.953
+#define DR_K_WARLOCK                0.953
+#define DR_K_DRUID                  0.972
+// Parry Caps
+#define DR_PARRY_CAP_WARRIOR        47.003525
+#define DR_PARRY_CAP_PALADIN        47.003525
+#define DR_PARRY_CAP_HUNTER         145.560408
+#define DR_PARRY_CAP_ROGUE          145.560408
+#define DR_PARRY_CAP_PRIEST         0
+#define DR_PARRY_CAP_DEATH_KNIGHT    47.003525
+#define DR_PARRY_CAP_SHAMAN         145.560408
+#define DR_PARRY_CAP_MAGE           0
+#define DR_PARRY_CAP_WARLOCK        0
+#define DR_PARRY_CAP_DRUID          0
+// Dodge Caps
+#define DR_DODGE_CAP_WARRIOR        88.129021
+#define DR_DODGE_CAP_PALADIN        88.129021
+#define DR_DODGE_CAP_HUNTER         145.560408
+#define DR_DODGE_CAP_ROGUE          145.560408
+#define DR_DODGE_CAP_PRIEST         150.375940
+#define DR_DODGE_CAP_DEATH_KNIGHT    88.129021
+#define DR_DODGE_CAP_SHAMAN         145.560408
+#define DR_DODGE_CAP_MAGE           150.375940
+#define DR_DODGE_CAP_WARLOCK        150.375940
+#define DR_DODGE_CAP_DRUID          116.890707
+
 void Player::UpdateParryPercentage()
 {
     // No parry
@@ -606,10 +641,58 @@ void Player::UpdateParryPercentage()
         value  = 5.0f;
         // Modify value from defense skill
         value += (int32(GetDefenseSkillValue()) - int32(GetMaxSkillValueForLevel())) * 0.04f;
-        // Parry from SPELL_AURA_MOD_PARRY_PERCENT aura
-        value += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
         // Parry from rating
         value += GetRatingBonusValue(CR_PARRY);
+        //Diminishing Returns
+        float dr_k = 0.0f;
+        float dr_cap = 0.0f;
+        switch (getClass())
+        {
+            case CLASS_WARRIOR:
+                dr_k = DR_K_WARRIOR;
+                dr_cap = DR_PARRY_CAP_WARRIOR;
+                break;
+            case CLASS_PALADIN:
+                dr_k = DR_K_PALADIN;
+                dr_cap = DR_PARRY_CAP_PALADIN;
+                break;
+            case CLASS_HUNTER:
+                dr_k = DR_K_HUNTER;
+                dr_cap = DR_PARRY_CAP_HUNTER;
+                break;
+            case CLASS_ROGUE:
+                dr_k = DR_K_ROGUE;
+                dr_cap = DR_PARRY_CAP_ROGUE;
+                break;
+            case CLASS_PRIEST:
+                dr_k = DR_K_PRIEST;
+                dr_cap = DR_PARRY_CAP_PRIEST;
+                break;
+            case CLASS_DEATH_KNIGHT:
+                dr_k = DR_K_DEATH_KNIGHT;
+                dr_cap = DR_PARRY_CAP_DEATH_KNIGHT;
+                break;
+            case CLASS_SHAMAN:
+                dr_k = DR_K_SHAMAN;
+                dr_cap = DR_PARRY_CAP_SHAMAN;
+                break;
+            case CLASS_MAGE:
+                dr_k = DR_K_MAGE;
+                dr_cap = DR_PARRY_CAP_MAGE;
+                break;
+            case CLASS_WARLOCK:
+                dr_k = DR_K_WARLOCK;
+                dr_cap = DR_PARRY_CAP_WARLOCK;
+                break;
+            case CLASS_DRUID:
+                dr_k = DR_K_DRUID;
+                dr_cap = DR_PARRY_CAP_DRUID;
+                break;
+        }
+        value = (value * dr_cap) / (value + dr_cap * dr_k);
+        // Parry from SPELL_AURA_MOD_PARRY_PERCENT aura
+        value += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
+
         value = value < 0.0f ? 0.0f : value;
     }
     SetStatFloatValue(PLAYER_PARRY_PERCENTAGE, value);
@@ -621,10 +704,58 @@ void Player::UpdateDodgePercentage()
     float value = GetDodgeFromAgility();
     // Modify value from defense skill
     value += (int32(GetDefenseSkillValue()) - int32(GetMaxSkillValueForLevel())) * 0.04f;
-    // Dodge from SPELL_AURA_MOD_DODGE_PERCENT aura
-    value += GetTotalAuraModifier(SPELL_AURA_MOD_DODGE_PERCENT);
     // Dodge from rating
     value += GetRatingBonusValue(CR_DODGE);
+    //Diminishing Returns
+    float dr_k = 0.0f;
+    float dr_cap = 0.0f;
+    switch (getClass())
+    {
+        case CLASS_WARRIOR:
+            dr_k = DR_K_WARRIOR;
+            dr_cap = DR_DODGE_CAP_WARRIOR;
+            break;
+        case CLASS_PALADIN:
+            dr_k = DR_K_PALADIN;
+            dr_cap = DR_DODGE_CAP_PALADIN;
+            break;
+        case CLASS_HUNTER:
+            dr_k = DR_K_HUNTER;
+            dr_cap = DR_DODGE_CAP_HUNTER;
+            break;
+        case CLASS_ROGUE:
+            dr_k = DR_K_ROGUE;
+            dr_cap = DR_DODGE_CAP_ROGUE;
+            break;
+        case CLASS_PRIEST:
+            dr_k = DR_K_PRIEST;
+            dr_cap = DR_DODGE_CAP_PRIEST;
+            break;
+        case CLASS_DEATH_KNIGHT:
+            dr_k = DR_K_DEATH_KNIGHT;
+            dr_cap = DR_DODGE_CAP_DEATH_KNIGHT;
+            break;
+        case CLASS_SHAMAN:
+            dr_k = DR_K_SHAMAN;
+            dr_cap = DR_DODGE_CAP_SHAMAN;
+            break;
+        case CLASS_MAGE:
+            dr_k = DR_K_MAGE;
+            dr_cap = DR_DODGE_CAP_MAGE;
+            break;
+        case CLASS_WARLOCK:
+            dr_k = DR_K_WARLOCK;
+            dr_cap = DR_DODGE_CAP_WARLOCK;
+            break;
+        case CLASS_DRUID:
+            dr_k = DR_K_DRUID;
+            dr_cap = DR_DODGE_CAP_DRUID;
+            break;
+    }
+    value = (value * dr_cap) / (value + dr_cap * dr_k);
+    // Dodge from SPELL_AURA_MOD_DODGE_PERCENT aura
+    value += GetTotalAuraModifier(SPELL_AURA_MOD_DODGE_PERCENT);
+
     value = value < 0.0f ? 0.0f : value;
     SetStatFloatValue(PLAYER_DODGE_PERCENTAGE, value);
 }
