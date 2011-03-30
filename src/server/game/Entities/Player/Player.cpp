@@ -395,7 +395,7 @@ bool Player::EpBooster(uint8 type) // 1 = xp, 2 = quest, 3 = explore, 4 = rest
     switch(type)
     {   
         default:
-            return 1;
+            return true ;
             break;
         case 1:
             return xp;
