@@ -382,15 +382,15 @@ void TradeData::SetAccepted(bool state, bool crosssend /*= false*/)
     }
 }
 
-bool Player::EpBooster(Player* player, uint8 type) // 1 = xp, 2 = quest, 3 = explore, 4 = rest
+bool Player::EpBooster(uint8 type) // 1 = xp, 2 = quest, 3 = explore, 4 = rest
 {
+    Player* player;
     //    = CharacterBoni
     // p_ = PremiumBoni
-    // f_ = FactionBoni
-    uint32 xp      = player->kill_xp_rate * player->p_kill_xp_rate * player->f_kill_xp_rate;
-    uint32 quest   = player->quest_xp_rate * player->p_quest_xp_rate * player->f_kill_xp_rate;
-    uint32 explore = player->explore_xp_rate * player->p_explore_xp_rate * player->f_explore_xp_rate;
-    uint32 rest    = player->rest_xp_rate * player->p_rest_xp_rate * player->f_rest_xp_rate;
+    uint32 xp      = player->kill_xp_rate * player->p_kill_xp_rate;
+    uint32 quest   = player->quest_xp_rate * player->p_quest_xp_rate;
+    uint32 explore = player->explore_xp_rate * player->p_explore_xp_rate;
+    uint32 rest    = player->rest_xp_rate * player->p_rest_xp_rate;
     
     switch(type)
     {   
@@ -532,8 +532,7 @@ inline void KillRewarder::_RewardXP(Player* player, float rate)
             AddPctN(xp, (*i)->GetAmount());
 
         // 4.2.2.2. Apply rates from character_rates and premium_rates
-        xp *= player->kill_xp_rate;
-        xp *= player->p_kill_xp_rate;
+        xp *= player->EpBooster(1);
 
         // 4.2.3. Give XP to player.
         player->GiveXP(xp, _victim, _groupRate);
@@ -6864,7 +6863,7 @@ void Player::CheckAreaExploreAndOutdoor()
                 uint32 XP = 0;
                 if (diff < -5)
                 {
-                    XP = uint32(sObjectMgr->GetBaseXP(getLevel()+5)*sWorld->getRate(RATE_XP_EXPLORE)*explore_xp_rate*p_explore_xp_rate);
+                    XP = uint32(sObjectMgr->GetBaseXP(getLevel()+5)*sWorld->getRate(RATE_XP_EXPLORE)*EpBooster(3));
                 }
                 else if (diff > 5)
                 {
@@ -6874,11 +6873,11 @@ void Player::CheckAreaExploreAndOutdoor()
                     else if (exploration_percent < 0)
                         exploration_percent = 0;
 
-                    XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*exploration_percent/100*sWorld->getRate(RATE_XP_EXPLORE)*explore_xp_rate*p_explore_xp_rate);
+                    XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*exploration_percent/100*sWorld->getRate(RATE_XP_EXPLORE)*EpBooster(3));
                 }
                 else
                 {
-                    XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*sWorld->getRate(RATE_XP_EXPLORE)*explore_xp_rate*p_explore_xp_rate);
+                    XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*sWorld->getRate(RATE_XP_EXPLORE)*EpBooster(3));
                 }
 
                 GiveXP(XP, NULL);
@@ -14965,7 +14964,7 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     bool rewarded = (rewItr != m_RewardedQuests.end());
 
     // Not give XP in case already completed once repeatable quest
-    uint32 XP = rewarded ? 0 : uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST)*quest_xp_rate*p_quest_xp_rate);
+    uint32 XP = rewarded ? 0 : uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST)*EpBooster(2));
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
     Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
@@ -17042,7 +17041,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
         float bubble1 = 0.125f;
         float bubble = fields[23].GetUInt32() > 0
-            ? bubble1*sWorld->getRate(RATE_REST_OFFLINE_IN_TAVERN_OR_CITY)*rest_xp_rate*p_rest_xp_rate
+            ? bubble1*sWorld->getRate(RATE_REST_OFFLINE_IN_TAVERN_OR_CITY)*EpBooster(4)
             : bubble0*sWorld->getRate(RATE_REST_OFFLINE_IN_WILDERNESS);
 
         SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
