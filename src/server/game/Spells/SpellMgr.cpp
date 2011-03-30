@@ -4171,8 +4171,8 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 6;
             spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOD_XP_PCT;
             spellInfo->EffectApplyAuraName[1] = SPELL_AURA_MOD_XP_QUEST_PCT;
-            spellInfo->EffectBasePoints[0] = 5;
-            spellInfo->EffectBasePoints[1] = 5;
+            spellInfo->EffectBasePoints[0] = 10;
+            spellInfo->EffectBasePoints[1] = 10;
             spellInfo->EffectImplicitTargetA[0] = 1;
             spellInfo->EffectImplicitTargetA[1] = 1;
             spellInfo->EffectImplicitTargetB[0] = 0;
