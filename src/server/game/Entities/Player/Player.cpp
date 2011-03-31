@@ -382,7 +382,7 @@ void TradeData::SetAccepted(bool state, bool crosssend /*= false*/)
     }
 }
 
-bool Player::EpBooster(uint8 type) // 1 = xp, 2 = quest, 3 = explore, 4 = rest
+uint32 Player::EpBooster(uint32 type) // 1 = xp, 2 = quest, 3 = explore, 4 = rest
 {
     //    = CharacterBoni
     // p_ = PremiumBoni
