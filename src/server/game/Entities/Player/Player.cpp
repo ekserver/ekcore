@@ -384,13 +384,12 @@ void TradeData::SetAccepted(bool state, bool crosssend /*= false*/)
 
 bool Player::EpBooster(uint8 type) // 1 = xp, 2 = quest, 3 = explore, 4 = rest
 {
-    Player* player;
     //    = CharacterBoni
     // p_ = PremiumBoni
-    uint32 xp      = player->kill_xp_rate * player->p_kill_xp_rate;
-    uint32 quest   = player->quest_xp_rate * player->p_quest_xp_rate;
-    uint32 explore = player->explore_xp_rate * player->p_explore_xp_rate;
-    uint32 rest    = player->rest_xp_rate * player->p_rest_xp_rate;
+    uint32 xp      = kill_xp_rate * p_kill_xp_rate;
+    uint32 quest   = quest_xp_rate * p_quest_xp_rate;
+    uint32 explore = explore_xp_rate * p_explore_xp_rate;
+    uint32 rest    = rest_xp_rate * p_rest_xp_rate;
     
     switch(type)
     {   
