@@ -16,6 +16,7 @@ if( WITH_SQL )
       base
       create
       anticheat
+	  DalaranSewers
     DESTINATION
       shared/trinity/sql
   )
