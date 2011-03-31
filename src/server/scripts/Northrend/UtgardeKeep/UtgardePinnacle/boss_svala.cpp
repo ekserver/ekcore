@@ -30,7 +30,7 @@ enum Spells
     SPELL_RITUAL_STRIKE_TRIGGER              = 48331,
     SPELL_ARTHAS_VISUAL                      = 54134,
 };
-//not in db
+
 enum Yells
 {
     SAY_DIALOG_WITH_ARTHAS_1                 = -1575000,
@@ -49,6 +49,7 @@ enum Yells
     SAY_SACRIFICE_PLAYER_5                   = -1575013,
     SAY_DEATH                                = -1575014
 };
+
 enum Creatures
 {
     CREATURE_ARTHAS                          = 29280, // Image of Arthas
@@ -57,35 +58,42 @@ enum Creatures
     CREATURE_RITUAL_CHANNELER                = 27281,
     CREATURE_SCOURGE_HULK                    = 26555,
 };
+
 enum ChannelerSpells
 {
     //ritual channeler's spells
     SPELL_PARALYZE                           = 48278,
     SPELL_SHADOWS_IN_THE_DARK                = 59407
 };
+
 enum Misc
 {
     DATA_SVALA_DISPLAY_ID                    = 25944,
 };
+
 enum IntroPhase
 {
     IDLE,
     INTRO,
     FINISHED
 };
+
 enum CombatPhase
 {
     NORMAL,
     SACRIFICING
 };
+
 enum DisplayIds
 {
     DISPLAY_SVALA_WITH_SWORD                = 26096,
 };
+
 enum Achievements
 {
     ACHIEV_INCREDIBLE_HULK                   = 2043
 };
+
 static Position RitualChannelerPos[]=
 {
     {296.42f, -355.01f, 90.94f},

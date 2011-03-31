@@ -20,7 +20,6 @@ SDName: Boss_Skadi
 SDAuthor: LordVanMartin, JohnHoliver
 SD%Complete: 90%
 SDComment: <Known Bugs>
-               After Unmount() he appears to still be flying even with SetFlying(false)
            </Known Bugs>
 SDCategory: Utgarde Pinnacle
 Script Data End */
@@ -31,16 +30,18 @@ Script Data End */
 //Yell
 enum eYells
 {
-    SAY_AGGRO                           = -1575004,
-    SAY_KILL_1                          = -1575005,
-    SAY_KILL_2                          = -1575006,
-    EMOTE_RANGE                         = -1575007, //Skadi
-    SAY_DEATH                           = -1575008,
-    SAY_DRAKE_DEATH                     = -1575009,
-    EMOTE_BREATH                        = -1575010, //Grauf
-    SAY_DRAKE_BREATH_1                  = -1575011,
-    SAY_DRAKE_BREATH_2                  = -1575012,
-    SAY_DRAKE_BREATH_3                  = -1575013,
+    SAY_AGGRO                           = -1575019,
+    SAY_DRAKE_BREATH_1                  = -1575020,
+    SAY_DRAKE_BREATH_2                  = -1575021,
+    SAY_DRAKE_BREATH_3                  = -1575022,
+    SAY_DRAKE_HARPOON_1                 = -1575023,
+    SAY_DRAKE_HARPOON_2                 = -1575024,
+    SAY_KILL_1                          = -1575025,
+    SAY_KILL_2                          = -1575026,
+    SAY_KILL_3                          = -1575027,
+    SAY_DEATH                           = -1575028,
+    SAY_DRAKE_DEATH                     = -1575029,
+    EMOTE_RANGE                         = -1575030,
 };
 
 static Position SpawnLoc = {468.931f, -513.555f, 104.723f, 0};
@@ -140,7 +141,6 @@ enum eSide
 
 enum eSpells
 {
-    //Skadi Spells
     SPELL_CRUSH                 = 50234,
     H_SPELL_CRUSH               = 59330,
     SPELL_POISONED_SPEAR        = 50255,
@@ -169,7 +169,6 @@ enum eAchievments
 {
     ACHIEV_TIMED_START_EVENT       = 17726,
     ACHIEV_MY_GIRL_LOVES_TO_SKADI  = 2156,
-
     // needed harpoon hits
     MAX_HIT_COUNT                  = 5
 };
@@ -311,14 +310,15 @@ public:
         {
             if (spell->Id == SPELL_HARPOON_DAMAGE && Phase == FLYING)
             {
+                DoScriptText(RAND(SAY_DRAKE_HARPOON_1, SAY_DRAKE_HARPOON_2), me);
                 m_uiSpellHitCount++;
                 if (m_uiSpellHitCount >= MAX_HIT_COUNT)
                 {
                     Phase = SKADI;
-                    me->SetFlying(false);
-                    //me->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
                     me->Unmount();
-                    if(Creature* pGrauf = me->SummonCreature(CREATURE_GRAUF, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3*IN_MILLISECONDS))
+                    me->SetFlying(false);
+                    me->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
+                    if (Creature* pGrauf = me->SummonCreature(CREATURE_GRAUF, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3*IN_MILLISECONDS))
                     {
                         pGrauf->GetMotionMaster()->MoveFall(0);
                         pGrauf->HandleEmoteCommand(EMOTE_ONESHOT_FLYDEATH);
@@ -424,8 +424,8 @@ public:
                                         break;
                                 }
                                 me->GetMotionMaster()->MovePoint(0, Location[m_LocNr].GetPositionX(), Location[m_LocNr].GetPositionY(), Location[m_LocNr].GetPositionZ());
-                                DoScriptText(RAND(SAY_DRAKE_BREATH_1,SAY_DRAKE_BREATH_2), me);
-                                DoScriptText(EMOTE_BREATH, me);
+                                DoScriptText(RAND(SAY_DRAKE_BREATH_1, SAY_DRAKE_BREATH_2, SAY_DRAKE_BREATH_3), me);
+                                //DoScriptText(EMOTE_BREATH, me);
                                 m_uiMovementTimer = 2500;
                                 m_uiSpawnTriggerTimer = 3000;
                                 m_LocCount = m_Start;
@@ -438,7 +438,6 @@ public:
                                 // if there are harpoon hits at this point, disable achievement
                                 if (m_uiSpellHitCount)
                                     m_bAchiev = false;
-
                                 break;
                             case 5:
                                 me->GetMotionMaster()->MovePoint(0, Location[72].GetPositionX(), Location[72].GetPositionY(), Location[72].GetPositionZ());
@@ -549,7 +548,7 @@ public:
 
         void KilledUnit(Unit * /*victim*/)
         {
-            DoScriptText(RAND(SAY_KILL_1,SAY_KILL_2), me);
+            DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2, SAY_KILL_3), me);
         }
 
         void SpawnMobs()

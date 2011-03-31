@@ -43,7 +43,6 @@ enum OrbSpells
     SPELL_ORB_CHANNEL                           = 48048
 };
 
-//not in db
 enum Yells
 {
     SAY_AGGRO                                = -1575015,
