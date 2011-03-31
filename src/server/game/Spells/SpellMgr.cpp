@@ -3603,6 +3603,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectTriggerSpell[0] = 36325; // They Must Burn Bomb Drop (DND)
             count++;
             break;
+        case 32645: // Envenom (Rank 1)
+        case 32684: // Envenom (Rank 2)
+        case 57992: // Envenom (Rank 3)
+        case 57993: // Envenom (Rank 4)
+            spellInfo->Dispel = 0;
+            break;
         case 49838: // Stop Time
         case 50526: // Wandering Plague
         case 52916: // Honor Among Thieves
