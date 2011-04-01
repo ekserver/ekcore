@@ -1447,15 +1447,25 @@ void Player::HandleDrowning(uint32 time_diff)
                 uint32 damage = urand(600, 700);
                 if (m_MirrorTimerFlags&UNDERWATER_INLAVA)
                     EnvironmentalDamage(DAMAGE_LAVA, damage);
-                // need to skip Slime damage in Undercity,
-                // maybe someone can find better way to handle environmental damage
-                else if (m_zoneUpdateId != 1497 && m_zoneUpdateId != 3968)
-                    EnvironmentalDamage(DAMAGE_SLIME, damage);
+                else
+                {
+                    // need to skip Slime damage in Undercity,
+                    // maybe someone can find better way to handle environmental damage
+                    if (m_zoneUpdateId != 1497 && m_zoneUpdateId != 3968)
+                        EnvironmentalDamage(DAMAGE_SLIME, damage);
+                        
+                    if (m_mapId == 533 && !HasAura(28801))
+                        CastSpell(this,28801,true);
+                }
             }
         }
     }
     else
+    {
         m_MirrorTimer[FIRE_TIMER] = DISABLED_MIRROR_TIMER;
+        if(m_mapId == 533)
+            RemoveAurasDueToSpell(28801);
+    }
 
     // Recheck timers flag
     m_MirrorTimerFlags&=~UNDERWATER_EXIST_TIMERS;
@@ -5508,7 +5518,7 @@ void Player::RepopAtGraveyard()
     if (Battleground *bg = GetBattleground())
         ClosestGrave = bg->GetClosestGraveYard(this);
     else
-        ClosestGrave = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
+        ClosestGrave = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam(), getClass());
 
     // stop countdown until repop
     m_deathTimer = 0;
@@ -7373,6 +7383,16 @@ uint32 Player::GetLevelFromDB(uint64 guid)
     return level;
 }
 
+// Need to be implementet in new Anticheat
+//bool Player::HasSpeedEffectAuras()
+//{
+//    if(HasAura(1953,GetGUID()))
+//        return true;
+//    if(HasAura(1066,GetGUID()))
+//        return true;
+//    return false;
+//}
+
 void Player::UpdateArea(uint32 newArea)
 {
     // FFA_PVP flags are area and not zone id dependent
@@ -7387,7 +7407,16 @@ void Player::UpdateArea(uint32 newArea)
 
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
     pvpInfo.inNoPvPArea = false;
-    if (area && area->IsSanctuary())    // in sanctuary
+    // no-fly zones
+    if (area)
+    {
+        // expand the 58600 to SpellMgr::GetNoFlightSpellForZone(uint32 zoneId) in case more no-fly zones are added
+        if ((area->flags & AREA_FLAG_NO_FLY_ZONE || area->ID == 4601) && HasFlyingAura() && !HasAura(58600))
+            CastSpell(this, 58600, true);
+        else if (HasAura(58600) && !(area->flags & AREA_FLAG_NO_FLY_ZONE || area->ID == 4601))
+            RemoveAurasDueToSpell(58600);
+    }
+    else if (area && area->IsSanctuary())    // in sanctuary
     {
         SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
         pvpInfo.inNoPvPArea = true;
@@ -7436,14 +7465,14 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     switch (zone->team)
     {
         case AREATEAM_ALLY:
-            pvpInfo.inHostileArea = GetTeam() != ALLIANCE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
+            pvpInfo.inHostileArea = GetTeam() != ALLIANCE && !isInFlight(); /*&& (World.IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL)*/;
             break;
         case AREATEAM_HORDE:
-            pvpInfo.inHostileArea = GetTeam() != HORDE && (sWorld->IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL);
+            pvpInfo.inHostileArea = GetTeam() != HORDE && !isInFlight(); /*&& (sWorld.IsPvPRealm() || zone->flags & AREA_FLAG_CAPITAL)*/;
             break;
         case AREATEAM_NONE:
             // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
-            pvpInfo.inHostileArea = sWorld->IsPvPRealm() || InBattleground() || zone->flags & AREA_FLAG_OUTDOOR_PVP;
+            pvpInfo.inHostileArea = sWorld->IsPvPRealm() || InBattleground() || (zone->flags & AREA_FLAG_OUTDOOR_PVP && !isInFlight());
             break;
         default:                                            // 6 in fact
             pvpInfo.inHostileArea = false;
@@ -11769,6 +11798,9 @@ uint8 Player::CanUseItem(Item *pItem, bool not_loading) const
     if (pItem)
     {
         sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "STORAGE:  CanUseItem item = %u", pItem->GetEntry());
+
+        if (GetSession() && GetSession()->GetSecurity() > SEC_PLAYER)
+            return EQUIP_ERR_OK;
 
         if (!isAlive() && not_loading)
             return EQUIP_ERR_YOU_ARE_DEAD;
@@ -21003,7 +21035,7 @@ void Player::SetBattlegroundEntryPoint()
         // If map is dungeon find linked graveyard
         if (GetMap()->IsDungeon())
         {
-            if (const WorldSafeLocsEntry* entry = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam()))
+            if (const WorldSafeLocsEntry* entry = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam(), getClass()))
             {
                 m_bgData.joinPos = WorldLocation(entry->map_id, entry->x, entry->y, entry->z, 0.0f);
                 return;
@@ -23594,6 +23626,13 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
 void Player::CompletedAchievement(AchievementEntry const* entry, bool ignoreGMAllowAchievementConfig)
 {
     GetAchievementMgr().CompletedAchievement(entry, ignoreGMAllowAchievementConfig);
+}
+
+bool Player::HasAchieved(uint32 entry)
+{
+    if(AchievementEntry const *achievement = sAchievementStore.LookupEntry(entry))
+        return GetAchievementMgr().HasAchieved(achievement);
+    return false;
 }
 
 void Player::LearnTalent(uint32 talentId, uint32 talentRank)

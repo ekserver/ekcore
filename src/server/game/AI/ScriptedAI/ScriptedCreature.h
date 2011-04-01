@@ -15,6 +15,8 @@
 
 #define SCRIPT_CAST_TYPE dynamic_cast
 
+#define MAX_AGGRO_PULSE_TIMER            5000
+
 #define CAST_PLR(a)     (SCRIPT_CAST_TYPE<Player*>(a))
 #define CAST_CRE(a)     (SCRIPT_CAST_TYPE<Creature*>(a))
 #define CAST_SUM(a)     (SCRIPT_CAST_TYPE<TempSummon*>(a))
@@ -232,6 +234,12 @@ struct ScriptedAI : public CreatureAI
         return heroic25;
     }
 
+    void SetImmuneToPushPullEffects(bool set)
+    {
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, set);
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, set);
+    }
+
     private:
         Difficulty _difficulty;
         uint32 _evadeCheckCooldown;
@@ -254,6 +262,9 @@ class BossAI : public ScriptedAI
         BossAI(Creature* creature, uint32 bossId);
         virtual ~BossAI() {}
 
+        uint32 inFightAggroCheck_Timer;
+        EventMap events;
+        SummonList summons;
         InstanceScript* const instance;
         BossBoundaryMap const* GetBoundary() const { return _boundary; }
 
@@ -272,6 +283,7 @@ class BossAI : public ScriptedAI
         void _EnterCombat();
         void _JustDied();
         void _JustReachedHome() { me->setActive(false); }
+        void _DoAggroPulse(const uint32 diff);
 
         bool CheckInRoom()
         {
@@ -291,6 +303,7 @@ class BossAI : public ScriptedAI
     private:
         BossBoundaryMap const* const _boundary;
         const uint32 _bossId;
+        void SetImmuneToDeathGrip(bool set = true);
 };
 
 // SD2 grid searchers.

@@ -149,7 +149,9 @@ class InstanceScript : public ZoneScript
         virtual bool IsEncounterInProgress() const;
 
         //Called when a player successfully enters the instance.
-        virtual void OnPlayerEnter(Player* /*player*/) {}
+        virtual void OnPlayerEnter(Player *) {}
+        //Called when a player killed in instance.
+        virtual void OnPlayerKilled(Player *) {}
 
         //Handle open / close objects
         //use HandleGameObject(0, boolen, GO); in OnObjectCreate in instance scripts

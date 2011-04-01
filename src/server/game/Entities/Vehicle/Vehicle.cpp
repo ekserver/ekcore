@@ -65,6 +65,8 @@ Vehicle::Vehicle(Unit *unit, VehicleEntry const *vehInfo, uint32 creatureEntry)
             me->ApplySpellImmune(0, IMMUNITY_ID, 13810, true); // Frost Trap
             me->ApplySpellImmune(0, IMMUNITY_ID, 55741, true); // Desecration Rank 1
             me->ApplySpellImmune(0, IMMUNITY_ID, 68766, true); // Desecration Rank 2
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_SCHOOL_ABSORB, true);
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
             break;
         default:
             break;

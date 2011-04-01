@@ -1495,8 +1495,16 @@ void Creature::setDeathState(DeathState s)
 {
     if ((s == JUST_DIED && !m_isDeadByDefault)||(s == JUST_ALIVED && m_isDeadByDefault))
     {
-        m_corpseRemoveTime = time(NULL) + m_corpseDelay;
-        m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
+        if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_RESPAWN_IGNORE)
+        {
+            m_corpseRemoveTime = time(NULL) + 10;
+            m_respawnTime = time(NULL) + m_respawnDelay + 10;
+        }
+        else
+        {
+            m_corpseRemoveTime = time(NULL) + m_corpseDelay;
+            m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
+        }
 
         // always save boss respawn time at death to prevent crash cheating
         if (sWorld->getBoolConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || isWorldBoss())
@@ -1603,6 +1611,14 @@ void Creature::Respawn(bool force)
 
         if (m_originalEntry != GetEntry())
             UpdateEntry(m_originalEntry);
+        // Need Check if needed
+        //if (!m_isDeadByDefault)
+        //    if (isTotem() || isTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
+        //        SetReactState(REACT_PASSIVE);
+        //    /*else if (isCivilian())
+        //        SetReactState(REACT_DEFENSIVE);*/
+        //    else
+        //        SetReactState(REACT_AGGRESSIVE);
 
         CreatureInfo const *cinfo = GetCreatureInfo();
         SelectLevel(cinfo);
