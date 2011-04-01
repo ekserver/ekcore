@@ -296,10 +296,6 @@ class BossAI : public ScriptedAI
 
         bool CheckBoundary(Unit* who);
         void TeleportCheaters();
-
-        EventMap events;
-        SummonList summons;
-
     private:
         BossBoundaryMap const* const _boundary;
         const uint32 _bossId;

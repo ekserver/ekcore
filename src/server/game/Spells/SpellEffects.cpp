@@ -7206,7 +7206,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
         if (ItemPrototype const *proto = m_CastItem->GetProto())
             if (proto->RequiredSkill == SKILL_ENGINERING)
                 if (uint16 skill202 = caster->ToPlayer()->GetSkillValue(SKILL_ENGINERING))
-                    level = std::max(skill202/5, caster->getLevel());
+                    level = std::max(uint8(skill202/5), caster->getLevel());
 
     //float radius = GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
     float radius = 5.0f;

@@ -382,7 +382,7 @@ void TradeData::SetAccepted(bool state, bool crosssend /*= false*/)
     }
 }
 
-uint32 Player::EpBooster(uint32 type) // 1 = xp, 2 = quest, 3 = explore, 4 = rest
+uint32 Player::EpBooster(uint32 xp_type) // 1 = xp, 2 = quest, 3 = explore, 4 = rest
 {
     //    = CharacterBoni
     // p_ = PremiumBoni
@@ -391,10 +391,10 @@ uint32 Player::EpBooster(uint32 type) // 1 = xp, 2 = quest, 3 = explore, 4 = res
     uint32 explore = explore_xp_rate * p_explore_xp_rate;
     uint32 rest    = rest_xp_rate * p_rest_xp_rate;
     
-    switch(type)
+    switch(xp_type)
     {   
         default:
-            return true ;
+            return 1 ;
             break;
         case 1:
             return xp;

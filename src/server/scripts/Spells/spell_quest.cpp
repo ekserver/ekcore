@@ -818,8 +818,8 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_q10041_q10040_who_are_they_SpellScript();
-    }
-}
+    };
+};
 
 // http://www.wowhead.com/quest=11307 Field Test
 // 43385 Plagued Vrykul Dummy
