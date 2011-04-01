@@ -1473,6 +1473,14 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                 // Remove the immunity shield marker on Forbearance removal if AW marker is not present
                 if (GetId() == 25771 && target->HasAura(61988) && !target->HasAura(61987))
                     target->RemoveAura(61988);
+                // Divine Storm Helper (SERVERSIDE)
+                else if (GetId() == 99999)
+                {
+                    int32 damage = aurApp->GetBase()->GetEffect(0)->GetAmount();
+                    if (!damage)
+                        break;
+                    caster->CastCustomSpell(target, 54171, &damage, NULL, NULL, true);
+                }
                 break;
             case SPELLFAMILY_DEATHKNIGHT:
                 // Blood of the North
@@ -1506,6 +1514,27 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     else
                         target->SetReducedThreatPercent(0,0);
                     break;
+            }
+            break;
+        case SPELLFAMILY_DRUID:
+            // Enrage - armor reduction implemented here
+            if (GetSpellProto()->SpellFamilyFlags[0] & 0x80000)
+            {
+                if (AuraEffect * auraEff = target->GetAuraEffectOfRankedSpell(1178, 0))
+                {
+                    uint32 armorMod;
+                    switch (auraEff->GetId())
+                    {
+                        case 1178: armorMod = 27; break;
+                        case 9635: armorMod = 16; break;
+                    }
+                    armorMod = auraEff->GetAmount() / 100 * armorMod;
+                    if (apply)
+                        auraEff->ChangeAmount(auraEff->GetAmount() - armorMod);
+                    else
+                        auraEff->ChangeAmount(auraEff->GetAmount() + armorMod);
+                }
+                break;
             }
             break;
         case SPELLFAMILY_ROGUE:
