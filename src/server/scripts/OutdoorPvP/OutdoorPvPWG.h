@@ -32,9 +32,9 @@
 
 const uint16 WintergraspFaction[3] = {1802, 1801, 35};
 const uint32 WG_MARK_OF_HONOR = 43589;
-const uint16 VehNumWorldState[2] = {3680,3490};
-const uint16 MaxVehNumWorldState[2] = {3681,3491};
-const uint16 ClockWorldState[2] = {3781,4354};
+const uint32 VehNumWorldState[2] = {3680,3490};
+const uint32 MaxVehNumWorldState[2] = {3681,3491};
+const uint32 ClockWorldState[2] = {3781,4354};
 const uint8 CapturePointArtKit[3] = {2, 1, 21};
 char const *fmtstring(char const *format, ...);
 const Team TeamId2Team[3] = {ALLIANCE, HORDE, TEAM_OTHER};
@@ -137,7 +137,7 @@ enum OutdoorPvPWGDamageState
     DAMAGE_DESTROYED,
 };
 
-typedef uint16 TeamPair[2];
+typedef uint32 TeamPair[2];
 
 enum OutdoorPvPWGQuest
 {
@@ -206,7 +206,7 @@ struct BuildingState
     {
         team = t;
         if(graveTeam)
-            if (uint16 newTeam = TeamId2Team[t])
+            if (uint32 newTeam = TeamId2Team[t])
                 *graveTeam = newTeam;
     }
 };
@@ -226,7 +226,7 @@ class OutdoorPvPWG : public OutdoorPvP
     public:
         OutdoorPvPWG();
         bool SetupOutdoorPvP();
-        uint16 TeamIDsound;
+        uint32 TeamIDsound;
         bool MaingateDestroyed;
         uint32 GetCreatureEntry(uint32 guidlow, const CreatureData *data);
         void OnCreatureCreate(Creature *creature);
@@ -291,7 +291,7 @@ class OutdoorPvPWG : public OutdoorPvP
 
         bool m_wartime;
         bool m_changeDefender;
-        uint8 m_clock[2];
+        uint32 m_clock[2];
         uint8 m_workshopCount[2];
         uint8 m_towerDestroyedCount[2];
         uint8 m_towerDamagedCount[2];
