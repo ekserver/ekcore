@@ -30,11 +30,11 @@
 #define POS_X_CENTER             5100
 #define MAX_VEHICLE_PER_WORKSHOP    4
 
-const uint32 WintergraspFaction[3] = {1802, 1801, 35};
+const uint16 WintergraspFaction[3] = {1802, 1801, 35};
 const uint32 WG_MARK_OF_HONOR = 43589;
-const uint32 VehNumWorldState[2] = {3680,3490};
-const uint32 MaxVehNumWorldState[2] = {3681,3491};
-const uint32 ClockWorldState[2] = {3781,4354};
+const uint16 VehNumWorldState[2] = {3680,3490};
+const uint16 MaxVehNumWorldState[2] = {3681,3491};
+const uint16 ClockWorldState[2] = {3781,4354};
 const uint8 CapturePointArtKit[3] = {2, 1, 21};
 char const *fmtstring(char const *format, ...);
 const Team TeamId2Team[3] = {ALLIANCE, HORDE, TEAM_OTHER};
@@ -137,7 +137,7 @@ enum OutdoorPvPWGDamageState
     DAMAGE_DESTROYED,
 };
 
-typedef uint32 TeamPair[2];
+typedef uint16 TeamPair[2];
 
 enum OutdoorPvPWGQuest
 {
@@ -206,7 +206,7 @@ struct BuildingState
     {
         team = t;
         if(graveTeam)
-            if (uint32 newTeam = TeamId2Team[t])
+            if (uint16 newTeam = TeamId2Team[t])
                 *graveTeam = newTeam;
     }
 };
@@ -226,7 +226,7 @@ class OutdoorPvPWG : public OutdoorPvP
     public:
         OutdoorPvPWG();
         bool SetupOutdoorPvP();
-        int TeamIDsound;
+        uint16 TeamIDsound;
         bool MaingateDestroyed;
         uint32 GetCreatureEntry(uint32 guidlow, const CreatureData *data);
         void OnCreatureCreate(Creature *creature);
@@ -275,7 +275,7 @@ class OutdoorPvPWG : public OutdoorPvP
         uint32 GetReviveQueueSize() const { return m_ReviveQueue.size(); }
         // BG end
         TeamId m_defender;
-        int32 m_tenacityStack;
+        int16 m_tenacityStack;
 
         BuildingStateMap m_buildingStates;
         BuildingState *m_gate;
@@ -291,10 +291,10 @@ class OutdoorPvPWG : public OutdoorPvP
 
         bool m_wartime;
         bool m_changeDefender;
-        uint32 m_clock[2];
-        uint32 m_workshopCount[2];
-        uint32 m_towerDestroyedCount[2];
-        uint32 m_towerDamagedCount[2];
+        uint8 m_clock[2];
+        uint8 m_workshopCount[2];
+        uint8 m_towerDestroyedCount[2];
+        uint8 m_towerDamagedCount[2];
         uint32 m_WSSaveTimer;
 
         OPvPCapturePointWG *GetWorkshop(uint32 lowguid) const;
@@ -315,7 +315,7 @@ class OutdoorPvPWG : public OutdoorPvP
 
         void RebuildAllBuildings();
         void RemoveOfflinePlayerWGAuras();
-        void RewardMarkOfHonor(Player *player, uint32 count);
+        void RewardMarkOfHonor(Player *player, uint8 count);
         void MoveQuestGiver(uint32 guid);
         void LoadQuestGiverMap(uint32 guid, Position posHorde, Position posAlli);
         bool UpdateQuestGiverPosition(uint32 guid, Creature *creature);

@@ -87,7 +87,7 @@ bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint3
 
 enum eWintergraspBattleMage
 {
-    SPELL_PORTAL_VISUAL        = 60223,
+    SPELL_PORTAL_VISUAL      = 60223,
     GO_WINTERGRASP_PORTAL    = 193772
 };
 
@@ -209,7 +209,9 @@ public:
                                     uiPortalTimer = 1000;
                                     break;
                                 }
-                            }else uiPortalTimer -= diff;
+                            }
+                            else
+                                uiPortalTimer -= diff;
                         }
                         else
                         {

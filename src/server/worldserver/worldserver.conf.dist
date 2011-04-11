@@ -2824,12 +2824,6 @@ LevelReq.Mail = 1
 #       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
 #       Default: 750
 #
-#   OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding
-#       Defines the amount of honor points that should be given to the
-#        team for damaged buildings after the battle.
-#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
-#       Default: 750
-#
 #   OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding
 #      Defines the amount of honor points that should be given to the
 #        team for intact buildings after the battle.
@@ -2860,7 +2854,6 @@ OutdoorPvP.Wintergrasp.CustomHonorBattleWin = 3000
 OutdoorPvP.Wintergrasp.CustomHonorBattleLose = 1250
 OutdoorPvP.Wintergrasp.CustomHonorDamageTower = 750
 OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower = 750
-OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding = 750
 OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding = 1500
 OutdoorPvP.Wintergrasp.Antifarm.Enable = 0
 OutdoorPvP.Wintergrasp.Antifarm.Atk = 5
