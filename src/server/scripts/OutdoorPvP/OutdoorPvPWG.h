@@ -66,7 +66,7 @@ enum OutdoorPvPWGSpell
     SPELL_VICTORY_AURA                           = 60044,
 };
 
-const uint16 GameEventWintergraspDefender[2] = {50, 51};
+const uint8 GameEventWintergraspDefender[2] = {50, 51};
 
 enum OutdoorPvP_WG_Sounds
 {

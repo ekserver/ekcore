@@ -1453,13 +1453,13 @@ void OutdoorPvPWG::UpdateClock()
     else
         UpdateClockDigit(timer, 0, 10);
 
-    //Announce in all world, comment it if you don't like/need it
+    // Announce in all world, comment it if you don't like/need it
     // Announce 30 minutes left
-    if ((m_timer>1800000) && (m_timer<1802000) && (m_wartime==false))
+    if ((m_timer > 1800000) && (m_timer < 1802000) && !isWarTime())
         sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_30);
 
     // Announce 10 minutes left
-    if ((m_timer>600000) && (m_timer<602000) && (m_wartime==false))
+    if ((m_timer > 600000) && (m_timer < 602000) && !isWarTime())
         sWorld->SendWorldText(LANG_BG_WG_WORLD_ANNOUNCE_10);
 }
 
@@ -1987,11 +1987,8 @@ void OutdoorPvPWG::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
 {
     m_ReviveQueue[npc_guid].push_back(player_guid);
 
-    Player *plr = sObjectMgr->GetPlayer(player_guid);
-    if (!plr)
-        return;
-
-    plr->CastSpell(plr, SPELL_WAITING_FOR_RESURRECT, true);
+    if (Player *plr = sObjectMgr->GetPlayer(player_guid))
+        plr->CastSpell(plr, SPELL_WAITING_FOR_RESURRECT, true);
 }
 
 void OutdoorPvPWG::RemovePlayerFromResurrectQueue(uint64 player_guid)
