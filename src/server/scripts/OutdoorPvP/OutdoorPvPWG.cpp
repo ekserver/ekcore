@@ -1377,7 +1377,7 @@ void OutdoorPvPWG::UpdateTenacityStack()
     TeamId team = TEAM_NEUTRAL;
     uint16 allianceNum = 0;
     uint16 hordeNum = 0;
-    int16 newStack = 0;
+    int8 newStack = 0;
 
     for (PlayerSet::iterator itr = m_players[TEAM_ALLIANCE].begin(); itr != m_players[TEAM_ALLIANCE].end(); ++itr)
         if ((*itr)->getLevel() > 74)
@@ -1390,9 +1390,9 @@ void OutdoorPvPWG::UpdateTenacityStack()
     if (allianceNum && hordeNum)
     {
         if (allianceNum < hordeNum)
-            newStack = int16((float(hordeNum) / float(allianceNum) - 1) * 4); // positive, should cast on alliance
+            newStack = int8((float(hordeNum) / float(allianceNum) - 1) * 4); // positive, should cast on alliance
         else if (allianceNum > hordeNum)
-            newStack = int16((1 - float(allianceNum) / float(hordeNum)) * 4); // negative, should cast on horde
+            newStack = int8((1 - float(allianceNum) / float(hordeNum)) * 4); // negative, should cast on horde
     }
 
     if (newStack == m_tenacityStack)
@@ -1635,7 +1635,6 @@ void OutdoorPvPWG::StartBattle()
     for (PlayerSet::iterator itr = m_players[getDefenderTeam()].begin(); itr != m_players[getDefenderTeam()].end(); ++itr)
     {
         Player * plr = *itr;
-
         if (plr->getLevel() < 75)
             plr->CastSpell(plr, SPELL_TELEPORT_DALARAN, true);
         else
@@ -1651,7 +1650,6 @@ void OutdoorPvPWG::StartBattle()
     for (PlayerSet::iterator itr = m_players[getAttackerTeam()].begin(); itr != m_players[getAttackerTeam()].end(); ++itr)
     {
         Player * plr = *itr;
-
         if (plr->getLevel() < 75)
             plr->CastSpell(plr, SPELL_TELEPORT_DALARAN, true);
         else
@@ -1659,7 +1657,7 @@ void OutdoorPvPWG::StartBattle()
             CountAtk++;
             plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
             plr->RemoveAurasByType(SPELL_AURA_FLY);
-            plr->CastSpell((*itr), 45472, true); //prevent die if fall
+            plr->CastSpell(plr, 45472, true); //prevent die if fall
             plr->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
         }
     }
@@ -1794,8 +1792,11 @@ void OutdoorPvPWG::EndBattle()
         {
             // Calculate Level 70+ with Corporal or Lieutenant rank
             for (PlayerSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
-                if ((*itr)->getLevel() > 74 && ((*itr)->HasAura(SPELL_LIEUTENANT) || (*itr)->HasAura(SPELL_CORPORAL)))
+            {
+                Player * plr = *itr;
+                if (plr->getLevel() > 74 && (plr->HasAura(SPELL_LIEUTENANT) || plr->HasAura(SPELL_CORPORAL)))
                     ++playersWithRankNum;
+            }
             baseHonor = team == getDefenderTeam() ? sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE) : sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE);
             baseHonor += (sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER) * m_towerDamagedCount[OTHER_TEAM(team)]);
             baseHonor += (sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER) * m_towerDestroyedCount[OTHER_TEAM(team)]);
@@ -1941,7 +1942,7 @@ void OutdoorPvPWG::LoadQuestGiverMap(uint32 guid, Position posHorde, Position po
     m_questgivers[guid] = NULL;
     if (getDefenderTeam() == TEAM_ALLIANCE)
         sObjectMgr->MoveCreData(guid, 571, posAlli);
-    if (getDefenderTeam() == TEAM_HORDE)
+    else
         sObjectMgr->MoveCreData(guid, 571, posHorde);
 }
 
