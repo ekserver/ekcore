@@ -275,7 +275,7 @@ class OutdoorPvPWG : public OutdoorPvP
         uint32 GetReviveQueueSize() const { return m_ReviveQueue.size(); }
         // BG end
         TeamId m_defender;
-        int16 m_tenacityStack;
+        int8 m_tenacityStack;
 
         BuildingStateMap m_buildingStates;
         BuildingState *m_gate;
