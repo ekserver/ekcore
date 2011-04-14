@@ -16361,7 +16361,7 @@ void Player::_LoadExpPremiumRates(PreparedQueryResult result)
         if( p_start_time < p_currenttime && p_currenttime < p_end_time )
         {
             // bonus is legal, player gets db values even if they are 1 and flag characters with premium
-            CharacterDatabase.PExecute("UPDATE character_rates SET premium = '1' WHERE accountId = '%u'", GetSession()->GetAccountId());
+            CharacterDatabase.PExecute("UPDATE character_rates SET premium = '1' WHERE account = '%u'", GetSession()->GetAccountId());
 
             p_kill_xp_rate      = fields[2].GetUInt32();
             p_quest_xp_rate     = fields[3].GetUInt32();
@@ -16372,6 +16372,7 @@ void Player::_LoadExpPremiumRates(PreparedQueryResult result)
         {
             // bonus is illegal, player gets default values
             LoginDatabase.PExecute("UPDATE premium_account SET kill_xp_rate = '1', quest_xp_rate = '1', explore_xp_rate = '1', rest_xp_rate = '1', start_time = '0000-00-00 00:00:00', end_time = '0000-00-00 00:00:00' where id = '%u'",GetSession()->GetAccountId());
+            CharacterDatabase.PExecute("UPDATE character_rates SET premium = '0' WHERE account = '%u'", GetSession()->GetAccountId());
 
             p_kill_xp_rate      = 1;
             p_quest_xp_rate     = 1;
@@ -16411,7 +16412,7 @@ void Player::_LoadExpRates(PreparedQueryResult result)
 
         time_t currenttime  = time(NULL);
 
-        if( (start_time < currenttime && currenttime < end_time) && premium_is_active > 1 ) 
+        if( (start_time < currenttime && currenttime < end_time) && premium_is_active == 0 ) 
         {
             // bonus is legal and premium is not active, player gets db values even if they are 1!
             kill_xp_rate    = fields[2].GetUInt32();
