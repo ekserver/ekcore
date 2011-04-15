@@ -1209,7 +1209,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     // all item positions resolved
 
     // insert player into character_rates with default values
-    CharacterDatabase.PExecute("INSERT INTO character_rates (guid) VALUES ('%u')", guidlow);
+    CharacterDatabase.PExecute("INSERT INTO character_rates (guid, account) VALUES ('%u', '%u')", guidlow, GetSession()->GetAccountId());
 
     return true;
 }
@@ -16351,14 +16351,14 @@ void Player::_LoadExpPremiumRates(PreparedQueryResult result)
     {
         Field* fields = result->Fetch();
 
-        time_t p_start_time     = (time_t)fields[0].GetUInt64();
-        time_t p_end_time       = (time_t)fields[1].GetUInt64();
+        time_t p_start_time     = (time_t)fields[2].GetUInt64();
+        time_t p_end_time       = (time_t)fields[3].GetUInt64();
 
         // XP Premium Rates
-        p_kill_xp_rate          = fields[2].GetUInt32();
-        p_quest_xp_rate         = fields[3].GetUInt32();
-        p_explore_xp_rate       = fields[4].GetUInt32();
-        p_rest_xp_rate          = fields[5].GetUInt32();
+        p_kill_xp_rate          = fields[4].GetUInt32();
+        p_quest_xp_rate         = fields[5].GetUInt32();
+        p_explore_xp_rate       = fields[6].GetUInt32();
+        p_rest_xp_rate          = fields[7].GetUInt32();
 
         time_t p_currenttime    = time(NULL);
         
@@ -16367,10 +16367,10 @@ void Player::_LoadExpPremiumRates(PreparedQueryResult result)
             // bonus is legal, player gets db values even if they are 1 and flag characters with premium
             CharacterDatabase.PExecute("UPDATE character_rates SET premium = '1' WHERE account = '%u'", GetSession()->GetAccountId());
 
-            p_kill_xp_rate      = fields[2].GetUInt32();
-            p_quest_xp_rate     = fields[3].GetUInt32();
-            p_explore_xp_rate   = fields[4].GetUInt32();
-            p_rest_xp_rate      = fields[5].GetUInt32();
+            p_kill_xp_rate      = fields[4].GetUInt32();
+            p_quest_xp_rate     = fields[5].GetUInt32();
+            p_explore_xp_rate   = fields[6].GetUInt32();
+            p_rest_xp_rate      = fields[7].GetUInt32();
         }
         else
         {
@@ -16403,26 +16403,26 @@ void Player::_LoadExpRates(PreparedQueryResult result)
     {
         Field* fields = result->Fetch();
 
-        time_t start_time   = (time_t)fields[0].GetUInt64();
-        time_t end_time     = (time_t)fields[1].GetUInt64();
+        time_t start_time   = (time_t)fields[3].GetUInt64();
+        time_t end_time     = (time_t)fields[4].GetUInt64();
         
         // XP Rates
-        kill_xp_rate        = fields[2].GetUInt32();
-        quest_xp_rate       = fields[3].GetUInt32();
-        explore_xp_rate     = fields[4].GetUInt32();
-        rest_xp_rate        = fields[5].GetUInt32();
+        kill_xp_rate        = fields[5].GetUInt32();
+        quest_xp_rate       = fields[6].GetUInt32();
+        explore_xp_rate     = fields[7].GetUInt32();
+        rest_xp_rate        = fields[8].GetUInt32();
 
-        premium_is_active   = fields[6].GetUInt8();
+        premium_is_active   = fields[9].GetUInt8();
 
         time_t currenttime  = time(NULL);
 
         if( (start_time < currenttime && currenttime < end_time) && premium_is_active == 0 ) 
         {
             // bonus is legal and premium is not active, player gets db values even if they are 1!
-            kill_xp_rate    = fields[2].GetUInt32();
-            quest_xp_rate   = fields[3].GetUInt32();
-            explore_xp_rate = fields[4].GetUInt32();
-            rest_xp_rate    = fields[5].GetUInt32();
+            kill_xp_rate    = fields[5].GetUInt32();
+            quest_xp_rate   = fields[6].GetUInt32();
+            explore_xp_rate = fields[7].GetUInt32();
+            rest_xp_rate    = fields[8].GetUInt32();
         }
         else
         {
@@ -16438,7 +16438,7 @@ void Player::_LoadExpRates(PreparedQueryResult result)
     else
     {
         sLog->outError("Player (GUID %u) not found in table `character_rates`, will use default values",GetGUIDLow());
-        CharacterDatabase.PExecute("INSERT INTO character_rates (guid) VALUES ('%u')",GetGUIDLow());
+        CharacterDatabase.PExecute("INSERT INTO character_rates (guid, account) VALUES ('%u', '%u')",GetGUIDLow(), GetSession()->GetAccountId());
         
         // XP Rates
         kill_xp_rate = 1;
