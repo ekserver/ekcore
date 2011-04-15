@@ -16371,7 +16371,7 @@ void Player::_LoadExpPremiumRates(PreparedQueryResult result)
         else
         {
             // bonus is illegal, player gets default values
-            LoginDatabase.PExecute("UPDATE premium_account SET kill_xp_rate = '1', quest_xp_rate = '1', explore_xp_rate = '1', rest_xp_rate = '1', start_time = '0000-00-00 00:00:00', end_time = '0000-00-00 00:00:00' where id = '%u'",GetSession()->GetAccountId());
+            LoginDatabase.PExecute("UPDATE account_premium SET kill_xp_rate = '1', quest_xp_rate = '1', explore_xp_rate = '1', rest_xp_rate = '1', start_time = '0000-00-00 00:00:00', end_time = '0000-00-00 00:00:00' where id = '%u'",GetSession()->GetAccountId());
             CharacterDatabase.PExecute("UPDATE character_rates SET premium = '0' WHERE account = '%u'", GetSession()->GetAccountId());
 
             p_kill_xp_rate      = 1;
@@ -16382,10 +16382,10 @@ void Player::_LoadExpPremiumRates(PreparedQueryResult result)
     }
     else
     {
-        sLog->outError("Account (ID %u) not found in table `premium_account`, will use default values",GetSession()->GetAccountId());
+        sLog->outError("Account (ID %u) not found in table `account_premium`, will use default values",GetSession()->GetAccountId());
         
         // Insert premium account default data into premium_account table
-        LoginDatabase.PExecute("INSERT INTO premium_account (id) VALUES ('%u')",GetSession()->GetAccountId());
+        LoginDatabase.PExecute("INSERT INTO account_premium (id) VALUES ('%u')",GetSession()->GetAccountId());
 
         p_kill_xp_rate          = 1;
         p_quest_xp_rate         = 1;

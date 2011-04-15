@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `premium_account` (
+CREATE TABLE IF NOT EXISTS `account_premium` (
         `id` INT(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Global Unique Identifier' ,
         `start_time` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Absolute start date, the bonus will be granted' ,
         `end_time`  TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Absolute end date, the bonus is expired' ,
