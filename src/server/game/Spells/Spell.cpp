@@ -1574,10 +1574,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                 duration = m_originalCaster->ModSpellDuration(aurSpellInfo, unit, duration, positive);
 
                 // Haste modifies duration of channeled spells
-                if (IsChanneledSpell(m_spellInfo))
-                    // Seduction duration should not be affected by casting time mods
-                    if (m_spellInfo->Id != 6358)
-                        m_originalCaster->ModSpellCastTime(aurSpellInfo, duration, this);
+                if (IsChanneledSpell(m_spellInfo) && m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_DURATION)
+                    m_originalCaster->ModSpellCastTime(aurSpellInfo, duration, this);
 
                 // and duration of auras affected by SPELL_AURA_PERIODIC_HASTE
                 if (m_originalCaster->HasAuraTypeWithAffectMask(SPELL_AURA_PERIODIC_HASTE, aurSpellInfo) || aurSpellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_SHAMAN_FLAME_SHOCK)
@@ -3421,8 +3419,7 @@ void Spell::handle_immediate()
             if (Player* modOwner = m_caster->GetSpellModOwner())
                 modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
             // Apply haste mods
-            // Seduction duration should not be affected by casting time mods
-            if (m_spellInfo->Id != 6358)
+            if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_DURATION)
                 m_caster->ModSpellCastTime(m_spellInfo, duration, this);
 
             m_spellState = SPELL_STATE_CASTING;
@@ -4462,19 +4459,24 @@ void Spell::TakePower()
     if (m_CastItem || m_triggeredByAuraSpell)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->powerType == POWER_ENERGY)
+    bool hit = true;
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        if (m_spellInfo->powerType == POWER_RAGE || m_spellInfo->powerType == POWER_ENERGY || m_spellInfo->powerType == POWER_RUNE)
+        if (m_spellInfo->powerType == POWER_RAGE || m_spellInfo->powerType == POWER_ENERGY ||
+            m_spellInfo->powerType == POWER_RUNE || m_spellInfo->powerType == POWER_RUNIC_POWER)
             if (uint64 targetGUID = m_targets.getUnitTargetGUID())
                 for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
                     if (ihit->targetGUID == targetGUID)
                     {
-                        //lower spell cost on fail (by talent aura)
-                        if (Player *modOwner = m_caster->ToPlayer()->GetSpellModOwner())
-                            modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_SPELL_COST_REFUND_ON_FAIL, m_powerCost);
+                        if (ihit->missCondition != SPELL_MISS_NONE)
+                        {
+                            hit = false;
+                            //lower spell cost on fail (by talent aura)
+                            if (Player *modOwner = m_caster->ToPlayer()->GetSpellModOwner())
+                                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_SPELL_COST_REFUND_ON_FAIL, m_powerCost);
+                        }
+                        break;
                     }
-                    break;
-                }
     }
 
     Powers powerType = Powers(m_spellInfo->powerType);
@@ -4502,7 +4504,10 @@ void Spell::TakePower()
         return;
     }
 
-    m_caster->ModifyPower(powerType, -m_powerCost);
+    if (hit || m_spellInfo->AttributesEx & SPELL_ATTR1_REQ_COMBO_POINTS1)
+        m_caster->ModifyPower(powerType, -m_powerCost);
+    else
+        m_caster->ModifyPower(powerType, -m_powerCost/5);
 
     // Set the five second timer
     if (powerType == POWER_MANA && m_powerCost > 0)

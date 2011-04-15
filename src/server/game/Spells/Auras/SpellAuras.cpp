@@ -567,7 +567,7 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
                     }
                 }
                 // Prevent exploiting with doubling auras
-                else
+                else if (caster)
                 {
                     // check if not stacking aura already on target and remove not own aura
                     for (Unit::AuraApplicationMap::iterator iter = itr->first->GetAppliedAuras().begin(); iter != itr->first->GetAppliedAuras().end(); ++iter)
@@ -1036,6 +1036,32 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         break;
                 }
                 break;
+            case SPELLFAMILY_HUNTER:
+                // Rapid Killing
+                if (GetSpellProto()->SpellFamilyFlags[1] & 0x01000000)
+                {
+                    // Rapid Recuperation
+                    // FIXME: this is completely wrong way to fixing this talent
+                    // but for unknown reason it won't proc if your target are dead
+                    if (AuraEffect * auraEff = target->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_HUNTER, 3560, 1))
+                    {
+                        uint32 spellId;
+                        switch (auraEff->GetId())
+                        {
+                            case 53228: spellId = 56654; break;
+                            case 53232: spellId = 58882; break;
+                        }
+                        target->CastSpell(target, spellId, true);
+                    }
+                }
+                // Animal Handler
+                else if (GetId() == 68361)
+                {
+                    if (Unit * owner = target->GetOwner())
+                        if (AuraEffect * auraEff = owner->GetDummyAuraEffect(SPELLFAMILY_HUNTER, 2234, 1))
+                            GetEffect(0)->SetAmount(auraEff->GetAmount());
+                }
+                break;
             case SPELLFAMILY_WARLOCK:
                 switch(GetId())
                 {
@@ -1048,6 +1074,11 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                             }
                         break;
                 }
+                break;
+            case SPELLFAMILY_DRUID:
+                // Cat Form, Bear Form, Dire Bear Form - exploit fix
+                if (GetSpellProto()->SpellFamilyFlags[0] & 0xC0000000)
+                    target->RemoveAurasDueToSpell(64904); // Hymn of Hope
                 break;
             case SPELLFAMILY_PRIEST:
                 if (!caster)
@@ -1342,14 +1373,21 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                 }
                 switch(GetId())
                 {
-                   case 48018: // Demonic Circle
+                    case 6358: // Seduction
+                        // Interrupt cast if aura removed from target
+                        // maybe should be used SpellChannelInterruptFlags instead
+                        caster->InterruptNonMeleeSpells(false, 6358, false);
+                        break;
+                    case 48018: // Demonic Circle
                         // Do not remove GO when aura is removed by stack
                         // to prevent remove GO added by new spell
                         // old one is already removed
                         if (removeMode != AURA_REMOVE_BY_STACK)
                             target->RemoveGameObject(GetId(), true);
                         target->RemoveAura(62388);
-                    break;
+                        break;
+                    default:
+                        break;
                 }
                 break;
             case SPELLFAMILY_PRIEST:
@@ -1517,24 +1555,29 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
             }
             break;
         case SPELLFAMILY_DRUID:
-            // Enrage - armor reduction implemented here
+            // Enrage
             if (GetSpellProto()->SpellFamilyFlags[0] & 0x80000)
             {
-                if (AuraEffect * auraEff = target->GetAuraEffectOfRankedSpell(1178, 0))
+                if (target->HasAura(70726)) // Druid T10 Feral 4P Bonus
                 {
-                    uint32 armorMod;
-                    switch (auraEff->GetId())
-                    {
-                        case 1178: armorMod = 27; break;
-                        case 9635: armorMod = 16; break;
-                    }
-                    armorMod = auraEff->GetAmount() / 100 * armorMod;
                     if (apply)
-                        auraEff->ChangeAmount(auraEff->GetAmount() - armorMod);
-                    else
-                        auraEff->ChangeAmount(auraEff->GetAmount() + armorMod);
+                        target->CastSpell(target, 70725, true);
                 }
-                break;
+                else // armor reduction implemented here
+                    if (AuraEffect * auraEff = target->GetAuraEffectOfRankedSpell(1178, 0))
+                    {
+                        int32 value = auraEff->GetAmount();
+                        int32 mod;
+                        switch (auraEff->GetId())
+                        {
+                            case 1178: mod = 27; break;
+                            case 9635: mod = 16; break;
+                        }
+                        mod = value / 100 * mod;
+                        value = value + (apply ? -mod : mod);
+                        auraEff->ChangeAmount(value);
+                    }
+                //break;
             }
             break;
         case SPELLFAMILY_ROGUE:

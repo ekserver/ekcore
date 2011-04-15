@@ -1427,7 +1427,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
             // Set trigger flag
             uint32 procAttacker = PROC_FLAG_DONE_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
-            uint32 procEx = PROC_EX_NORMAL_HIT | PROC_EX_INTERNAL_DOT;
+            uint32 procEx = (crit ? PROC_EX_CRITICAL_HIT : PROC_EX_NORMAL_HIT) | PROC_EX_INTERNAL_DOT;
             damage = (damage <= absorb+resist) ? 0 : (damage-absorb-resist);
             if (damage)
                 procVictim|=PROC_FLAG_TAKEN_DAMAGE;
@@ -1513,7 +1513,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
             // Set trigger flag
             uint32 procAttacker = PROC_FLAG_DONE_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
-            uint32 procEx = PROC_EX_NORMAL_HIT | PROC_EX_INTERNAL_DOT;
+            uint32 procEx = (crit ? PROC_EX_CRITICAL_HIT : PROC_EX_NORMAL_HIT) | PROC_EX_INTERNAL_DOT;
             damage = (damage <= absorb+resist) ? 0 : (damage-absorb-resist);
             if (damage)
                 procVictim|=PROC_FLAG_TAKEN_DAMAGE;
@@ -1657,7 +1657,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
 
             uint32 procAttacker = PROC_FLAG_DONE_PERIODIC;
             uint32 procVictim   = PROC_FLAG_TAKEN_PERIODIC;
-            uint32 procEx = PROC_EX_NORMAL_HIT | PROC_EX_INTERNAL_HOT;
+            uint32 procEx = (crit ? PROC_EX_CRITICAL_HIT : PROC_EX_NORMAL_HIT) | PROC_EX_INTERNAL_HOT;
             // ignore item heals
             if (!haveCastItem)
                 caster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damage + absorb, BASE_ATTACK, GetSpellProto());
@@ -2537,6 +2537,14 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
             {
                 Unit * triggerCaster = (Unit *)(GetBase()->GetOwner());
                 triggerCaster->CastSpell(triggerTarget, triggeredSpellInfo, true, 0, this, triggerCaster->GetGUID());
+                return;
+            }
+            // Rapid Recuperation (triggered energize have basepoints == 0)
+            case 56654:
+            case 58882:
+            {
+                if (int32 mana = target->GetMaxPower(POWER_MANA) / 100 * GetAmount())
+                    target->CastCustomSpell(target, triggerSpellId, &mana, NULL, NULL, true, NULL, this);
                 return;
             }
             // Slime Spray - temporary here until preventing default effect works again
@@ -4591,7 +4599,9 @@ void AuraEffect::HandleModStateImmunityMask(AuraApplication const * aurApp, uint
         target->ApplySpellImmune(GetId(), IMMUNITY_ID, 68766, apply);   // Desecration Rank 2
         target->ApplySpellImmune(GetId(), IMMUNITY_ID, 605, apply);     // Mind Control
         target->ApplySpellImmune(GetId(), IMMUNITY_STATE, SPELL_AURA_TRANSFORM, apply);
-        target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK, apply);
+        immunity_list.push_back(SPELL_AURA_MOD_PACIFY_SILENCE);
+        target->ApplySpellImmune(GetId(), IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, apply);
+        target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_SNARE, apply); 
     }
 
     if (apply && GetSpellProto()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
@@ -5491,6 +5501,10 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const * aurApp, uint8 mo
 
     Unit * target = aurApp->GetTarget();
 
+    // Dirty hack to fix Improved Icy Talons
+    if (GetId() == 55610 && GetCasterGUID() == target->GetGUID())
+        return;
+
     target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)GetAmount(), apply);
     target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)GetAmount(), apply);
 }
@@ -6128,6 +6142,16 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                             caster->CastSpell(target, GetAmount(), true);
                     }
                     break;
+                case SPELLFAMILY_ROGUE:
+                {
+                    // Tricks of the Trade
+                    if (GetId() == 59628)
+                    {
+                        if (caster)
+                            caster->SetReducedThreatPercent(0, 0);
+                    }
+                    break;
+                }
                 case SPELLFAMILY_WARLOCK:
                     // Haunt
                     if (m_spellProto->SpellFamilyFlags[1] & 0x40000)
@@ -6168,24 +6192,21 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     break;
                 case SPELLFAMILY_PRIEST:
                     // Vampiric Touch
-                    if (m_spellProto->SpellFamilyFlags[1] & 0x400 && aurApp->GetEffectMask() == 0)
+                    if (m_spellProto->SpellFamilyFlags[1] & 0x400 && GetEffIndex() == 0 && aurApp->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
                     {
                         if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
                         {
-                            if (AuraEffect const * aurEff = GetBase()->GetEffect(1))
-                            {
-                                // backfire damage
-                                int32 damage = aurEff->GetAmount() * 8;
-                                int32 dispelDamage = caster->SpellDamageBonus(caster, m_spellProto, damage, SPELL_DIRECT_DAMAGE);
-                                target->CastCustomSpell(target, 64085, &dispelDamage, NULL, NULL, true, NULL, NULL,GetCasterGUID());
-                            }
+                            int32 damage = aurEff->GetAmount() * 8;
+                            damage = caster->SpellDamageBonus(caster, m_spellProto, damage, DOT);
+                            // backfire damage
+                            target->CastCustomSpell(target, 64085, &damage, NULL, NULL, true, NULL, NULL,GetCasterGUID());
                         }
                     }
                     break;
                 case SPELLFAMILY_HUNTER:
                     // Misdirection
                     if (GetId() == 35079)
-                        caster->SetReducedThreatPercent(0, 0);
+                        target->SetReducedThreatPercent(0, 0);
                     break;
                 case SPELLFAMILY_ROGUE:
                 {

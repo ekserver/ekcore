@@ -3645,6 +3645,14 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENEMY_SRC;
             count++;
             break;
+        // Improved Succubus
+        case 18754:
+        case 18755:
+        case 18756:
+            // now aura will be applied correctly
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+            count++;
+            break;
         // Bind
         case 3286:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
@@ -3664,6 +3672,12 @@ void SpellMgr::LoadSpellCustomAttr()
         // Bloodlust
         case 2825:
             spellInfo->excludeCasterAuraSpell = 57724; // Sated
+            count++;
+            break;
+        // Fiery Payback hack
+        case 44440:
+        case 44441:
+            spellInfo->CasterAuraStateNot = AURA_STATE_NONE;
             count++;
             break;
         // Heart of the Crusader
@@ -3852,6 +3866,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 17941:    // Shadow Trance
         case 22008:    // Netherwind Focus
         case 31834:    // Light's Grace
+        case 34477:    // Misdirection
         case 34754:    // Clearcasting
         case 34936:    // Backlash
         case 48108:    // Hot Streak
@@ -4344,6 +4359,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 count++;
                 break;
+            case SPELLFAMILY_HUNTER:
+                // Monstrous Bite target fix
+                // seems we incorrectly handle spell with "no target"
+                if (spellInfo->SpellIconID == 599)
+                    spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+                else
+                    break;
+                count++;
+                break;
             case SPELLFAMILY_DRUID:
                 // Starfall Target Selection
                 if (spellInfo->SpellFamilyFlags[2] & 0x100)
@@ -4368,6 +4392,26 @@ void SpellMgr::LoadSpellCustomAttr()
             case SPELLFAMILY_ROGUE:
                 if (spellInfo->SpellFamilyFlags[1] & 0x1 || spellInfo->SpellFamilyFlags[0] & 0x40000)
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_CANT_PROC_FROM_SELFCAST;
+                else
+                    break;
+                count++;
+                break;
+            case SPELLFAMILY_DEATHKNIGHT:
+                // Icy Touch - extend FamilyFlags (unused value) for Sigil of the Frozen Conscience to use
+                if (spellInfo->SpellIconID == 2721 && spellInfo->SpellFamilyFlags[0] & 0x2)
+                    spellInfo->SpellFamilyFlags[0] |= 0x40;
+                count++;
+                break;
+            case SPELLFAMILY_PRIEST:
+                // Twin Disciplines should affect at Prayer of Mending
+                if (spellInfo->SpellIconID == 2292)
+                    spellInfo->EffectSpellClassMask[0][1] |= 0x20;
+                // Spiritual Healing should affect at Prayer of Mending
+                else if (spellInfo->SpellIconID == 46)
+                    spellInfo->EffectSpellClassMask[0][1] |= 0x20;
+                // Divine Providence should affect at Prayer of Mending
+                else if (spellInfo->SpellIconID == 2845 && spellInfo->Id != 64844)
+                    spellInfo->EffectSpellClassMask[0][1] |= 0x20;
                 else
                     break;
                 count++;
