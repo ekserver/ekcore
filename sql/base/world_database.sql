@@ -76,6 +76,38 @@ LOCK TABLES `achievement_criteria_data` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `achievement_dbc`
+--
+
+DROP TABLE IF EXISTS `achievement_dbc`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `achievement_dbc` (
+  `ID` int(10) unsigned NOT NULL,
+  `requiredFaction` int(11) NOT NULL DEFAULT '-1',
+  `mapID` int(11) NOT NULL DEFAULT '-1',
+  `points` int(10) unsigned NOT NULL DEFAULT '0',
+  `flags` int(10) unsigned NOT NULL DEFAULT '0',
+  `count` int(10) unsigned NOT NULL DEFAULT '0',
+  `refAchievement` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `achievement_dbc`
+--
+
+LOCK TABLES `achievement_dbc` WRITE;
+/*!40000 ALTER TABLE `achievement_dbc` DISABLE KEYS */;
+INSERT INTO `achievement_dbc` VALUES
+(3696,-1,-1,0,2,1,0), -- Earned the right to represent a city in the Argent Tournament
+(4788,-1,-1,0,2,1,0), -- Is exalted with The Aldor or has any of exalted rewards
+(4789,-1,-1,0,2,1,0); -- Is exalted with The Scryers or has any of exalted rewards
+/*!40000 ALTER TABLE `achievement_dbc` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `achievement_reward`
 --
 
@@ -446,7 +478,6 @@ INSERT INTO `command` VALUES
 ('itemmove',2,'Syntax: .itemmove #sourceslotid #destinationslotid\r\n\r\nMove an item from slots #sourceslotid to #destinationslotid in your inventory\r\n\r\nNot yet implemented'),
 ('kick',2,'Syntax: .kick [$charactername] [$reason]\r\n\r\nKick the given character name from the world with or without reason. If no character name is provided then the selected player (except for yourself) will be kicked. If no reason is provided, default is \"No Reason\".'),
 ('learn',3,'Syntax: .learn #spell [all]\r\n\r\nSelected character learn a spell of id #spell. If ''all'' provided then all ranks learned.'),
-('learn all',3,'Syntax: .learn all\r\n\r\nLearn all big set different spell maybe useful for Administaror.'),
 ('learn all crafts',2,'Syntax: .learn crafts\r\n\r\nLearn all professions and recipes.'),
 ('learn all default',1,'Syntax: .learn all default [$playername]\r\n\r\nLearn for selected/$playername player all default spells for his race/class and spells rewarded by completed quests.'),
 ('learn all gm',2,'Syntax: .learn all gm\r\n\r\nLearn all default spells for Game Masters.'),
@@ -18170,6 +18201,10 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 (-71224, 69706, 0, 'Rotface: Mutated Infection Summon'),
 (-73022, 69706, 0, 'Rotface: Mutated Infection Summon'),
 (-73023, 69706, 0, 'Rotface: Mutated Infection Summon'),
+(-70447, 70530, 0, 'Putricide: Volatile Ooze Adhesive Protection'),
+(-72836, 70530, 0, 'Putricide: Volatile Ooze Adhesive Protection'),
+(-72837, 70530, 0, 'Putricide: Volatile Ooze Adhesive Protection'),
+(-72838, 70530, 0, 'Putricide: Volatile Ooze Adhesive Protection'),
 ( 70867, 70871, 2, 'Blood-Queen: Essence of the Blood Queen'),
 ( 71473, 70871, 2, 'Blood-Queen: Essence of the Blood Queen'),
 ( 71532, 70871, 2, 'Blood-Queen: Essence of the Blood Queen'),

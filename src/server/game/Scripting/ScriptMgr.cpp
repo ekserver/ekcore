@@ -135,7 +135,7 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget)
 }
 
 ScriptMgr::ScriptMgr()
-    : _scriptCount(0)
+    : _scriptCount(0), _scheduledScripts(0)
 {
 }
 
@@ -823,12 +823,20 @@ uint32 ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
     return tmpscript->GetDialogStatus(player, go);
 }
 
-void ScriptMgr::OnGameObjectDestroyed(Player* player, GameObject* go, uint32 eventId)
+void ScriptMgr::OnGameObjectDestroyed(GameObject* go, Player* player, uint32 eventId)
 {
     ASSERT(go);
 
     GET_SCRIPT(GameObjectScript, go->GetScriptId(), tmpscript);
-    tmpscript->OnDestroyed(player, go, eventId);
+    tmpscript->OnDestroyed(go, player, eventId);
+}
+
+void ScriptMgr::OnGameObjectDamaged(GameObject* go, Player* player, uint32 eventId)
+{
+    ASSERT(go);
+
+    GET_SCRIPT(GameObjectScript, go->GetScriptId(), tmpscript);
+    tmpscript->OnDamaged(go, player, eventId);
 }
 
 void ScriptMgr::OnGameObjectUpdate(GameObject* go, uint32 diff)
@@ -853,7 +861,7 @@ bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger)
     ASSERT(player);
     ASSERT(trigger);
 
-    GET_SCRIPT_RET(AreaTriggerScript, GetAreaTriggerScriptId(trigger->id), tmpscript, false);
+    GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr->GetAreaTriggerScriptId(trigger->id), tmpscript, false);
     return tmpscript->OnTrigger(player, trigger);
 }
 

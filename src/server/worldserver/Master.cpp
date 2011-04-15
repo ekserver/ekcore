@@ -49,8 +49,8 @@
 extern int m_ServiceStatus;
 #endif
 
-/// Handle cored's termination signals
-class CoredSignalHandler : public Trinity::SignalHandler
+/// Handle worldservers's termination signals
+class WorldServerSignalHandler : public Trinity::SignalHandler
 {
     public:
         virtual void HandleSignal(int SigNum)
@@ -158,6 +158,7 @@ public:
                 sLog->outError("World Thread hangs, kicking out server!");
                 *((uint32 volatile*)NULL) = 0;                       // bang crash
                 #endif /* WITH_AUTOBACKTRACE */
+                ASSERT(false);
             }
         }
         sLog->outString("Anti-freeze thread exiting without problems.");
@@ -178,8 +179,8 @@ int Master::Run()
     BigNumber seed1;
     seed1.SetRand(16 * 8);
 
-    sLog->outString("%s (core-daemon)", _FULLVERSION );
-    sLog->outString("<Ctrl-C> to stop.\n" );
+    sLog->outString("%s (worldserver-daemon)", _FULLVERSION);
+    sLog->outString("<Ctrl-C> to stop.\n");
 
     sLog->outString(" ______                       __");
     sLog->outString("/\\__  _\\       __          __/\\ \\__");
@@ -198,7 +199,7 @@ int Master::Run()
     sLog->outString("\n");
 #endif //USE_SFMT_FOR_RNG
 
-    /// worldd PID file creation
+    /// worldserver PID file creation
     std::string pidfile = sConfig->GetStringDefault("PidFile", "");
     if (!pidfile.empty())
     {
@@ -223,17 +224,17 @@ int Master::Run()
     sWorld->SetInitialWorldSettings();
 
     // Initialise the signal handlers
-    CoredSignalHandler SignalINT, SignalTERM;
+    WorldServerSignalHandler SignalINT, SignalTERM;
     
     #ifdef WITH_AUTOBACKTRACE
-    CoredSignalHandler SignalSEGV, SignalILL, SignalABRT, SignalBUS, SignalFPE, SignalUSR1;
+    WorldServerSignalHandler SignalSEGV, SignalILL, SignalABRT, SignalBUS, SignalFPE, SignalUSR1;
     #endif /* WITH_AUTOBACKTRACE */
-    
+
     #ifdef _WIN32
-    CoredSignalHandler SignalBREAK;
+    WorldServerSignalHandler SignalBREAK;
     #endif /* _WIN32 */
 
-    // Register core's signal handlers
+    // Register worldserver's signal handlers
     ACE_Sig_Handler Handler;
     Handler.register_handler(SIGINT, &SignalINT);
     Handler.register_handler(SIGTERM, &SignalTERM);
@@ -286,11 +287,11 @@ int Master::Run()
 
                 if (!curAff)
                 {
-                    sLog->outError("Processors marked in UseProcessors bitmask (hex) %x not accessible for Trinityd. Accessible processors bitmask (hex): %x", Aff, appAff);
+                    sLog->outError("Processors marked in UseProcessors bitmask (hex) %x are not accessible for the worldserver. Accessible processors bitmask (hex): %x", Aff, appAff);
                 }
                 else
                 {
-                    if (SetProcessAffinityMask(hProcess,curAff))
+                    if (SetProcessAffinityMask(hProcess, curAff))
                         sLog->outString("Using processors (bitmask, hex): %x", curAff);
                     else
                         sLog->outError("Can't set used processors (hex): %x", curAff);
@@ -305,9 +306,9 @@ int Master::Run()
         if (Prio)
         {
             if (SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
-                sLog->outString("TrinityCore process priority class set to HIGH");
+                sLog->outString("worldserver process priority class set to HIGH");
             else
-                sLog->outError("Can't set Trinityd process priority class.");
+                sLog->outError("Can't set worldserver process priority class.");
             sLog->outString("");
         }
     }
@@ -581,5 +582,5 @@ void Master::clearOnlineAccounts()
     CharacterDatabase.DirectExecute("UPDATE characters SET online = 0 WHERE online <> 0");
 
     // Battleground instance ids reset at server restart
-    CharacterDatabase.DirectExecute("UPDATE character_battleground_data SET instance_id = 0");
+    CharacterDatabase.DirectExecute(CharacterDatabase.GetPreparedStatement(CHAR_RESET_PLAYERS_BGDATA));
 }

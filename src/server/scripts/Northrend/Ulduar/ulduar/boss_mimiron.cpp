@@ -1650,7 +1650,6 @@ public:
             else uiFrostTimer -= diff;
         }
     };
-
 };
 
 void AddSC_boss_mimiron()
