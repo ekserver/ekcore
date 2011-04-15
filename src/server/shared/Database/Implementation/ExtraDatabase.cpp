@@ -17,26 +17,12 @@
 
 #include "ExtraDatabase.h"
 
-bool ExtraDatabaseConnection::Open()
+void ExtraDatabaseConnection::DoPrepareStatements()
 {
-    if (!MySQLConnection::Open())
-        return false;
-
     if (!m_reconnecting)
         m_stmts.resize(MAX_EXTRADATABASE_STATEMENTS);
-
-    /* ################ LOAD PREPARED STATEMENTS HERE ################ */
 
     PREPARE_STATEMENT(EXTRA_ADD_ITEMSTAT, "INSERT INTO item_stats (guid, item, state, map) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC)
     PREPARE_STATEMENT(EXTRA_ADD_BGSTAT, "INSERT INTO battleground_stats (bg_id, winner) VALUES (?, ?)", CONNECTION_ASYNC)
     PREPARE_STATEMENT(EXTRA_ADD_GMLOG, "INSERT INTO `gm_log` (`player`, `account`, `command`, `position`, `selected`) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC)
-
-    /* ############## END OF LOADING PREPARED STATEMENTS ############## */
-
-    for (PreparedStatementMap::const_iterator itr = m_queries.begin(); itr != m_queries.end(); ++itr)
-    {
-        PrepareStatement(itr->first, itr->second.first, itr->second.second);
-    }
-
-    return true;
 }

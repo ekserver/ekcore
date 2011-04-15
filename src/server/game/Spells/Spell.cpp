@@ -4690,7 +4690,7 @@ void Spell::TakeRunePower(bool didHit)
     }
 
     // you can gain some runic power when use runes
-    float rp = (float)runePowerGain;
+    float rp = (float)runeCostData->runePowerGain;
     // Blood Boil should generate Runic Power when caster is in combat
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_spellInfo->SpellFamilyFlags[0] & 0x40000)
         if (player->isInCombat())
@@ -5561,17 +5561,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                     Difficulty difficulty = m_caster->GetMap()->GetDifficulty();
                     if (map->IsRaid())
                         if (InstancePlayerBind* targetBind = target->GetBoundInstance(mapId, difficulty))
-                            if (InstancePlayerBind* casterBind = m_caster->ToPlayer()->GetBoundInstance(mapId, difficulty))
-                                if (targetBind->save)
-                                    if (casterBind->save)
-                                    {
-                                        if (targetBind->perm && targetBind->save->GetInstanceId() != casterBind->save->GetInstanceId())
-                                            return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
-                                    }
-                                    else
-                                    {
-                                        return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
-                                    }
+                            if (targetBind->perm && targetBind != m_caster->ToPlayer()->GetBoundInstance(mapId, difficulty))
+                                return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
 
                     InstanceTemplate const* instance = ObjectMgr::GetInstanceTemplate(mapId);
                     if (!instance)
