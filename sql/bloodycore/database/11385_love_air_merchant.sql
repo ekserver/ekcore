@@ -10,13 +10,13 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `modelid`
 (140010, 37674, 0, 1, 1, 0, 0, -4928.03, -985.31, 501.461, 1.81664, 300, 0, 0, 1848, 0, 0, 0, 0, 0, 0); -- Ironforge
 
 DELETE FROM `game_event_creature` WHERE `guid`IN (140003, 140004, 140005, 140006, 140007, 140008, 140009, 140010);
-INSERT INTO `game_event_creature` (`guid`,`event`) VALUES
-(140003, 8),
-(140004, 8),
-(140005, 8),
-(140006, 8),
-(140007, 8),
-(140008, 8),
-(140009, 8),
-(140010, 8);
+INSERT INTO `game_event_creature` (`eventEntry`,`guid`) VALUES
+(8, 140003),
+(8, 140004),
+(8, 140005),
+(8, 140006),
+(8, 140007),
+(8, 140008),
+(8, 140009),
+(8, 140010);
 

@@ -1551,7 +1551,7 @@ INSERT INTO `conditions` VALUES
 ('13','0','63702','0','18','1','32930','0','0','',"Focused Eyebeam (Kologarn)");
 -- Cleanup
 DELETE FROM `creature` WHERE `id` IN (33632, 33802, 34297, 32933, 32934, 33809, 33661, 33742);
-DELETE FROM vehicle_accessory WHERE entry = 32930;
+DELETE FROM vehicle_template_accessory WHERE entry = 32930;
 
 
 -- Auriaya
@@ -1645,8 +1645,8 @@ UPDATE `creature_template` SET `mechanic_immune_mask` = 650854235, `ScriptName` 
 UPDATE `creature_template` SET `vehicleid` = 370, `mechanic_immune_mask` = 650854235, `ScriptName` = 'boss_leviathan_mk' WHERE `entry` = 33432;
 UPDATE `creature_template` SET `minlevel` = 83, `maxlevel` = 83, `mechanic_immune_mask` = 650854235, `flags_extra` = 1 WHERE `entry` = 34106;
 UPDATE `creature_template` SET `mechanic_immune_mask` = 650854235, `ScriptName` = 'boss_leviathan_mk_turret' WHERE `entry` = 34071;
-DELETE FROM vehicle_accessory WHERE entry = 33432;
-INSERT INTO vehicle_accessory VALUE (33432, 34071, 3, 1, 'Leviathan Mk II turret');
+DELETE FROM vehicle_template_accessory WHERE entry = 33432;
+INSERT INTO vehicle_template_accessory VALUE (33432, 34071, 3, 1, 'Leviathan Mk II turret', 6, 30000);
 UPDATE creature_template SET ScriptName = 'npc_proximity_mine' WHERE entry = 34362;
 DELETE FROM `creature_model_info` WHERE `modelid`=28831;
 INSERT INTO `creature_model_info` (`modelid`, `bounding_radius`, `combat_reach`, `gender`, `modelid_other_gender`) VALUES

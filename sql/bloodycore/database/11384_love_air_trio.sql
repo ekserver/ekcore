@@ -5,11 +5,11 @@ INSERT INTO `creature` (`guid`,`id`,`map`,`spawnMask`,`phaseMask`,`modelid`,`equ
 (140001, 36565, 33, 1, 1, 0, 0, -209.865, 2213.18, 79.763, 5.01826, 604800, 0, 0, 269620, 0, 0, 0, 0, 0, 0),
 (140002, 36272, 33, 1, 1, 0, 0, -204.071, 2215.01, 79.763, 5.01826, 604800, 0, 0, 269620, 0, 0, 0, 0, 0, 0);
 
-DELETE FROM `game_event_creature` WHERE `guid`IN (140000, 140001, 140002);
-INSERT INTO `game_event_creature` (`guid`,`event`) VALUES
-(140000, 8),
-(140001, 8),
-(140002, 8);
+DELETE FROM `game_event_creature` WHERE `guid` IN (140000, 140001, 140002);
+INSERT INTO `game_event_creature` (`eventEntry`, `guid`) VALUES
+(8, 140000),
+(8, 140001),
+(8, 140002);
 
 UPDATE `creature_template` SET `faction_A` = 16, `faction_H` = 16, `Health_mod` = 86.189, `lootid` = 36296, `mechanic_immune_mask` = 650854235, `ScriptName` = 'npc_apothecary_hummel' WHERE `entry` = 36296;
 UPDATE `creature_template` SET `faction_A` = 16, `faction_H` = 16, `Health_mod` = 86.189, `lootid` = 36296, `mechanic_immune_mask` = 650854235, `ScriptName` = 'npc_apothecary_baxter' WHERE `entry` = 36565;

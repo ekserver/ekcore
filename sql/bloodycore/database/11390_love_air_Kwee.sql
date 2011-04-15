@@ -12,12 +12,12 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `modelid`
 
 -- Event for creature Kwee Q. Peddlefeet <Crown Chemical Co.>
 DELETE FROM `game_event_creature` WHERE `guid`IN (140011, 140012, 140013, 140014, 140015, 140016, 140017, 140018);
-INSERT INTO `game_event_creature` (`guid`,`event`) VALUES
-(140011, 8),
-(140012, 8),
-(140013, 8),
-(140014, 8),
-(140015, 8),
-(140016, 8),
-(140017, 8),
-(140018, 8);
+INSERT INTO `game_event_creature` (`eventEntry`,`guid`) VALUES
+(8, 140011),
+(8, 140012),
+(8, 140013),
+(8, 140014),
+(8, 140015),
+(8, 140016),
+(8, 140017),
+(8, 140018);

@@ -2,10 +2,10 @@
 DELETE FROM creature WHERE id = 33167;
 UPDATE `creature_template` SET `modelid1` = 11686, `modelid2` = 0 WHERE `entry` IN (33364, 33369, 33108, 33366);
 
-DELETE FROM vehicle_accessory WHERE entry = 33113 AND seat_id IN (0, 1);
-INSERT INTO vehicle_accessory VALUES 
-(33113, 33114, 0, 1, "Flame Leviathan"),
-(33113, 33114, 1, 1, "Flame Leviathan");
+DELETE FROM vehicle_template_accessory WHERE entry = 33113 AND seat_id IN (0, 1);
+INSERT INTO vehicle_template_accessory VALUES 
+(33113, 33114, 0, 1, "Flame Leviathan", 6, 30000),
+(33113, 33114, 1, 1, "Flame Leviathan", 6, 30000);
 
 UPDATE creature_model_info SET bounding_radius = 15, combat_reach = 10 WHERE modelid IN (29158, 29159, 29160);
 UPDATE `creature_template` SET `flags_extra` = 2 WHERE `entry` = 33264; -- TODO

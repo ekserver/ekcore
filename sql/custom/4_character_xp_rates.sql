@@ -13,4 +13,4 @@ PRIMARY KEY (`guid`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
  
 -- Copy all players in characters into character_xp_rate with default values
-INSERT IGNORE INTO `character_rates` (`guid`, `account` ) SELECT `guid`, `account` FROM `characters`;
+INSERT IGNORE INTO `character_rates` (`guid`, `account`) SELECT `guid`, `account` FROM `characters`;
