@@ -16389,7 +16389,7 @@ void Player::_LoadExpPremiumRates(PreparedQueryResult result)
         sLog->outError("Account (ID %u) not found in table `account_premium`, will use default values",GetSession()->GetAccountId());
         
         // Insert premium account default data into premium_account table
-        LoginDatabase.PExecute("INSERT INTO account_premium (id) VALUES ('%u')",GetSession()->GetAccountId());
+        LoginDatabase.PExecute("INSERT IGNORE INTO account_premium (id) VALUES ('%u')",GetSession()->GetAccountId());
 
         p_kill_xp_rate          = 1;
         p_quest_xp_rate         = 1;
@@ -16438,7 +16438,7 @@ void Player::_LoadExpRates(PreparedQueryResult result)
     else
     {
         sLog->outError("Player (GUID %u) not found in table `character_rates`, will use default values",GetGUIDLow());
-        CharacterDatabase.PExecute("INSERT INTO character_rates (guid, account) VALUES ('%u', '%u')",GetGUIDLow(), GetSession()->GetAccountId());
+        CharacterDatabase.PExecute("INSERT IGNORE INTO character_rates (guid, account) VALUES ('%u', '%u')",GetGUIDLow(), GetSession()->GetAccountId());
         
         // XP Rates
         kill_xp_rate = 1;
