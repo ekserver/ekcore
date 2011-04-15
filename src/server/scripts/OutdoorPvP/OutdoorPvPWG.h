@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2008 - 2010 Trinity <http://www.trinitycore.org/>
  *
- * Copyright (C) 2010 Myth Project <http://bitbucket.org/sun/myth-core/>
+ * Patch supported by ChaosUA & TCRU community http://trinity-core.ru/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,11 +30,14 @@
 #define POS_X_CENTER             5100
 #define MAX_VEHICLE_PER_WORKSHOP    4
 
-const uint32 WintergraspFaction[3] = {1802, 1801, 35};
+const uint16 WintergraspFaction[3] = {1802, 1801, 35};
 const uint32 WG_MARK_OF_HONOR = 43589;
 const uint32 VehNumWorldState[2] = {3680,3490};
 const uint32 MaxVehNumWorldState[2] = {3681,3491};
 const uint32 ClockWorldState[2] = {3781,4354};
+const uint8 CapturePointArtKit[3] = {2, 1, 21};
+char const *fmtstring(char const *format, ...);
+const Team TeamId2Team[3] = {ALLIANCE, HORDE, TEAM_OTHER};
 
 enum OutdoorPvPWGSpell
 {
@@ -63,7 +66,7 @@ enum OutdoorPvPWGSpell
     SPELL_VICTORY_AURA                           = 60044,
 };
 
-const uint16 GameEventWintergraspDefender[2] = {50, 51};
+const uint8 GameEventWintergraspDefender[2] = {50, 51};
 
 enum OutdoorPvP_WG_Sounds
 {
@@ -100,7 +103,10 @@ enum OutdoorPvP_WG_KeepStatus
 
 enum OutdoorPVPWGStatus
 {
-    WORLDSTATE_WINTERGRASP_CONTROLING_FACTION,
+    WORLDSTATE_WINTERGRASP_WARTIME            = 31001,
+    WORLDSTATE_WINTERGRASP_TIMER              = 31002,
+    WORLDSTATE_WINTERGRASP_DEFENDERS          = 31003,
+    WORLDSTATE_WINTERGRASP_CONTROLING_FACTION = 31004,
     WORLDSTATE_VALUE_COUNT,
 };
 
@@ -138,7 +144,8 @@ enum OutdoorPvPWGQuest
     A_VICTORY_IN_WG                              = 13181,
     H_VICTORY_IN_WG                              = 13183,
     CRE_PVP_KILL                                 = 31086, //Quest Objective - Fixme: this should be handled by DB
-    CRE_PVP_KILL_V                               = 31093, //Quest Objective - Fixme: this should be handled by DB
+    CRE_PVP_KILL_V                               = 31093, //Quest Objective - Fixme: this should be handled by DB.
+    TOWER_PVP_DESTROYED                          = 35074, //Quest Objective - Toppling the Towers & Southern Sabotage
 };
 
 enum OutdoorPvPWGCreEntry
@@ -173,13 +180,13 @@ struct BuildingState
 {
     explicit BuildingState(uint32 _worldState, TeamId _team, bool asDefault)
          : worldState(_worldState), health(0)
-         , defaultTeam(asDefault ? _team : OTHER_TEAM(_team)), team(_team), damageState(DAMAGE_INTACT)
-         , building(NULL), type(BUILDING_WALL), graveTeam(NULL)
-    { }
+         , defaultTeam(asDefault ? _team : OTHER_TEAM(_team)), damageState(DAMAGE_INTACT), team(_team)
+         , building(NULL), graveTeam(NULL), type(BUILDING_WALL) {}
     uint32 worldState;
     uint32 health;
     TeamId defaultTeam;
     OutdoorPvPWGDamageState damageState;
+    TeamId team;
     GameObject *building;
     uint32 *graveTeam;
     OutdoorPvPWGBuildingType type;
@@ -202,9 +209,6 @@ struct BuildingState
             if (uint32 newTeam = TeamId2Team[t])
                 *graveTeam = newTeam;
     }
-
-    private:
-        TeamId team;
 };
 
 typedef std::map<uint32, uint32> TeamPairMap;
@@ -222,7 +226,8 @@ class OutdoorPvPWG : public OutdoorPvP
     public:
         OutdoorPvPWG();
         bool SetupOutdoorPvP();
-        int TeamIDsound;
+        uint32 TeamIDsound;
+        bool MaingateDestroyed;
         uint32 GetCreatureEntry(uint32 guidlow, const CreatureData *data);
         void OnCreatureCreate(Creature *creature);
         void OnGameObjectCreate(GameObject *go);
@@ -236,7 +241,6 @@ class OutdoorPvPWG : public OutdoorPvP
         bool Update(uint32 diff);
         void BroadcastStateChange(BuildingState *state) const;
         uint32 GetData(uint32 id);
-        void SetData(uint32 id, uint32 value) { };
         void ModifyWorkshopCount(TeamId team, bool add);
         uint32 GetTimer() const { return m_timer / 1000; };
         bool isWarTime() const { return m_wartime; };
@@ -257,7 +261,8 @@ class OutdoorPvPWG : public OutdoorPvP
         // BG end
         void SendInitWorldStatesTo(Player *player = NULL) const;
         uint32 m_timer;
-        uint8 m_ann;
+        bool m_changeAlly;
+        bool m_changeHorde;
 
     protected:
         // Temporal BG specific till 3.2
@@ -270,7 +275,7 @@ class OutdoorPvPWG : public OutdoorPvP
         uint32 GetReviveQueueSize() const { return m_ReviveQueue.size(); }
         // BG end
         TeamId m_defender;
-        int32 m_tenacityStack;
+        int8 m_tenacityStack;
 
         BuildingStateMap m_buildingStates;
         BuildingState *m_gate;
@@ -287,9 +292,9 @@ class OutdoorPvPWG : public OutdoorPvP
         bool m_wartime;
         bool m_changeDefender;
         uint32 m_clock[2];
-        uint32 m_workshopCount[2];
-        uint32 m_towerDestroyedCount[2];
-        uint32 m_towerDamagedCount[2];
+        uint8 m_workshopCount[2];
+        uint8 m_towerDestroyedCount[2];
+        uint8 m_towerDamagedCount[2];
         uint32 m_WSSaveTimer;
 
         OPvPCapturePointWG *GetWorkshop(uint32 lowguid) const;
@@ -310,7 +315,7 @@ class OutdoorPvPWG : public OutdoorPvP
 
         void RebuildAllBuildings();
         void RemoveOfflinePlayerWGAuras();
-        void RewardMarkOfHonor(Player *player, uint32 count);
+        void RewardMarkOfHonor(Player *player, uint8 count);
         void MoveQuestGiver(uint32 guid);
         void LoadQuestGiverMap(uint32 guid, Position posHorde, Position posAlli);
         bool UpdateQuestGiverPosition(uint32 guid, Creature *creature);

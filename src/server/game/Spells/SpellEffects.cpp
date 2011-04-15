@@ -4514,7 +4514,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 58622:
                 {
                     if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
-                        if(pvpWG->isWarTime() || pvpWG->m_timer<300000)
+                        if( (pvpWG->isWarTime() || pvpWG->m_timer<300000) && unitTarget->getLevel() > 74)
                         {
                             if ((pvpWG->getDefenderTeam()==TEAM_ALLIANCE) && (unitTarget->ToPlayer()->GetTeam() == ALLIANCE))
                                 unitTarget->CastSpell(unitTarget, SPELL_TELEPORT_FORTRESS, true);
@@ -7390,19 +7390,21 @@ void Spell::EffectPlayerNotification(SpellEffIndex effIndex)
     switch(m_spellInfo->Id)
     {
         case 58730: // Restricted Flight Area
-           {
-             if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
-              {
-              if (pvpWG->isWarTime()==true)
-               {
-                unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
-                unitTarget->PlayDirectSound(9417); // Fel Reaver sound
-                unitTarget->MonsterTextEmote("The air is too thin in Wintergrasp for normal flight. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
-               break;
-               } else unitTarget->RemoveAura(58730);
-              }
-            break;
+        {
+            if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+            {
+                OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197);
+                if (pvpWG->isWarTime()==true)
+                {
+                    unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
+                    unitTarget->PlayDirectSound(9417); // Fel Reaver sound
+                    unitTarget->MonsterTextEmote("The air is too thin in Wintergrasp for normal flight. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
+                }
+                else
+                    unitTarget->RemoveAura(58730);
             }
+            break;
+        }
         case 58600: // Restricted Flight Area
             unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
             break;
