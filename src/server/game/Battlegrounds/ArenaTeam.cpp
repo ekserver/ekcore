@@ -637,7 +637,7 @@ int32 ArenaTeam::GetPersonalRatingMod(int32 baseRating, uint32 ownRating, uint32
     float chance = GetChanceAgainst(ownRating, opponentRating);
     chance *= 2.0f;
     float bonusChance = chance - 1.0f;
-    if (bonusChance < 0 || base_rating < 0)
+    if (bonusChance < 0 || baseRating < 0)
         bonusChance = 0;
     return (int32)(ceil(float(baseRating) * chance) + ceil(24.0f * bonusChance));
 }

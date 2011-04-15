@@ -1264,8 +1264,6 @@ public:
     struct npc_lorekeeperAI : public ScriptedAI
     {
         npc_lorekeeperAI(Creature* pCreature) : ScriptedAI(pCreature), summons(me)
-
-        void OnDestroyed(GameObject* go, Player* /*pPlayer*/,  uint32 /*value*/)
         {
             instance = pCreature->GetInstanceScript();
         }

@@ -4691,7 +4691,7 @@ void Spell::TakeRunePower(bool didHit)
     }
 
     // you can gain some runic power when use runes
-    float rp = (float)src->runePowerGain;
+    float rp = (float)runePowerGain;
     // Blood Boil should generate Runic Power when caster is in combat
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_spellInfo->SpellFamilyFlags[0] & 0x40000)
         if (player->isInCombat())

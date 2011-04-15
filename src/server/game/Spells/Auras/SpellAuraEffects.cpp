@@ -6142,16 +6142,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                             caster->CastSpell(target, GetAmount(), true);
                     }
                     break;
-                case SPELLFAMILY_ROGUE:
-                {
-                    // Tricks of the Trade
-                    if (GetId() == 59628)
-                    {
-                        if (caster)
-                            caster->SetReducedThreatPercent(0, 0);
-                    }
-                    break;
-                }
                 case SPELLFAMILY_WARLOCK:
                     // Haunt
                     if (m_spellProto->SpellFamilyFlags[1] & 0x40000)
@@ -6196,7 +6186,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     {
                         if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
                         {
-                            int32 damage = aurEff->GetAmount() * 8;
+                            int32 damage = GetAmount() * 8;
                             damage = caster->SpellDamageBonus(caster, m_spellProto, damage, DOT);
                             // backfire damage
                             target->CastCustomSpell(target, 64085, &damage, NULL, NULL, true, NULL, NULL,GetCasterGUID());

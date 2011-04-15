@@ -4280,12 +4280,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_TARGET_ENEMY;
             count++;
             break;
-        case 18754: // Improved Seduction
-        case 18755:
-        case 18756:
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
-            count++;
-            break;
         case 20467: // Judgement of Command
             spellInfo->EffectBasePoints[1] = 19;
             count++;
