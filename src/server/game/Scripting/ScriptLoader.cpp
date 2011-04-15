@@ -431,7 +431,6 @@ void AddSC_boss_thorim();
 void AddSC_boss_xt002();
 void AddSC_boss_yoggsaron();
 void AddSC_ulduar_teleporter();
-void AddSC_boss_mimiron();
 void AddSC_instance_ulduar();
 void AddSC_boss_keleseth();              //Utgarde Keep
 void AddSC_boss_skarvald_dalronn();
@@ -1136,7 +1135,6 @@ void AddNorthrendScripts()
     AddSC_boss_xt002();
     AddSC_boss_yoggsaron();
     AddSC_ulduar_teleporter();
-    AddSC_boss_mimiron();
     AddSC_instance_ulduar();
     AddSC_boss_keleseth();              //Utgarde Keep
     AddSC_boss_skarvald_dalronn();
