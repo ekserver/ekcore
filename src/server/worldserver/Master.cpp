@@ -156,9 +156,8 @@ public:
                 }
                 #else /* WITH_AUTOBACKTRACE */
                 sLog->outError("World Thread hangs, kicking out server!");
-                *((uint32 volatile*)NULL) = 0;                       // bang crash
-                #endif /* WITH_AUTOBACKTRACE */
                 ASSERT(false);
+                #endif /* WITH_AUTOBACKTRACE */
             }
         }
         sLog->outString("Anti-freeze thread exiting without problems.");
