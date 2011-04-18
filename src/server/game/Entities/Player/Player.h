@@ -2353,12 +2353,7 @@ class Player : public Unit, public GridObject<Player>
         void SendMovieStart(uint32 MovieId);
 
         uint32 EpBooster(uint32 xp_type);
-        uint32 p_kill_xp_rate;
-        uint32 p_quest_xp_rate;
-        uint32 p_explore_xp_rate;
-        uint32 p_rest_xp_rate;
-
-        uint8 premium_is_active;
+        bool premium;
         uint32 kill_xp_rate;
         uint32 quest_xp_rate;
         uint32 explore_xp_rate;
@@ -2545,7 +2540,6 @@ class Player : public Unit, public GridObject<Player>
         bool _LoadHomeBind(PreparedQueryResult result);
         void _LoadDeclinedNames(PreparedQueryResult result);
         void _LoadExpRates(PreparedQueryResult result);
-        void _LoadExpPremiumRates(PreparedQueryResult result);
         void _LoadArenaTeamInfo(PreparedQueryResult result);
         void _LoadEquipmentSets(PreparedQueryResult result);
         void _LoadBGData(PreparedQueryResult result);

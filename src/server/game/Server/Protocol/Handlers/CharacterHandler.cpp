@@ -196,10 +196,6 @@ bool LoginQueryHolder::Initialize()
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_PLAYER_XPRATES);
     stmt->setUInt32(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADXPRATE, stmt);
-    
-    stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_PREMIUMRATES);
-    stmt->setUInt32(0, m_accountId);
-    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADXPPREMIUMRATE, stmt);
 
     return res;
 }

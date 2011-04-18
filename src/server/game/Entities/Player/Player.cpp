@@ -387,10 +387,10 @@ uint32 Player::EpBooster(uint32 xp_type) // 1 = xp, 2 = quest, 3 = explore, 4 = 
 {
     //    = CharacterBoni
     // p_ = PremiumBoni
-    uint32 xp      = kill_xp_rate * p_kill_xp_rate;
-    uint32 quest   = quest_xp_rate * p_quest_xp_rate;
-    uint32 explore = explore_xp_rate * p_explore_xp_rate;
-    uint32 rest    = rest_xp_rate * p_rest_xp_rate;
+    uint32 xp      = kill_xp_rate;
+    uint32 quest   = quest_xp_rate;
+    uint32 explore = explore_xp_rate;
+    uint32 rest    = rest_xp_rate;
     
     switch(xp_type)
     {   
@@ -16345,88 +16345,36 @@ void Player::_LoadDeclinedNames(PreparedQueryResult result)
     for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
         m_declinedname->name[i] = (*result)[i].GetString();
 }
-void Player::_LoadExpPremiumRates(PreparedQueryResult result)
-{
-    if (result)
-    {
-        Field* fields = result->Fetch();
 
-        time_t p_start_time     = (time_t)fields[2].GetUInt64();
-        time_t p_end_time       = (time_t)fields[3].GetUInt64();
-
-        // XP Premium Rates
-        p_kill_xp_rate          = fields[4].GetUInt32();
-        p_quest_xp_rate         = fields[5].GetUInt32();
-        p_explore_xp_rate       = fields[6].GetUInt32();
-        p_rest_xp_rate          = fields[7].GetUInt32();
-
-        time_t p_currenttime    = time(NULL);
-        
-        if( p_start_time < p_currenttime && p_currenttime < p_end_time )
-        {
-            // bonus is legal, player gets db values even if they are 1 and flag characters with premium
-            CharacterDatabase.PExecute("UPDATE character_rates SET premium = '1' WHERE account = '%u'", GetSession()->GetAccountId());
-
-            p_kill_xp_rate      = fields[4].GetUInt32();
-            p_quest_xp_rate     = fields[5].GetUInt32();
-            p_explore_xp_rate   = fields[6].GetUInt32();
-            p_rest_xp_rate      = fields[7].GetUInt32();
-        }
-        else
-        {
-            // bonus is illegal, player gets default values
-            LoginDatabase.PExecute("UPDATE account_premium SET kill_xp_rate = '1', quest_xp_rate = '1', explore_xp_rate = '1', rest_xp_rate = '1', start_time = '0000-00-00 00:00:00', end_time = '0000-00-00 00:00:00' where id = '%u'",GetSession()->GetAccountId());
-            CharacterDatabase.PExecute("UPDATE character_rates SET premium = '0' WHERE account = '%u'", GetSession()->GetAccountId());
-
-            p_kill_xp_rate      = 1;
-            p_quest_xp_rate     = 1;
-            p_explore_xp_rate   = 1;
-            p_rest_xp_rate      = 1;
-        } 
-    }
-    else
-    {
-        sLog->outError("Account (ID %u) not found in table `account_premium`, will use default values",GetSession()->GetAccountId());
-        
-        // Insert premium account default data into premium_account table
-        LoginDatabase.PExecute("INSERT IGNORE INTO account_premium (id) VALUES ('%u')",GetSession()->GetAccountId());
-
-        p_kill_xp_rate          = 1;
-        p_quest_xp_rate         = 1;
-        p_explore_xp_rate       = 1;
-        p_rest_xp_rate          = 1;
-    }
-}
 void Player::_LoadExpRates(PreparedQueryResult result)
 {     
     if (result)
     {
-        Field* fields = result->Fetch();
+        Field* fields           = result->Fetch();
 
-        time_t start_time   = (time_t)fields[3].GetUInt64();
-        time_t end_time     = (time_t)fields[4].GetUInt64();
+        time_t start_time       = (time_t)fields[0].GetUInt64();
+        time_t end_time         = (time_t)fields[1].GetUInt64();
+        time_t currenttime      = time(NULL);
         
         // XP Rates
-        kill_xp_rate        = fields[5].GetUInt32();
-        quest_xp_rate       = fields[6].GetUInt32();
-        explore_xp_rate     = fields[7].GetUInt32();
-        rest_xp_rate        = fields[8].GetUInt32();
+        kill_xp_rate            = fields[2].GetUInt32();
+        quest_xp_rate           = fields[3].GetUInt32();
+        explore_xp_rate         = fields[4].GetUInt32();
+        rest_xp_rate            = fields[5].GetUInt32();
 
-        premium_is_active   = fields[9].GetUInt8();
+        bool premium            = fields[6].GetUInt8();
 
-        time_t currenttime  = time(NULL);
-
-        if( (start_time < currenttime && currenttime < end_time) && premium_is_active == 0 ) 
+        if( (start_time < currenttime && currenttime < end_time) || premium)
         {
             // bonus is legal and premium is not active, player gets db values even if they are 1!
-            kill_xp_rate    = fields[5].GetUInt32();
-            quest_xp_rate   = fields[6].GetUInt32();
-            explore_xp_rate = fields[7].GetUInt32();
-            rest_xp_rate    = fields[8].GetUInt32();
+            kill_xp_rate    = fields[2].GetUInt32();
+            quest_xp_rate   = fields[3].GetUInt32();
+            explore_xp_rate = fields[4].GetUInt32();
+            rest_xp_rate    = fields[5].GetUInt32();
         }
         else
         {
-            // bonus is illegal or Premium is active
+            // bonus is illegal
             CharacterDatabase.PExecute("UPDATE character_rates SET kill_xp_rate = '1', quest_xp_rate = '1', explore_xp_rate = '1', rest_xp_rate = '1', start_time = '0000-00-00 00:00:00', end_time = '0000-00-00 00:00:00' WHERE guid = '%u'", GetGUIDLow());
 
             kill_xp_rate    = 1;
@@ -17234,9 +17182,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // load data from table character_rates
     _LoadExpRates(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADXPRATE));
-    
-    // load data from table premium_account
-    _LoadExpPremiumRates(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADXPPREMIUMRATE));
 
     return true;
 }

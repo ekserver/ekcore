@@ -1073,11 +1073,12 @@ enum TrinityStrings
     
     // Use for EK customs
     LANG_BONI_INFO                          = 16001,
-    LANG_BONI_P_INFO                        = 16002,
-    LANG_YOU_CHANGE_PREMIUM_HEAD            = 16003,
-    LANG_YOU_CHANGE_PREMIUM                 = 16004,
-    LANG_YOU_CHANGE_BONI_HEAD               = 16005,
-    LANG_YOU_CHANGE_BONI                    = 16006,
+    LANG_BONI_PREMIUM_TRUE                  = 16002,
+    LANG_BONI_PREMIUM_FALSE                 = 16003,
+    LANG_YOU_CHANGE_PREMIUM_HEAD            = 16004,
+    LANG_YOU_CHANGE_PREMIUM                 = 16005,
+    LANG_YOU_CHANGE_BONI_HEAD               = 16006,
+    LANG_YOU_CHANGE_BONI                    = 16007,
     
 
     // NOT RESERVED IDS                   12000-1999999999

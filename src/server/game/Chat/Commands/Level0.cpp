@@ -111,15 +111,16 @@ bool ChatHandler::HandleBoniInfoCommand(const char* /*args*/)
     uint32 questBoni        = player->quest_xp_rate;
     uint32 exploreBoni      = player->explore_xp_rate;
     uint32 restBoni         = player->rest_xp_rate;
-    
-    // PremiumBoni
-    uint32 p_xpBoni         = player->p_kill_xp_rate;
-    uint32 p_questBoni      = player->p_quest_xp_rate;
-    uint32 p_exploreBoni    = player->p_explore_xp_rate;
-    uint32 p_restBoni       = player->p_rest_xp_rate;
+    bool premium            = player->premium;
     
     PSendSysMessage(LANG_BONI_INFO, xpBoni, questBoni, exploreBoni, restBoni);
-    PSendSysMessage(LANG_BONI_P_INFO, p_xpBoni, p_questBoni, p_exploreBoni, p_restBoni);
+    if(xpBoni > 1 || questBoni > 1 || exploreBoni > 1 || restBoni > 1)
+        PSendSysMessage(LANG_BONI_INFO, xpBoni, questBoni, exploreBoni, restBoni);
+
+    if(player->premium)
+        PSendSysMessage(LANG_BONI_PREMIUM_TRUE, premium);
+    else
+        PSendSysMessage(LANG_BONI_PREMIUM_FALSE);
     
     return true;
 }
